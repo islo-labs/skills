@@ -16,9 +16,14 @@ Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support
    - `islo schema`
    - `islo schema <command>`
    - `ISLO_HELP=full islo`
-3. For scheduled jobs, put `[schedule]` in `job.toml` and deploy the job with `islo job deploy <name>`.
-4. Do not ask users to install or authenticate Claude Code, Cursor agent, or Codex inside the sandbox before trying them. They are preinstalled, and connected integrations provide auth.
-5. Do not tell users to put GitHub, Slack, model-provider, or other provider tokens inside a sandbox unless they explicitly choose that escape hatch. Prefer gateway profiles and connected providers.
+3. **Before writing or editing `job.toml`, always scaffold first:**
+   - `islo job init <name>` — scaffold `jobs/<name>/job.toml`, then edit from that baseline
+   - `islo job deploy <name> --dry-run` — validate before deploy
+   - read `automations.md` for the verified Linear→Slack example and param/schedule rules
+   - treat other skill examples as patterns, not drop-in manifests
+4. For scheduled jobs, put `[schedule]` in `job.toml` only after every param has a `default`, then deploy with `islo job deploy <name>`.
+5. Do not ask users to install or authenticate Claude Code, Cursor agent, or Codex inside the sandbox before trying them. They are preinstalled, and connected integrations provide auth.
+6. Do not tell users to put GitHub, Slack, model-provider, or other provider tokens inside a sandbox unless they explicitly choose that escape hatch. Prefer gateway profiles and connected providers.
 
 ## Choose the right reference
 
