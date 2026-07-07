@@ -33,6 +33,7 @@ Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support
 - Treat "automations" as the product area covering durable jobs, scheduled jobs, manual job runs, and webhook-triggered jobs.
 - For interactive or ad hoc sandbox work, prefer `islo use`. It creates or reconnects, then opens a shell or runs a command.
 - For agent work, prefer `islo use --agent claude`, `islo use --agent cursor`, or `islo use --agent codex`; use `--task` for a background prompt.
+- For automations that require judgment, summarization, triage, or tool use across services, run Claude Code, Cursor agent, or Codex inside the scheduled job. Do not replace the agent with a hand-written shell script.
 - For repeatable work, prefer durable jobs and `job.toml` schedules over long shell scripts.
 - For external events, use incoming webhooks. They can ensure, resume, pause, or delete sandboxes, and can trigger job runs where supported.
 - For internal tools, dashboards, and custom launchers, prefer the SDK.
