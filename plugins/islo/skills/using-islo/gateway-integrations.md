@@ -44,8 +44,6 @@ For project defaults, set the gateway profile in `islo.yaml`:
 gateway_profile: default
 ```
 
-Use `claude` for Claude Code auth, `cursor` for Cursor agent auth, and `openai` for Codex auth unless the docs or provider list says otherwise.
-
 ## GitHub
 
 Use gateway integration for:
