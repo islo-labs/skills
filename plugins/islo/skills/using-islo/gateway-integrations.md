@@ -8,6 +8,8 @@ Do not put provider tokens inside the sandbox by default. Use connected provider
 
 Inside the sandbox, tools may see placeholder credentials such as `GITHUB_TOKEN`, `GH_TOKEN`, or `SLACK_TOKEN`. Treat those as phantom tokens, not secrets. Egress through the Islo gateway replaces matching outbound requests with real credentials outside the sandbox.
 
+Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes. If the user connected the matching integration before using the sandbox, these agents can run without an in-sandbox login. Do not copy local auth files or API keys into the sandbox just to make the agent start.
+
 ## Flow
 
 1. The user connects a provider outside the sandbox, for example GitHub or Slack.
@@ -28,6 +30,9 @@ Typical flow:
 ```bash
 islo login --tool github
 islo login --tool slack
+islo login --tool claude
+islo login --tool cursor
+islo login --tool openai
 islo gateway profile create <profile>
 islo gateway rule create <profile> --host api.github.com --provider-key github --auth-mode bearer
 islo use <sandbox> --gateway-profile <profile>
@@ -38,6 +43,8 @@ For project defaults, set the gateway profile in `islo.yaml`:
 ```yaml
 gateway_profile: default
 ```
+
+Use `claude` for Claude Code auth, `cursor` for Cursor agent auth, and `openai` for Codex auth unless the docs or provider list says otherwise.
 
 ## GitHub
 
