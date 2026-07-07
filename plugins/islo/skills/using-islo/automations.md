@@ -31,30 +31,6 @@ islo job deploy <name>
 
 Always start from `islo job init <name>`. The scaffold sets section layout, field names, the platform default sandbox image, and a param example you can adapt.
 
-Common mistakes to avoid:
-
-- `init = "full"` or `init = "minimal"` as a bare string — the compute API expects an internally tagged enum (`{ type = "full" }`); omit `init` in `job.toml` and let the platform default for the image apply
-- unqualified image names like `islo/default` — they resolve to Docker Hub and fail with registry `Not authorized`; use the platform default image or a fully qualified registry reference
-- `mode = "ephemeral"` — not valid; use `provision`, `ensure`, or `reuse`
-- omitting `image` when `mode` is `provision` or `ensure` — deploy validation requires an explicit image in `job.toml` (unlike `islo.yaml`, where image is optional)
-- `timeout` inside `[[run.tasks.steps]]` — not valid; only `[run]` accepts `timeout`
-- `${param}` in prompts — bash expansion; Islo will not fill it
-- `[schedule]` with `required = true` params that have no `default` — deploy fails with `VALIDATION_ERROR`
-
-### Sandbox image
-
-For agent jobs (Claude/Cursor/Codex on the default runner), use:
-
-```toml
-[run.sandbox]
-mode = "provision"
-image = "ghcr.io/islo-labs/islo-runner:latest"
-```
-
-- **Platform default image:** `ghcr.io/islo-labs/islo-runner:latest` on infrastructure (CLI constant: `docker.io/library/islo-runner:latest`). Pre-pulled, includes dev tools and preinstalled agents. `islo job init` sets the default explicitly because `job.toml` requires `image` for `mode = "provision"` or `"ensure"` (unlike `islo.yaml`, where image is optional).
-
-Do not set `init` unless docs or `islo schema` show the correct table form for your API version. For most agent jobs on the default runner, omit it.
-
 ## Job manifests
 
 The standard manifest path is:
