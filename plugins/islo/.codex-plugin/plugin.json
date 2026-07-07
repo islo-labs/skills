@@ -1,6 +1,6 @@
 {
   "name": "islo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Use Islo sandboxes, automations, gateway integrations, and SDKs from coding agents.",
   "author": {
     "name": "Islo Labs"
