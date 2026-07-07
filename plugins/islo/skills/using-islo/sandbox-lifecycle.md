@@ -94,8 +94,8 @@ ghcr.io/islo-labs/islo-runner:latest
 It is pre-pulled on Islo infrastructure for fast startup and includes common dev tools plus preinstalled agents (Claude Code, Cursor agent, Codex).
 
 - For `islo use` and `islo.yaml`, omitting `image` uses this default.
-- For `job.toml` with `mode = "provision"` or `"ensure"`, `image` is **required** — set the fully qualified reference above.
-- Do not use `islo/default` in job manifests. The `islo job init` scaffold may emit it, but compute resolves it as `docker.io/islo/default` and provisioning fails.
+- For `job.toml` with `mode = "provision"` or `"ensure"`, `image` is **required** — set `ghcr.io/islo-labs/islo-runner:latest`.
+- Do not use `islo/default` in job manifests. Do not copy `init = "full"` from the scaffold — remove it; the compute API rejects bare string init values.
 
 ## Bootstrap
 

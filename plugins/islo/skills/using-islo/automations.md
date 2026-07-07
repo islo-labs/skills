@@ -20,51 +20,55 @@ Islo automations are repeatable work that runs in managed sandboxes:
 
 ## Before writing `job.toml`
 
-**Required workflow.** Do not skip this and write a manifest from examples alone.
+**Required workflow.** Do not skip this and write a manifest from memory or partial examples.
 
 ```bash
 islo job init <name>
-# edit jobs/<name>/job.toml
+# edit jobs/<name>/job.toml — diff against the scaffold for field names and types
 islo job deploy <name> --dry-run
 islo job deploy <name>
 ```
 
-`islo job init` is the source of truth for **section layout** and most defaults:
+Always start from `islo job init <name>`. The scaffold catches section layout and most field names before you hit the server. Then diff your edits against it — the scaffold still emits some invalid values (see below).
+
+After `islo job init`, fix these scaffold lines before first deploy:
+
+| Scaffold emits | Replace with |
+|----------------|--------------|
+| `image = "islo/default"` | `image = "ghcr.io/islo-labs/islo-runner:latest"` |
+| `init = "full"` | remove the `init` line entirely |
+
+Valid scaffold defaults to keep:
 
 - `[run]`: `fail_fast = true`, `fanout = false`
-- `[run.sandbox]`: `mode = "provision"`, `init = "full"`, `gateway_profile = "default"`
+- `[run.sandbox]`: `mode = "provision"`, `gateway_profile = "default"`
 - `[[run.tasks.steps]]`: `name` plus exactly one action (`exec`, `snapshot`, `pause`, `resume`, or `delete`)
-
-**Immediately fix the scaffold image line** — `islo job init` currently emits `image = "islo/default"`, which is not safe to deploy as-is. See [Sandbox image](#sandbox-image) below.
 
 Common mistakes to avoid:
 
-- `image = "islo/default"` — compute resolves this as `docker.io/islo/default` and registry pull fails; use `ghcr.io/islo-labs/islo-runner:latest` instead
+- `init = "full"` or `init = "minimal"` as a string — the compute API expects an internally tagged enum (`{ type = "full" }`), not a bare string; omit `init` in `job.toml` and let the platform default for the image apply
+- `image = "islo/default"` — resolves to Docker Hub (`docker.io/islo/default`) and fails with registry `Not authorized`; use `ghcr.io/islo-labs/islo-runner:latest`
 - `mode = "ephemeral"` — not valid; use `provision`, `ensure`, or `reuse`
 - omitting `image` when `mode` is `provision` or `ensure` — deploy validation requires an explicit image in `job.toml` (unlike `islo.yaml`, where image is optional)
-- `timeout` on a step — not a valid step field; put run-level timeout under `[run]` if needed
-- `${param}` or bash variable expansion in prompts — Islo substitutes run params itself
-- single-brace `{param}` in `exec` — use `{{param}}` (see below)
+- `timeout` inside `[[run.tasks.steps]]` — not valid; only `[run]` accepts `timeout`
+- `${param}` in prompts — bash expansion; Islo will not fill it
+- `[schedule]` with `required = true` params that have no `default` — deploy fails with `VALIDATION_ERROR`
 
 ### Sandbox image
 
-For agent jobs (`init = "full"`, Claude/Cursor/Codex), use the platform default runner image:
+For agent jobs (Claude/Cursor/Codex on the default runner), use:
 
 ```toml
 [run.sandbox]
 mode = "provision"
 image = "ghcr.io/islo-labs/islo-runner:latest"
-init = "full"
 ```
 
-Facts agents must not guess:
+- **Platform default image:** `ghcr.io/islo-labs/islo-runner:latest` — pre-pulled on Islo infrastructure, includes dev tools and preinstalled agents.
+- **`islo/default` is not valid** in job manifests even though `islo job init` emits it.
+- **`job.toml` requires `image` for `mode = "provision"` or `"ensure"`** — always set the fully qualified GHCR reference unless docs specify another image.
 
-- **Platform default image** (docs + CLI): `ghcr.io/islo-labs/islo-runner:latest` — pre-pulled on Islo infrastructure, includes common dev tools and preinstalled agents.
-- **`islo/default` is not that image.** The `islo job init` scaffold emits it, but the compute plane treats it as a Docker Hub reference (`docker.io/islo/default`). Provisioning then fails with registry `Not authorized` and surfaces as `loopback /sandboxes returned 503 RESOURCE_UNAVAILABLE`.
-- **`job.toml` requires `image` for `mode = "provision"` or `"ensure"`** — you cannot omit it the way you can in `islo.yaml`. Always set the fully qualified GHCR reference above unless docs or `islo schema` show a different image for your use case.
-- **Custom images** are valid when fully qualified (for example `ghcr.io/org/custom-runner:tag`). Pair `init = "minimal"` unless you need full platform setup.
-
-Verify with docs MCP (`default sandbox image`) or `islo schema` before deploying a manifest with a non-default image.
+Do not set `init` unless docs or `islo schema` show the correct table form for your API version. For most agent jobs on the default runner, omit it.
 
 ## Job manifests
 
@@ -79,7 +83,7 @@ Typical manifest sections:
 - `[job]`: name, version, description.
 - `[job.params.*]`: parameter schema and validation.
 - `[run]`: fail-fast, fanout, timeout, workdir, teardown policy.
-- `[run.sandbox]`: sandbox mode, name, image, snapshot, CPU, memory, init mode, gateway profile.
+- `[run.sandbox]`: sandbox mode, name, image, snapshot, CPU, memory, gateway profile.
 - `[[run.tasks]]` and `[[run.tasks.steps]]`: ordered commands to run inside the sandbox.
 - `[schedule]`: optional schedule for recurring runs.
 - Optional verification sections when supported by the target CLI/control plane.
@@ -88,21 +92,65 @@ Use `gateway_profile = "default"` or a named profile when the job needs provider
 
 ### Run parameters
 
-Declare params under `[job.params.<name>]` and reference them in the manifest with **double braces**:
+Declare params under `[job.params.<name>]`.
+
+Islo substitutes `{param_name}` in `exec` strings **before the step runs**. Declare every referenced param under `[job.params.*]` or deploy validation fails. Reserved: `{run_id}`. Do not use `${param}` — that is bash expansion.
+
+**Inline exec** (no heredoc):
 
 ```toml
 [job.params.ticket_id]
 type = "string"
-required = true
+default = "ENG-1"
 
 [[run.tasks.steps]]
 name = "summarize"
-exec = ["bash", "-lc", "claude -p 'Fetch ticket {{ticket_id}} and post to {{slack_channel}}'"]
+exec = ["bash", "-lc", "claude -p 'Fetch ticket {ticket_id} and post to {slack_channel}'"]
 ```
 
-Islo substitutes `{{param_name}}` in strings (including `exec` arrays) before the step runs. Reserved: `{{run_id}}`. Do not use `${param}` — that is bash expansion and will not be filled by Islo. Declare every referenced param under `[job.params.*]` or deploy validation fails.
+**Inside a `<<'PROMPT'` heredoc** (single-quoted delimiter — no shell expansion): write `{{param_name}}` in the manifest. That prevents premature substitution at deploy time and leaves `{param_name}` in the exec payload for Islo to fill at run time before bash executes.
 
-Scheduled jobs cannot require params without defaults.
+```toml
+exec = [
+  "bash",
+  "-lc",
+  '''
+claude -p "$(cat <<'PROMPT'
+Fetch ticket {{ticket_id}} and post to {{slack_channel}}.
+PROMPT
+)"
+''',
+]
+```
+
+Alternatively, avoid heredocs and pass the prompt as a single quoted `claude -p '...'` string with `{param_name}` placeholders.
+
+### Params and schedules
+
+If `[schedule]` is present, **every param the scheduled run needs must have a `default`**. The scheduler fires without a human passing `--param`.
+
+- `required = true` with no `default` → deploy fails with `VALIDATION_ERROR`
+- you cannot set both `required = true` and `default` on the same param
+- optional params (`required = false`) without defaults are allowed, but scheduled runs will not receive a value unless you add a default
+
+```toml
+[job.params.ticket_id]
+type = "string"
+default = "ENG-123"
+
+[job.params.slack_channel]
+type = "string"
+default = "#standup"
+
+[schedule]
+cron = "0 9 * * *"
+timezone = "UTC"
+enabled = true
+```
+
+Manual runs can override defaults: `islo job run <name> --param ticket_id=ENG-456 --watch`.
+
+If deploy fails with only `VALIDATION_ERROR` / `Invalid request parameters`, remove `[schedule]` temporarily to confirm, then add `default = "..."` to each param the scheduled run needs.
 
 ## Agent-first automations
 
@@ -123,25 +171,40 @@ Agent entrypoints available in Islo sandboxes:
 - Cursor agent: `agent --yolo --trust -p "<prompt>"`
 - Codex: `codex --sandbox danger-full-access -c model_provider=islo exec --skip-git-repo-check "<prompt>"`
 
-Example step launcher for "take one Linear ticket and post a summary to Slack". Start from `islo job init <name>`, then adapt sandbox and params — this snippet only shows the agent step pattern:
+### Verified example: Linear ticket → Slack summary
+
+Copy-paste starting point. Requires Linear and Slack integrations on the chosen `gateway_profile` (use a named profile or `default` if those providers are connected).
 
 ```toml
+[job]
+name = "linear-to-slack"
+version = "1.0.0"
+description = "Fetch a Linear ticket and post a daily AI summary to Slack using Claude Code"
+
 [job.params.ticket_id]
 type = "string"
-required = true
+description = "Linear ticket identifier, e.g. ENG-123"
+default = "ENG-1"
 
 [job.params.slack_channel]
 type = "string"
+description = "Slack channel to post to, e.g. #standup"
 default = "#general"
+
+[run]
+fail_fast = true
+fanout = false
 
 [run.sandbox]
 mode = "provision"
 image = "ghcr.io/islo-labs/islo-runner:latest"
-gateway_profile = "linear-slack"
-init = "full"
+gateway_profile = "default"
+
+[[run.tasks]]
+name = "post-summary"
 
 [[run.tasks.steps]]
-name = "summarize-linear-ticket"
+name = "run-agent"
 exec = [
   "bash",
   "-lc",
@@ -150,17 +213,32 @@ set -euo pipefail
 claude -p "$(cat <<'PROMPT'
 You are running inside an Islo sandbox with Linear and Slack access via gateway-managed credentials.
 
-Fetch ticket {{ticket_id}} and post a concise update to {{slack_channel}}.
-Do not ask for API tokens and do not write tokens to disk.
+Fetch the Linear ticket with ID {{ticket_id}} and post a concise daily standup update to {{slack_channel}}.
 
-1. Read the ticket title, description, comments, status, assignee, priority, and URL.
-2. Write a 2-3 sentence standup summary: status, context, blockers or next steps.
-3. Post to {{slack_channel}} using Slack Block Kit with ticket key, title, status, assignee, and summary.
+Do not ask for API tokens and do not write tokens to disk — the gateway handles authentication.
+
+1. Fetch ticket {{ticket_id}}: read its title, description, comments, status, assignee, priority, and URL.
+2. Write a 2-3 sentence standup summary: current status, key context, and any blockers or next steps.
+3. Post to {{slack_channel}} using Slack Block Kit: linked ticket ID, title, status, assignee, and summary.
 4. Confirm what you posted and the ticket ID.
 PROMPT
 )"
 ''',
 ]
+
+[schedule]
+cron = "0 9 * * *"
+timezone = "UTC"
+enabled = true
+```
+
+Deploy and test:
+
+```bash
+islo job init linear-to-slack   # or use the file above at jobs/linear-to-slack/job.toml
+islo job deploy linear-to-slack --dry-run
+islo job deploy linear-to-slack
+islo job run linear-to-slack --watch
 ```
 
 For larger automations, prefer a prompt file or the `islo-agents` harness over embedding a long prompt directly in `job.toml`.
@@ -195,30 +273,6 @@ Deploying the job creates or updates the schedule:
 ```bash
 islo job deploy <name>
 ```
-
-### Params and schedules
-
-The scheduler fires without a human passing `--param`. If `[schedule]` is present:
-
-- every param must have a `default`, **or** be optional (`required = false` with no default)
-- `required = true` with no `default` fails deploy validation
-- you cannot set both `required = true` and `default` on the same param
-
-For a daily standup on a fixed ticket/channel, bake the values into defaults:
-
-```toml
-[job.params.ticket_id]
-type = "string"
-default = "ENG-123"
-
-[job.params.slack_channel]
-type = "string"
-default = "#standup"
-```
-
-Manual runs can still override defaults: `islo job run <name> --param ticket_id=ENG-456 --watch`.
-
-If deploy fails with only `VALIDATION_ERROR` / `Invalid request parameters`, the usual schedule conflict is a required param without a default. Remove `[schedule]` temporarily to confirm, then add `default = "..."` to each param the scheduled run needs.
 
 The control plane behavior:
 
@@ -264,8 +318,10 @@ Do not copy templates into this skills repo. Point users to the template repo an
 
 ## Things to avoid
 
-- Do not deploy `image = "islo/default"` from the `islo job init` scaffold — replace with `ghcr.io/islo-labs/islo-runner:latest` first.
+- Do not copy `init = "full"` from the scaffold — remove it; bare strings are rejected by the compute API.
+- Do not deploy `image = "islo/default"` — use `ghcr.io/islo-labs/islo-runner:latest`.
 - Do not write `job.toml` from skill examples without running `islo job init` and `islo job deploy --dry-run` first.
+- Do not add `[schedule]` until every param has a `default`.
 - Do not turn a one-off shell command into a job unless it needs repeatability, scheduling, retries, or auditability.
 - Do not implement judgment-heavy agent work as shell business logic. Use shell only to launch the agent, load a prompt, or run a small harness.
 - Do not put provider tokens in job params or sandbox environment variables by default.
