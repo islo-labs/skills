@@ -9,7 +9,9 @@ Prefer `islo use` for day-to-day work. It is the main create-or-connect entry po
 ```bash
 islo use <sandbox-name>
 islo use <sandbox-name> -- <command>
+islo use --agent claude
 islo use --agent cursor --task "Implement the issue"
+islo use --agent codex --task "Fix the failing tests"
 ```
 
 `islo use` handles the common path:
@@ -21,6 +23,28 @@ islo use --agent cursor --task "Implement the issue"
 5. Open an interactive session, run a one-shot command, or start a background agent task.
 
 Do not invent separate `islo create` or `islo exec` commands unless the current CLI exposes them. In current Islo CLI patterns, `islo use <name> -- <command>` is the exec path.
+
+## Built-in agents
+
+Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes. Do not add setup steps that reinstall them unless the user asks for a custom version.
+
+Use `islo use --agent <name>` to start an interactive agent session:
+
+```bash
+islo use <name> --agent claude
+islo use <name> --agent cursor
+islo use <name> --agent codex
+```
+
+Use `--task` to start a background prompt:
+
+```bash
+islo use <name> --agent claude --task "Review this PR"
+islo use <name> --agent cursor --task "Add tests for the auth flow"
+islo use <name> --agent codex --task "Fix the lint errors"
+```
+
+If the matching integration was connected before sandbox use, the agent should work without running a login flow inside the sandbox. Prefer this path over copying local key files or setting provider API keys in sandbox env.
 
 ## Common commands
 

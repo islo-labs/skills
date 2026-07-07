@@ -6,6 +6,7 @@ This repo teaches coding agents how to use Islo for:
 
 - Automations: scheduled jobs, manual job runs, and webhook-triggered jobs
 - Sandbox lifecycle: create, connect, exec, pause, resume, stop, and delete
+- Built-in agents: Claude Code, Cursor agent, and Codex inside Islo sandboxes
 - Gateway integrations: GitHub, Slack, and other provider credentials without copying tokens into the sandbox
 - SDK usage: programmatic integrations with the generated Islo SDKs
 
