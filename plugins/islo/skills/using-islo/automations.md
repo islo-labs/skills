@@ -18,6 +18,31 @@ Islo automations are repeatable work that runs in managed sandboxes:
 - Use `[schedule]` in `job.toml` for scheduled jobs.
 - The control plane validates schedule cron expressions at deploy time, stores one active schedule per job, and registers the next run through the workflow scheduler.
 
+## Before writing `job.toml`
+
+**Required workflow.** Do not skip this and write a manifest from examples alone.
+
+```bash
+islo job init <name>
+# edit jobs/<name>/job.toml
+islo job deploy <name> --dry-run
+islo job deploy <name>
+```
+
+`islo job init` is the source of truth for defaults such as:
+
+- `[run]`: `fail_fast = true`, `fanout = false`
+- `[run.sandbox]`: `mode = "provision"`, `image = "islo/default"`, `init = "full"`, `gateway_profile = "default"`
+- `[[run.tasks.steps]]`: `name` plus exactly one action (`exec`, `snapshot`, `pause`, `resume`, or `delete`)
+
+Common mistakes to avoid:
+
+- `mode = "ephemeral"` — not valid; use `provision`, `ensure`, or `reuse`
+- omitting `image` when `mode` is `provision` or `ensure` — deploy validation fails
+- `timeout` on a step — not a valid step field; put run-level timeout under `[run]` if needed
+- `${param}` or bash variable expansion in prompts — Islo substitutes run params itself
+- single-brace `{param}` in `exec` — use `{{param}}` (see below)
+
 ## Job manifests
 
 The standard manifest path is:
@@ -38,6 +63,24 @@ Typical manifest sections:
 
 Use `gateway_profile = "default"` or a named profile when the job needs provider API access through Islo gateway credential injection.
 
+### Run parameters
+
+Declare params under `[job.params.<name>]` and reference them in the manifest with **double braces**:
+
+```toml
+[job.params.ticket_id]
+type = "string"
+required = true
+
+[[run.tasks.steps]]
+name = "summarize"
+exec = ["bash", "-lc", "claude -p 'Fetch ticket {{ticket_id}} and post to {{slack_channel}}'"]
+```
+
+Islo substitutes `{{param_name}}` in strings (including `exec` arrays) before the step runs. Reserved: `{{run_id}}`. Do not use `${param}` — that is bash expansion and will not be filled by Islo. Declare every referenced param under `[job.params.*]` or deploy validation fails.
+
+Scheduled jobs cannot require params without defaults.
+
 ## Agent-first automations
 
 When the automation asks an agent to understand, summarize, triage, plan, comment, or coordinate work across tools, the job should run an agent inside the sandbox. Do not turn that request into a hand-written shell script that calls APIs directly.
@@ -57,31 +100,40 @@ Agent entrypoints available in Islo sandboxes:
 - Cursor agent: `agent --yolo --trust -p "<prompt>"`
 - Codex: `codex --sandbox danger-full-access -c model_provider=islo exec --skip-git-repo-check "<prompt>"`
 
-Example scheduled job step for "take one Linear ticket and post a summary to Slack":
+Example step launcher for "take one Linear ticket and post a summary to Slack". Start from `islo job init <name>`, then adapt sandbox and params — this snippet only shows the agent step pattern:
 
 ```toml
+[job.params.ticket_id]
+type = "string"
+required = true
+
+[job.params.slack_channel]
+type = "string"
+default = "#general"
+
+[run.sandbox]
+mode = "provision"
+image = "islo/default"
+gateway_profile = "linear-slack"
+init = "full"
+
 [[run.tasks.steps]]
 name = "summarize-linear-ticket"
-timeout = 1800
 exec = [
   "bash",
   "-lc",
   '''
 set -euo pipefail
 claude -p "$(cat <<'PROMPT'
-You are running inside an Islo sandbox.
+You are running inside an Islo sandbox with Linear and Slack access via gateway-managed credentials.
 
-Every day, take one Linear ticket that needs a summary and post a concise update to Slack.
-
-Use the available Linear and Slack integrations through Islo gateway credentials.
+Fetch ticket {{ticket_id}} and post a concise update to {{slack_channel}}.
 Do not ask for API tokens and do not write tokens to disk.
 
-Steps:
-1. Find one Linear ticket matching the configured queue or label.
-2. Read its title, description, comments, status, and linked context.
-3. Write a short Slack summary with the ticket key, current status, blocker/risk if any, and suggested next action.
-4. Post the summary to the configured Slack channel.
-5. Print what you posted and the ticket key.
+1. Read the ticket title, description, comments, status, assignee, priority, and URL.
+2. Write a 2-3 sentence standup summary: status, context, blockers or next steps.
+3. Post to {{slack_channel}} using Slack Block Kit with ticket key, title, status, assignee, and summary.
+4. Confirm what you posted and the ticket ID.
 PROMPT
 )"
 ''',
@@ -120,6 +172,30 @@ Deploying the job creates or updates the schedule:
 ```bash
 islo job deploy <name>
 ```
+
+### Params and schedules
+
+The scheduler fires without a human passing `--param`. If `[schedule]` is present:
+
+- every param must have a `default`, **or** be optional (`required = false` with no default)
+- `required = true` with no `default` fails deploy validation
+- you cannot set both `required = true` and `default` on the same param
+
+For a daily standup on a fixed ticket/channel, bake the values into defaults:
+
+```toml
+[job.params.ticket_id]
+type = "string"
+default = "ENG-123"
+
+[job.params.slack_channel]
+type = "string"
+default = "#standup"
+```
+
+Manual runs can still override defaults: `islo job run <name> --param ticket_id=ENG-456 --watch`.
+
+If deploy fails with only `VALIDATION_ERROR` / `Invalid request parameters`, the usual schedule conflict is a required param without a default. Remove `[schedule]` temporarily to confirm, then add `default = "..."` to each param the scheduled run needs.
 
 The control plane behavior:
 
@@ -165,6 +241,7 @@ Do not copy templates into this skills repo. Point users to the template repo an
 
 ## Things to avoid
 
+- Do not write `job.toml` from skill examples without running `islo job init` and `islo job deploy --dry-run` first.
 - Do not turn a one-off shell command into a job unless it needs repeatability, scheduling, retries, or auditability.
 - Do not implement judgment-heavy agent work as shell business logic. Use shell only to launch the agent, load a prompt, or run a small harness.
 - Do not put provider tokens in job params or sandbox environment variables by default.

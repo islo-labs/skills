@@ -12,12 +12,13 @@ Do not copy those templates into this skills repo. Link to the template repo and
 
 ## How to use templates
 
-1. Pick the closest template.
-2. Read its `job.toml` to understand the sandbox, gateway profile, params, and steps.
-3. Read its `action.yml` if the user wants GitHub Actions integration.
-4. Read its prompt file before changing behavior.
-5. Deploy the job with the current `islo job deploy` flow.
-6. Add any required CI secret, usually `ISLO_API_KEY`.
+1. Run `islo job init <name>` locally so you have the current scaffold defaults before copying template structure.
+2. Pick the closest template.
+3. Read its `job.toml` to understand the sandbox, gateway profile, params, and steps.
+4. Read its `action.yml` if the user wants GitHub Actions integration.
+5. Read its prompt file before changing behavior.
+6. Validate with `islo job deploy <name> --dry-run`, then deploy.
+7. Add any required CI secret, usually `ISLO_API_KEY`.
 
 ## Advice for agents
 
