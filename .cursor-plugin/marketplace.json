@@ -1,0 +1,16 @@
+{
+  "name": "islo-plugin",
+  "metadata": {
+    "description": "Agent skills for using Islo sandboxes, automations, gateway integrations, and SDKs.",
+    "pluginRoot": "plugins"
+  },
+  "owner": {
+    "name": "Islo Labs"
+  },
+  "plugins": [
+    {
+      "name": "islo",
+      "source": "islo"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "islo-docs": {
+      "url": "https://docs.islo.dev/_mcp/server"
+    }
+  }
+}
