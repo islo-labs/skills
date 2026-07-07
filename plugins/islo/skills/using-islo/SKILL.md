@@ -17,8 +17,7 @@ Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support
    - `islo schema <command>`
    - `ISLO_HELP=full islo`
 3. **Before writing or editing `job.toml`, always scaffold first:**
-   - `islo job init <name>` — get a valid scaffold, then diff your edits against it
-   - fix known bad scaffold values before deploy: replace `islo/default` with `ghcr.io/islo-labs/islo-runner:latest`, remove `init = "full"`
+   - `islo job init <name>` — scaffold `jobs/<name>/job.toml`, then edit from that baseline
    - `islo job deploy <name> --dry-run` — validate before deploy
    - read `automations.md` for the verified Linear→Slack example and param/schedule rules
    - treat other skill examples as patterns, not drop-in manifests

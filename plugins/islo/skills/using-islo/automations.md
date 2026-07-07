@@ -24,30 +24,17 @@ Islo automations are repeatable work that runs in managed sandboxes:
 
 ```bash
 islo job init <name>
-# edit jobs/<name>/job.toml — diff against the scaffold for field names and types
+# edit jobs/<name>/job.toml
 islo job deploy <name> --dry-run
 islo job deploy <name>
 ```
 
-Always start from `islo job init <name>`. The scaffold catches section layout and most field names before you hit the server. Then diff your edits against it — the scaffold still emits some invalid values (see below).
-
-After `islo job init`, fix these scaffold lines before first deploy:
-
-| Scaffold emits | Replace with |
-|----------------|--------------|
-| `image = "islo/default"` | `image = "ghcr.io/islo-labs/islo-runner:latest"` |
-| `init = "full"` | remove the `init` line entirely |
-
-Valid scaffold defaults to keep:
-
-- `[run]`: `fail_fast = true`, `fanout = false`
-- `[run.sandbox]`: `mode = "provision"`, `gateway_profile = "default"`
-- `[[run.tasks.steps]]`: `name` plus exactly one action (`exec`, `snapshot`, `pause`, `resume`, or `delete`)
+Always start from `islo job init <name>`. The scaffold sets section layout, field names, the platform default sandbox image, and a param example you can adapt.
 
 Common mistakes to avoid:
 
-- `init = "full"` or `init = "minimal"` as a string — the compute API expects an internally tagged enum (`{ type = "full" }`), not a bare string; omit `init` in `job.toml` and let the platform default for the image apply
-- `image = "islo/default"` — resolves to Docker Hub (`docker.io/islo/default`) and fails with registry `Not authorized`; use `ghcr.io/islo-labs/islo-runner:latest`
+- `init = "full"` or `init = "minimal"` as a bare string — the compute API expects an internally tagged enum (`{ type = "full" }`); omit `init` in `job.toml` and let the platform default for the image apply
+- unqualified image names like `islo/default` — they resolve to Docker Hub and fail with registry `Not authorized`; use the platform default image or a fully qualified registry reference
 - `mode = "ephemeral"` — not valid; use `provision`, `ensure`, or `reuse`
 - omitting `image` when `mode` is `provision` or `ensure` — deploy validation requires an explicit image in `job.toml` (unlike `islo.yaml`, where image is optional)
 - `timeout` inside `[[run.tasks.steps]]` — not valid; only `[run]` accepts `timeout`
@@ -64,9 +51,7 @@ mode = "provision"
 image = "ghcr.io/islo-labs/islo-runner:latest"
 ```
 
-- **Platform default image:** `ghcr.io/islo-labs/islo-runner:latest` — pre-pulled on Islo infrastructure, includes dev tools and preinstalled agents.
-- **`islo/default` is not valid** in job manifests even though `islo job init` emits it.
-- **`job.toml` requires `image` for `mode = "provision"` or `"ensure"`** — always set the fully qualified GHCR reference unless docs specify another image.
+- **Platform default image:** `ghcr.io/islo-labs/islo-runner:latest` on infrastructure (CLI constant: `docker.io/library/islo-runner:latest`). Pre-pulled, includes dev tools and preinstalled agents. `islo job init` sets the default explicitly because `job.toml` requires `image` for `mode = "provision"` or `"ensure"` (unlike `islo.yaml`, where image is optional).
 
 Do not set `init` unless docs or `islo schema` show the correct table form for your API version. For most agent jobs on the default runner, omit it.
 
@@ -318,8 +303,8 @@ Do not copy templates into this skills repo. Point users to the template repo an
 
 ## Things to avoid
 
-- Do not copy `init = "full"` from the scaffold — remove it; bare strings are rejected by the compute API.
-- Do not deploy `image = "islo/default"` — use `ghcr.io/islo-labs/islo-runner:latest`.
+- Do not use bare-string `init` values in `job.toml`; omit `init` unless docs show the correct table form.
+- Do not use unqualified image names like `islo/default`; use the platform default image or a fully qualified registry reference.
 - Do not write `job.toml` from skill examples without running `islo job init` and `islo job deploy --dry-run` first.
 - Do not add `[schedule]` until every param has a `default`.
 - Do not turn a one-off shell command into a job unless it needs repeatability, scheduling, retries, or auditability.
