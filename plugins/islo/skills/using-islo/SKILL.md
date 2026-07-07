@@ -17,7 +17,8 @@ Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support
    - `islo schema <command>`
    - `ISLO_HELP=full islo`
 3. **Before writing or editing `job.toml`, scaffold and validate first.** Do not invent manifest fields from memory or from partial examples in this skill:
-   - `islo job init <name>` — canonical scaffold for required sections and defaults
+   - `islo job init <name>` — scaffold for section layout and most defaults
+   - **replace `image = "islo/default"`** in the scaffold with `ghcr.io/islo-labs/islo-runner:latest` before deploy (see `automations.md`)
    - edit the scaffolded `jobs/<name>/job.toml`
    - `islo job deploy <name> --dry-run` — validate before deploy
    - treat `automations.md` examples as patterns, not complete manifests

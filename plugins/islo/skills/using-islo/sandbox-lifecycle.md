@@ -74,7 +74,7 @@ Sandbox creation can use:
 Common `islo.yaml` fields include:
 
 - `sandbox`: default sandbox name
-- `image`: container or VM image
+- `image`: container or VM image (optional; defaults to `ghcr.io/islo-labs/islo-runner:latest`)
 - `gateway_profile`: gateway rules for egress and credential injection
 - `sources`: repositories to clone into the sandbox
 - `setup_scripts`: commands to run after source checkout
@@ -82,6 +82,20 @@ Common `islo.yaml` fields include:
 - `lifecycle`: idle pause, TTL, and auto-resume policy
 
 CLI flags should win over `islo.yaml`. `islo.yaml` should win over defaults.
+
+## Default image
+
+The platform default sandbox image is:
+
+```text
+ghcr.io/islo-labs/islo-runner:latest
+```
+
+It is pre-pulled on Islo infrastructure for fast startup and includes common dev tools plus preinstalled agents (Claude Code, Cursor agent, Codex).
+
+- For `islo use` and `islo.yaml`, omitting `image` uses this default.
+- For `job.toml` with `mode = "provision"` or `"ensure"`, `image` is **required** — set the fully qualified reference above.
+- Do not use `islo/default` in job manifests. The `islo job init` scaffold may emit it, but compute resolves it as `docker.io/islo/default` and provisioning fails.
 
 ## Bootstrap
 

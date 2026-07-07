@@ -29,19 +29,42 @@ islo job deploy <name> --dry-run
 islo job deploy <name>
 ```
 
-`islo job init` is the source of truth for defaults such as:
+`islo job init` is the source of truth for **section layout** and most defaults:
 
 - `[run]`: `fail_fast = true`, `fanout = false`
-- `[run.sandbox]`: `mode = "provision"`, `image = "islo/default"`, `init = "full"`, `gateway_profile = "default"`
+- `[run.sandbox]`: `mode = "provision"`, `init = "full"`, `gateway_profile = "default"`
 - `[[run.tasks.steps]]`: `name` plus exactly one action (`exec`, `snapshot`, `pause`, `resume`, or `delete`)
+
+**Immediately fix the scaffold image line** — `islo job init` currently emits `image = "islo/default"`, which is not safe to deploy as-is. See [Sandbox image](#sandbox-image) below.
 
 Common mistakes to avoid:
 
+- `image = "islo/default"` — compute resolves this as `docker.io/islo/default` and registry pull fails; use `ghcr.io/islo-labs/islo-runner:latest` instead
 - `mode = "ephemeral"` — not valid; use `provision`, `ensure`, or `reuse`
-- omitting `image` when `mode` is `provision` or `ensure` — deploy validation fails
+- omitting `image` when `mode` is `provision` or `ensure` — deploy validation requires an explicit image in `job.toml` (unlike `islo.yaml`, where image is optional)
 - `timeout` on a step — not a valid step field; put run-level timeout under `[run]` if needed
 - `${param}` or bash variable expansion in prompts — Islo substitutes run params itself
 - single-brace `{param}` in `exec` — use `{{param}}` (see below)
+
+### Sandbox image
+
+For agent jobs (`init = "full"`, Claude/Cursor/Codex), use the platform default runner image:
+
+```toml
+[run.sandbox]
+mode = "provision"
+image = "ghcr.io/islo-labs/islo-runner:latest"
+init = "full"
+```
+
+Facts agents must not guess:
+
+- **Platform default image** (docs + CLI): `ghcr.io/islo-labs/islo-runner:latest` — pre-pulled on Islo infrastructure, includes common dev tools and preinstalled agents.
+- **`islo/default` is not that image.** The `islo job init` scaffold emits it, but the compute plane treats it as a Docker Hub reference (`docker.io/islo/default`). Provisioning then fails with registry `Not authorized` and surfaces as `loopback /sandboxes returned 503 RESOURCE_UNAVAILABLE`.
+- **`job.toml` requires `image` for `mode = "provision"` or `"ensure"`** — you cannot omit it the way you can in `islo.yaml`. Always set the fully qualified GHCR reference above unless docs or `islo schema` show a different image for your use case.
+- **Custom images** are valid when fully qualified (for example `ghcr.io/org/custom-runner:tag`). Pair `init = "minimal"` unless you need full platform setup.
+
+Verify with docs MCP (`default sandbox image`) or `islo schema` before deploying a manifest with a non-default image.
 
 ## Job manifests
 
@@ -113,7 +136,7 @@ default = "#general"
 
 [run.sandbox]
 mode = "provision"
-image = "islo/default"
+image = "ghcr.io/islo-labs/islo-runner:latest"
 gateway_profile = "linear-slack"
 init = "full"
 
@@ -241,6 +264,7 @@ Do not copy templates into this skills repo. Point users to the template repo an
 
 ## Things to avoid
 
+- Do not deploy `image = "islo/default"` from the `islo job init` scaffold — replace with `ghcr.io/islo-labs/islo-runner:latest` first.
 - Do not write `job.toml` from skill examples without running `islo job init` and `islo job deploy --dry-run` first.
 - Do not turn a one-off shell command into a job unless it needs repeatability, scheduling, retries, or auditability.
 - Do not implement judgment-heavy agent work as shell business logic. Use shell only to launch the agent, load a prompt, or run a small harness.
