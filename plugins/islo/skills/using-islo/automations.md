@@ -132,6 +132,41 @@ Agent entrypoints available in Islo sandboxes:
 - Cursor agent: `agent --yolo --trust -p "<prompt>"`
 - Codex: `codex --sandbox danger-full-access -c model_provider=islo exec --skip-git-repo-check "<prompt>"`
 
+Use direct agent CLI calls for simple jobs. For PR review jobs, use the `islo-agents` review harness instead of calling the sandbox Claude CLI directly. The harness keeps review behavior, prompt loading, variable substitution, and Claude Agent SDK usage in one reusable repo.
+
+### PR review jobs
+
+Use this shape for webhook-triggered GitHub PR review:
+
+```text
+GitHub pull_request event
+-> Islo incoming webhook filter or rules
+-> durable job params
+-> PR-scoped sandbox
+-> islo-agents review harness
+-> GitHub PR review
+```
+
+Keep these boundaries:
+
+- The webhook decides whether to run the job. Put event filtering in webhook target filters or rules, not in the agent prompt or job script.
+- Prefer `opened`, `reopened`, `review_requested`, and manual `labeled` with label `islo-review`. Include `ready_for_review` only when the user asks for draft-to-ready review.
+- Model multiple webhook conditions as multiple rule entries unless the current schema explicitly supports list or `in` matching.
+- Keep job params small. Pass stable identifiers such as repo, PR number, refs, sandbox name, and agent ref. Let the webhook, job, action, or harness derive everything else.
+- Use `[run.sandbox] mode = "ensure"` with a stable PR sandbox name. `ensure` creates the sandbox when missing and resumes an existing paused sandbox. Do not add a separate resume step.
+- If the user has not specified lifecycle, ask whether they want immediate pause after review or idle pause. Default to `[run.sandbox.lifecycle] pause_after_idle = ...` plus `delete_after = ...`; use an explicit pause step only when the user wants the sandbox paused as soon as the review finishes.
+- Use object or table init shape, for example `init = { type = "full" }` or `[run.sandbox.init] type = "full"`. Do not use `init = "full"`.
+- Post review output to GitHub as a PR review with inline comments and a summary. Sandbox files such as `/workspace/reviews/*.md` are debug artifacts only.
+
+When asked to set up the automation, do the full setup unless the user narrows the scope:
+
+1. Run `islo job deploy <name> --dry-run`.
+2. Deploy the job.
+3. Generate an HMAC secret, for example with `openssl rand -hex 32`.
+4. Create the Islo incoming webhook.
+5. Register the GitHub repo webhook with `gh api` after confirming the token has repo-hook permissions.
+6. Verify a real delivery or job run.
+
 ### Verified example: Linear ticket → Slack summary
 
 Copy-paste starting point. Requires Linear and Slack integrations on the chosen `gateway_profile` (use a named profile or `default` if those providers are connected).
@@ -285,6 +320,7 @@ Do not copy templates into this skills repo. Point users to the template repo an
 - Do not add `[schedule]` until every param has a `default`.
 - Do not turn a one-off shell command into a job unless it needs repeatability, scheduling, retries, or auditability.
 - Do not implement judgment-heavy agent work as shell business logic. Use shell only to launch the agent, load a prompt, or run a small harness.
+- Do not run PR review jobs by calling the sandbox Claude CLI directly. Use the `islo-agents` review harness or a user fork.
 - Do not put provider tokens in job params or sandbox environment variables by default.
 - Do not create a separate scheduler around Islo jobs when `[schedule]` in `job.toml` is enough.
 - Do not assume all job orchestration lives in the CLI. The CLI deploys and starts work; the control plane owns durable job versioning, runs, schedules, and orchestration.

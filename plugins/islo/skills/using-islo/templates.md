@@ -20,6 +20,22 @@ Do not copy those templates into this skills repo. Link to the template repo and
 6. Validate with `islo job deploy <name> --dry-run`, then deploy.
 7. Add any required CI secret, usually `ISLO_API_KEY`.
 
+## PR review template
+
+For automated PR review, use or fork `https://github.com/islo-labs/islo-agents`. Keep reusable review behavior there, not in the skill repo.
+
+Read these files before changing review automation:
+
+- `review/job.toml`: durable job params, sandbox mode, lifecycle, and steps.
+- `review/action.yml`: GitHub wrapper behavior when the user chooses that integration path.
+- `review/prompt.md`: review behavior and GitHub PR review instructions.
+- `src/agent.ts`: prompt loading, variable substitution, session reuse, and Claude Agent SDK execution.
+- `review/validate-job.mjs`: deployed job compatibility checks.
+
+For webhook-driven PR review, use `automations.md` for webhook and job boundaries, then point the webhook at a job that runs the `islo-agents` review harness or a user fork. Do not embed the full review prompt in the webhook or `job.toml`.
+
+The primary review output belongs on GitHub as a PR review with inline comments and a summary. Files written inside the sandbox are optional debug artifacts.
+
 ## Advice for agents
 
 - Use templates as starting points, not hidden magic.
