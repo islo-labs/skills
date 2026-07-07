@@ -16,7 +16,7 @@ For runnable automation templates, use [`islo-labs/islo-agents`](https://github.
 ### Generic Skills installer
 
 ```bash
-npx skills add islo-labs/islo-skills
+npx skills add islo-labs/skills
 ```
 
 ### Cursor
@@ -31,7 +31,14 @@ https://docs.islo.dev/_mcp/server
 
 ### Claude Code
 
-Install this repo as a Claude Code plugin using the local plugin directory flow. The plugin root is:
+Add the marketplace and install the plugin:
+
+```text
+/plugin marketplace add islo-labs/skills
+/plugin install islo@islo-plugin
+```
+
+For local development, point Claude Code at the plugin root:
 
 ```text
 plugins/islo
@@ -73,5 +80,6 @@ Keep the skill concise and move details into one-level reference files. Before p
 python -m json.tool .mcp.json
 python -m json.tool .cursor-plugin/marketplace.json
 python -m json.tool .claude-plugin/plugin.json
+python -m json.tool .claude-plugin/marketplace.json
 rg "https://docs.islo.dev/_mcp/server|using-islo|provider-key|islo job|islo use|@islo-labs/sdk|islo-agents" .
 ```
