@@ -32,7 +32,6 @@ Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support
 - Gateway profiles, provider integrations, phantom tokens, GitHub, Slack, and no-token-in-sandbox patterns: read `gateway-integrations.md`.
 - Programmatic usage with generated SDKs instead of shelling out to the CLI: read `sdk.md`.
 - Runnable automation examples (e.g. PR review): read `templates.md`.
-- PR review automation: read `automations.md` for webhook/job boundaries and `templates.md` for the `islo-agents` review template.
 
 ## Working rules
 
