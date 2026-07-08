@@ -20,9 +20,32 @@ Do not copy those templates into this skills repo. Link to the template repo and
 6. Validate with `islo job deploy <name> --dry-run`, then deploy.
 7. Add any required CI secret, usually `ISLO_API_KEY`.
 
+## Template-backed webhook jobs
+
+Use this shape when an external event should launch a reusable agent template:
+
+```text
+external provider event
+-> Islo incoming webhook verification/filtering
+-> job run with small stable params
+-> template job.toml
+-> template prompt/harness behavior
+```
+
+Setup flow:
+
+1. Pick the closest `islo-agents` template or user fork.
+2. Copy its `job.toml` into `jobs/<name>/job.toml`.
+3. Run `islo job deploy <name> --dry-run`, then deploy.
+4. Create the Islo incoming webhook.
+5. Configure the external provider webhook to call Islo.
+6. Keep event filtering in the webhook and behavior in the template.
+7. Verify with a real delivery or job run.
+
 ## Advice for agents
 
 - Use templates as starting points, not hidden magic.
 - Keep repo-specific guidance in files such as `REVIEW.md` or `VERIFY.md` when the template supports them.
 - Keep provider access through Islo gateway integrations.
 - Keep template changes in `islo-agents`, not in this skills repo, unless the user explicitly asks to move template ownership.
+- Keep workflow-specific triggers, prompt policy, output behavior, and job-specific lifecycle defaults in the template repo or a user fork.

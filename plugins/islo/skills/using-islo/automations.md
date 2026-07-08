@@ -262,6 +262,8 @@ Use them when an external HTTP event should:
 
 Webhook auth and verification are separate from outbound provider credentials. Inbound webhook secrets verify the sender. Outbound provider credentials should still use gateway profiles and integrations.
 
+Keep webhook filtering separate from job behavior. The webhook should verify and decide whether an event should invoke work. The job should assume it was invoked for a valid event and run the work with a small set of stable params.
+
 If the target CLI does not expose a supported webhook action yet, check whether `--request-json`, SDK calls, or the HTTP API exposes it.
 
 ## Templates
@@ -270,7 +272,7 @@ For runnable examples, link to `https://github.com/islo-labs/islo-agents`.
 
 That repo currently covers:
 
-- PR review through `islo-review`
+- GitHub PR review
 - CI babysitting through `islo-babysit`
 - E2E verification through `islo-verify`
 - Linear-triggered task execution
@@ -279,7 +281,7 @@ Do not copy templates into this skills repo. Point users to the template repo an
 
 ## Things to avoid
 
-- Do not use bare-string `init` values in `job.toml`; omit `init` unless docs show the correct table form.
+- Do not hand-write `[run.sandbox]` schema from memory. Use `islo schema job` or `islo job init <name>` before changing sandbox fields.
 - Do not use unqualified image names like `islo/default`; use the platform default image or a fully qualified registry reference.
 - Do not write `job.toml` from skill examples without running `islo job init` and `islo job deploy --dry-run` first.
 - Do not add `[schedule]` until every param has a `default`.
