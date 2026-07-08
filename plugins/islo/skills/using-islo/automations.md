@@ -51,25 +51,6 @@ Typical manifest sections:
 
 Use `gateway_profile = "default"` or a named profile when the job needs provider API access through Islo gateway credential injection.
 
-### Sandbox mode, init, and lifecycle
-
-For reusable automation sandboxes, prefer `mode = "ensure"` with a stable sandbox name. `ensure` creates the sandbox when it is missing and resumes it when it already exists but is paused. Do not add a separate resume step for that case.
-
-Use object or table init shape, not a bare string:
-
-```toml
-[run.sandbox]
-mode = "ensure"
-name = "{{sandbox_name}}"
-init = { type = "full" }
-
-[run.sandbox.lifecycle]
-pause_after_idle = 1800
-delete_after = 604800
-```
-
-Use lifecycle policy for normal cleanup. Add an explicit `pause = true` step only when the job should pause immediately after finishing.
-
 ### Run parameters
 
 Declare params under `[job.params.<name>]`.
@@ -300,7 +281,7 @@ Do not copy templates into this skills repo. Point users to the template repo an
 
 ## Things to avoid
 
-- Do not use bare-string `init` values in `job.toml`; omit `init` unless docs show the correct table form.
+- Do not hand-write `[run.sandbox]` schema from memory. Use `islo schema job` or `islo job init <name>` before changing sandbox fields.
 - Do not use unqualified image names like `islo/default`; use the platform default image or a fully qualified registry reference.
 - Do not write `job.toml` from skill examples without running `islo job init` and `islo job deploy --dry-run` first.
 - Do not add `[schedule]` until every param has a `default`.
