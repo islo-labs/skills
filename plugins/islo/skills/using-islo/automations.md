@@ -51,6 +51,25 @@ Typical manifest sections:
 
 Use `gateway_profile = "default"` or a named profile when the job needs provider API access through Islo gateway credential injection.
 
+### Sandbox mode, init, and lifecycle
+
+For reusable automation sandboxes, prefer `mode = "ensure"` with a stable sandbox name. `ensure` creates the sandbox when it is missing and resumes it when it already exists but is paused. Do not add a separate resume step for that case.
+
+Use object or table init shape, not a bare string:
+
+```toml
+[run.sandbox]
+mode = "ensure"
+name = "{{sandbox_name}}"
+init = { type = "full" }
+
+[run.sandbox.lifecycle]
+pause_after_idle = 1800
+delete_after = 604800
+```
+
+Use lifecycle policy for normal cleanup. Add an explicit `pause = true` step only when the job should pause immediately after finishing.
+
 ### Run parameters
 
 Declare params under `[job.params.<name>]`.
