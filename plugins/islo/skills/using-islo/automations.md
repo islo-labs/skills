@@ -272,7 +272,7 @@ For runnable examples, link to `https://github.com/islo-labs/islo-agents`.
 
 That repo currently covers:
 
-- PR review through `islo-review`
+- GitHub PR review
 - CI babysitting through `islo-babysit`
 - E2E verification through `islo-verify`
 - Linear-triggered task execution
