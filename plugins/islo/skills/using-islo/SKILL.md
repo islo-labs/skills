@@ -7,7 +7,7 @@ description: Use Islo sandboxes, automations, scheduled jobs, durable jobs, inco
 
 Use this skill when helping users build on Islo.
 
-Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support in `job.toml`, incoming webhooks, gateway-managed provider credentials, and generated SDKs. Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes and can run there without in-sandbox auth when the matching integration was connected before sandbox use. Some users call the credential-injection and provider-integration pattern "gateway+". Prefer retrieval over memory. Islo changes quickly.
+Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support in `job.toml`, incoming webhooks, gateway-managed provider credentials, and generated SDKs. Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes and can run there without in-sandbox auth when the matching integration was connected before sandbox use. Gateway auth combines rule-based injection and phantom-token replacement; Islo CLI flows wire this automatically. Some users call this provider-integration pattern "gateway+". Prefer retrieval over memory. Islo changes quickly.
 
 ## First checks
 

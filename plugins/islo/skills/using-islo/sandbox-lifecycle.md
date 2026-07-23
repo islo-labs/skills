@@ -76,7 +76,7 @@ Common `islo.yaml` fields include:
 - `sandbox`: default sandbox name
 - `image`: container or VM image (optional; defaults to `ghcr.io/islo-labs/islo-runner:latest`)
 - `gateway_profile`: gateway rules for egress and credential injection
-- `sources`: repositories to clone into the sandbox
+- `sources`: repositories to clone into the sandbox (private GitHub repos authenticate automatically via connected integration when using `--source github://…`)
 - `setup_scripts`: commands to run after source checkout
 - `init`: minimal, full, or custom platform setup
 - `lifecycle`: idle pause, TTL, and auto-resume policy
