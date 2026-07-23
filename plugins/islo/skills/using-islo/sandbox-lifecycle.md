@@ -76,12 +76,36 @@ Common `islo.yaml` fields include:
 - `sandbox`: default sandbox name
 - `image`: container or VM image (optional; defaults to `ghcr.io/islo-labs/islo-runner:latest`)
 - `gateway_profile`: gateway rules for egress and credential injection
-- `sources`: repositories to clone into the sandbox (private GitHub repos authenticate automatically via connected integration when using `--source github://…`)
+- `sources`: repositories to clone into the sandbox during bootstrap
 - `setup_scripts`: commands to run after source checkout
 - `init`: minimal, full, or custom platform setup
 - `lifecycle`: idle pause, TTL, and auto-resume policy
 
 CLI flags should win over `islo.yaml`. `islo.yaml` should win over defaults.
+
+## Sources
+
+Clone repos during sandbox bootstrap with `--source` or `sources:` in `islo.yaml`. Check exact formats with `islo schema use`.
+
+```bash
+islo login --tool github   # required for private repos
+islo use my-sandbox --source github://owner/repo
+islo use my-sandbox --source github://owner/repo:main
+islo use my-sandbox --source https://github.com/owner/repo:feat/branch
+```
+
+In `islo.yaml`:
+
+```yaml
+sources:
+  - url: github://owner/repo
+  - url: https://github.com/owner/other-repo
+    branch: main
+```
+
+Islo runs source checkout during sandbox bootstrap before your command or shell. For private GitHub repos, connect the integration first (`islo login --tool github`). Do not tell users to manually embed tokens in clone URLs for normal `islo use` source checkout.
+
+If clone fails with `Repository not found` on a private repo, check `islo status` for a connected GitHub integration before assuming the repo path is wrong.
 
 ## Default image
 
