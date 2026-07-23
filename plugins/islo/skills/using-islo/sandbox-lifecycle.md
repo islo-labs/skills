@@ -75,7 +75,7 @@ Common `islo.yaml` fields include:
 
 - `sandbox`: default sandbox name
 - `image`: container or VM image (optional; defaults to `ghcr.io/islo-labs/islo-runner:latest`)
-- `gateway_profile`: gateway rules for egress and credential injection
+- `gateway_profile`: optional override; omit to use `default`
 - `sources`: repositories to clone into the sandbox during bootstrap
 - `setup_scripts`: commands to run after source checkout
 - `init`: minimal, full, or custom platform setup
@@ -157,5 +157,5 @@ If the user asks about warm starts, caches, or snapshots, verify current docs an
 - Use named sandboxes for repeatable agent work.
 - Use `islo.yaml` for project defaults.
 - Use jobs for repeated or scheduled work.
-- Use gateway profiles for provider access.
+- Use the `default` gateway profile for provider access unless the user needs a custom profile.
 - Use `islo status` and `islo ls` before destructive commands.

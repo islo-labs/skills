@@ -4,9 +4,9 @@ Use this reference for GitHub, Slack, model providers, custom provider APIs, gat
 
 ## Core rule
 
-Do not put provider tokens inside the sandbox by default. Connect providers with `islo login --tool <provider>` and attach a `gateway_profile` to the sandbox.
+Do not put provider tokens inside the sandbox by default. Connect providers with `islo login --tool <provider>`. Use the **`default` gateway profile** unless the user needs a custom profile for stricter egress, extra hosts, or different auth rules.
 
-The gateway injects credentials on allowed outbound requests at the network layer. Connect the integration, create or use a gateway profile with allow rules for the provider hosts, then run `islo use` — you do not manually wire tokens for normal CLI workflows.
+The gateway injects credentials on allowed outbound requests at the network layer. Connect the integration, then run `islo use` — you do not manually wire tokens for normal CLI workflows.
 
 The sandbox may also expose phantom placeholder env vars (`GITHUB_TOKEN`, `GH_TOKEN`, `SLACK_TOKEN`, … with `islo_p…` values). Some tools read these directly; the gateway can replace them on egress when they appear in a request. Treat them as placeholders, not secrets.
 
@@ -15,9 +15,8 @@ Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes
 ## Flow
 
 1. Connect providers outside the sandbox: `islo login --tool github` (and slack, openai, etc. as needed).
-2. Use an existing gateway profile (often `default`) or create one with allow rules for provider hosts.
-3. Create or reconnect the sandbox with `--gateway-profile <name>` or `gateway_profile:` in `islo.yaml`.
-4. Tools inside the sandbox call provider APIs on allowed hosts; the gateway injects credentials automatically.
+2. Use the `default` gateway profile. Sandboxes pick it up automatically; only set `--gateway-profile` or `gateway_profile:` when the user needs a non-default profile.
+3. Tools inside the sandbox call provider APIs on allowed hosts; the gateway injects credentials automatically.
 
 Real provider tokens stay in the control plane or integration store. The sandbox gets the profile name and phantom placeholders only.
 
@@ -25,23 +24,33 @@ Real provider tokens stay in the control plane or integration store. The sandbox
 
 Check exact flags with `islo schema`, `ISLO_HELP=full islo`, or docs MCP before finalizing commands.
 
-Typical flow:
+Typical flow — **default gateway is enough for most work**:
 
 ```bash
 islo login --tool github
 islo login --tool slack
-islo gateway ls
-islo gateway create --name my-profile --default-action allow
-islo gateway my-profile add-rule --host api.github.com --provider-key github --auth-mode bearer
+islo use <sandbox>
+```
+
+Inspect the default profile if something fails:
+
+```bash
+islo gateway default
+islo status
+```
+
+Only create a custom gateway profile when the user needs something `default` does not provide — for example deny-by-default egress, extra allow rules for uncommon hosts, or different rate limits:
+
+```bash
+islo gateway create --name my-profile --default-action deny
+islo gateway my-profile add-rule --host api.example.com --action allow --provider-key my-key --auth-mode bearer
 islo use <sandbox> --gateway-profile my-profile
 ```
 
-Many accounts already have a `default` gateway profile with provider allow rules. Check with `islo gateway default` before creating a new profile.
-
-For project defaults:
+Set a non-default profile in `islo.yaml` only when the project needs it:
 
 ```yaml
-gateway_profile: default
+gateway_profile: my-profile
 ```
 
 If you change gateway rules after a sandbox was created, recreate or reconnect the sandbox and retest.
@@ -75,7 +84,7 @@ Reference implementation: `https://github.com/islo-labs/islo-agents` for agent j
 
 ## Slack
 
-Use gateway integration for Slack API calls from sandboxed agents. Connect Slack outside the sandbox, then allow Slack hosts in the gateway profile and use the matching provider key.
+Use gateway integration for Slack API calls from sandboxed agents. Connect Slack outside the sandbox. The `default` gateway profile usually already allows Slack hosts; only add custom rules if the user needs a non-default profile.
 
 Do not store a Slack bot token in `islo.yaml`, job params, setup scripts, or sandbox env unless the user explicitly asks to bypass gateway-managed credentials.
 
@@ -99,9 +108,8 @@ Users can override env vars or pass their own tokens. If they ask for that, warn
 If provider calls fail:
 
 - Run `islo status` and confirm the integration is connected.
-- Check the sandbox was created with the expected `gateway_profile` (`islo gateway ls`, `islo gateway <name>`).
-- Check allow rules cover the destination host (`api.github.com`, `github.com`, `slack.com`, etc.).
-- Check the rule has the intended `provider_key` and `auth_mode` when credential injection is required.
+- Check the sandbox is on the expected gateway profile — usually `default` (`islo gateway default`).
+- If using a custom profile, check allow rules cover the destination host (`api.github.com`, `github.com`, `slack.com`, etc.).
 - If you changed gateway rules after the sandbox was created, recreate or reconnect the sandbox.
 
 Common misleading failures:

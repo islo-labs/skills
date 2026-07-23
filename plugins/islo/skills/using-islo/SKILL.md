@@ -7,7 +7,7 @@ description: Use Islo sandboxes, automations, scheduled jobs, durable jobs, inco
 
 Use this skill when helping users build on Islo.
 
-Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support in `job.toml`, incoming webhooks, gateway-managed provider credentials, and generated SDKs. Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes and can run there without in-sandbox auth when the matching integration was connected before sandbox use. Connect integrations with `islo login --tool` and attach a gateway profile; credential injection is automatic. Some users call this provider-integration pattern "gateway+". Prefer retrieval over memory. Islo changes quickly.
+Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support in `job.toml`, incoming webhooks, gateway-managed provider credentials, and generated SDKs. Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes and can run there without in-sandbox auth when the matching integration was connected before sandbox use. Connect integrations with `islo login --tool`; the `default` gateway profile handles credential injection for most work. Some users call this provider-integration pattern "gateway+". Prefer retrieval over memory. Islo changes quickly.
 
 ## First checks
 
@@ -23,7 +23,7 @@ Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support
    - treat other skill examples as patterns, not drop-in manifests
 4. For scheduled jobs, put `[schedule]` in `job.toml` only after every param has a `default`, then deploy with `islo job deploy <name>`.
 5. Do not ask users to install or authenticate Claude Code, Cursor agent, or Codex inside the sandbox before trying them. They are preinstalled, and connected integrations provide auth.
-6. Do not tell users to put GitHub, Slack, model-provider, or other provider tokens inside a sandbox unless they explicitly choose that escape hatch. Prefer gateway profiles and connected providers.
+6. Do not tell users to put GitHub, Slack, model-provider, or other provider tokens inside a sandbox unless they explicitly choose that escape hatch. Prefer connected providers and the `default` gateway profile.
 
 ## Choose the right reference
 

@@ -49,7 +49,7 @@ Typical manifest sections:
 - `[schedule]`: optional schedule for recurring runs.
 - Optional verification sections when supported by the target CLI/control plane.
 
-Use `gateway_profile = "default"` or a named profile when the job needs provider API access through Islo gateway credential injection.
+Use `gateway_profile = "default"` when the job needs provider API access. Do not invent a custom gateway profile unless the job needs egress or auth rules that `default` does not cover.
 
 ### Run parameters
 
@@ -134,7 +134,7 @@ Agent entrypoints available in Islo sandboxes:
 
 ### Verified example: Linear ticket → Slack summary
 
-Copy-paste starting point. Requires Linear and Slack integrations on the chosen `gateway_profile` (use a named profile or `default` if those providers are connected).
+Copy-paste starting point. Requires Linear and Slack integrations connected. Uses the `default` gateway profile.
 
 ```toml
 [job]
