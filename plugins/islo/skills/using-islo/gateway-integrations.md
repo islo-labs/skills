@@ -4,54 +4,74 @@ Use this reference for GitHub, Slack, model providers, custom provider APIs, gat
 
 ## Core rule
 
-Do not put provider tokens inside the sandbox by default. Use connected providers and gateway profiles.
+Do not put provider tokens inside the sandbox by default. Connect providers with `islo login --tool <provider>`. Use the **`default` gateway profile** unless the user needs a custom profile for stricter egress, extra hosts, or different auth rules.
 
-Inside the sandbox, tools may see placeholder credentials such as `GITHUB_TOKEN`, `GH_TOKEN`, or `SLACK_TOKEN`. Treat those as phantom tokens, not secrets. Egress through the Islo gateway replaces matching outbound requests with real credentials outside the sandbox.
+The gateway injects credentials on allowed outbound requests at the network layer. Connect the integration, then run `islo use` — you do not manually wire tokens for normal CLI workflows.
+
+The sandbox may also expose phantom placeholder env vars (`GITHUB_TOKEN`, `GH_TOKEN`, `SLACK_TOKEN`, … with `islo_p…` values). Some tools read these directly; the gateway can replace them on egress when they appear in a request. Treat them as placeholders, not secrets.
 
 Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes. If the user connected the matching integration before using the sandbox, these agents can run without an in-sandbox login. Do not copy local auth files or API keys into the sandbox just to make the agent start.
 
 ## Flow
 
-1. The user connects a provider outside the sandbox, for example GitHub or Slack.
-2. A gateway profile defines which hosts and paths a sandbox may call.
-3. A gateway rule can attach a `provider_key` and auth strategy.
-4. The sandbox is created with that `gateway_profile`.
-5. Tools inside the sandbox call normal provider APIs.
-6. The gateway injects real credentials for allowed requests.
+1. Connect providers outside the sandbox: `islo login --tool github` (and slack, openai, etc. as needed).
+2. Use the `default` gateway profile. Sandboxes pick it up automatically; only set `--gateway-profile` or `gateway_profile:` when the user needs a non-default profile.
+3. Tools inside the sandbox call provider APIs on allowed hosts; the gateway injects credentials automatically.
 
-The sandbox should only get the profile key and phantom tokens. Real provider tokens stay in the control plane or provider integration store.
+Real provider tokens stay in the control plane or integration store. The sandbox gets the profile name and phantom placeholders only.
 
 ## Common CLI flow
 
 Check exact flags with `islo schema`, `ISLO_HELP=full islo`, or docs MCP before finalizing commands.
 
-Typical flow:
+Typical flow — **default gateway is enough for most work**:
 
 ```bash
 islo login --tool github
 islo login --tool slack
-islo login --tool claude
-islo login --tool cursor
-islo login --tool openai
-islo gateway profile create <profile>
-islo gateway rule create <profile> --host api.github.com --provider-key github --auth-mode bearer
-islo use <sandbox> --gateway-profile <profile>
+islo use <sandbox>
 ```
 
-For project defaults, set the gateway profile in `islo.yaml`:
+Inspect the default profile if something fails:
+
+```bash
+islo gateway default
+islo status
+```
+
+Only create a custom gateway profile when the user needs something `default` does not provide — for example deny-by-default egress, extra allow rules for uncommon hosts, or different rate limits:
+
+```bash
+islo gateway create --name my-profile --default-action deny
+islo gateway my-profile add-rule --host api.example.com --action allow --provider-key my-key --auth-mode bearer
+islo use <sandbox> --gateway-profile my-profile
+```
+
+Set a non-default profile in `islo.yaml` only when the project needs it:
 
 ```yaml
-gateway_profile: default
+gateway_profile: my-profile
 ```
+
+If you change gateway rules after a sandbox was created, recreate or reconnect the sandbox and retest.
 
 ## GitHub
 
 Use gateway integration for:
 
-- `gh api`
-- GitHub REST and GraphQL calls
-- private repository access where supported
+- `gh api` and other `gh` commands
+- GitHub REST and GraphQL calls to allowed hosts
+- private repository access when GitHub is connected
 - GitHub Actions runner registration flows
+
+Connect GitHub before sandbox work that touches private repos or the GitHub API:
+
+```bash
+islo login --tool github
+islo status   # confirm github shows as connected
+```
+
+Repo checkout during `islo use` bootstrap is covered in `sandbox-lifecycle.md`, not here.
 
 The GitHub runner pattern combines:
 
@@ -64,7 +84,7 @@ Reference implementation: `https://github.com/islo-labs/islo-agents` for agent j
 
 ## Slack
 
-Use gateway integration for Slack API calls from sandboxed agents. Connect Slack outside the sandbox, then allow Slack hosts in the gateway profile and use the matching provider key.
+Use gateway integration for Slack API calls from sandboxed agents. Connect Slack outside the sandbox. The `default` gateway profile usually already allows Slack hosts; only add custom rules if the user needs a non-default profile.
 
 Do not store a Slack bot token in `islo.yaml`, job params, setup scripts, or sandbox env unless the user explicitly asks to bypass gateway-managed credentials.
 
@@ -87,8 +107,12 @@ Users can override env vars or pass their own tokens. If they ask for that, warn
 
 If provider calls fail:
 
-- Check the sandbox was created with the expected `gateway_profile`.
-- Check the gateway profile has an allow rule for the destination host.
-- Check the rule has the intended `provider_key` and auth mode.
-- Check the provider was connected with `islo login --tool <provider>` or an equivalent control-plane flow.
-- Check the tool is calling the provider host directly, not a mirror or proxy host the rule does not match.
+- Run `islo status` and confirm the integration is connected.
+- Check the sandbox is on the expected gateway profile — usually `default` (`islo gateway default`).
+- If using a custom profile, check allow rules cover the destination host (`api.github.com`, `github.com`, `slack.com`, etc.).
+- If you changed gateway rules after the sandbox was created, recreate or reconnect the sandbox.
+
+Common misleading failures:
+
+- **`Repository not found` / 404 on a private GitHub repo** — usually GitHub is not connected, or the clone happened outside `islo use` source bootstrap. See `sandbox-lifecycle.md`.
+- **401 from a provider API** — confirm the integration is connected and the gateway profile allows that host before debugging from inside the sandbox.
