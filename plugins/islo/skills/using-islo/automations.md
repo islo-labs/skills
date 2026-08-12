@@ -44,12 +44,14 @@ Typical manifest sections:
 - `[job]`: name, version, description.
 - `[job.params.*]`: parameter schema and validation.
 - `[run]`: fail-fast, fanout, timeout, workdir, teardown policy.
-- `[run.sandbox]`: sandbox mode, name, image, snapshot, CPU, memory, gateway profile.
+- `[run.sandbox]`: sandbox mode, name, image, snapshot, CPU, memory, gateway profile, environment.
 - `[[run.tasks]]` and `[[run.tasks.steps]]`: ordered commands to run inside the sandbox.
 - `[schedule]`: optional schedule for recurring runs.
 - Optional verification sections when supported by the target CLI/control plane.
 
 Use `gateway_profile = "default"` or a named profile when the job needs provider API access through Islo gateway credential injection.
+
+Use `environment = "production"` when a job sandbox should receive the environment's sandbox env vars or environment-owned gateway-injected secrets.
 
 ### Run parameters
 

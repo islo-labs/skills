@@ -10,6 +10,8 @@ Inside the sandbox, tools may see placeholder credentials such as `GITHUB_TOKEN`
 
 Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes. If the user connected the matching integration before using the sandbox, these agents can run without an in-sandbox login. Do not copy local auth files or API keys into the sandbox just to make the agent start.
 
+Use Islo environment names when the same sandbox env vars or environment-owned gateway-injected secrets should be reused across sandboxes. Apply them with `islo use <sandbox> --environment production` or `environment: production` in `islo.yaml`.
+
 ## Flow
 
 1. The user connects a provider outside the sandbox, for example GitHub or Slack.
@@ -42,6 +44,7 @@ For project defaults, set the gateway profile in `islo.yaml`:
 
 ```yaml
 gateway_profile: default
+environment: production
 ```
 
 ## GitHub

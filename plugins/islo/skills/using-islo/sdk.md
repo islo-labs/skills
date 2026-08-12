@@ -69,6 +69,7 @@ Confirm current names in docs MCP or package docs before giving exact deployment
 ## SDK design advice
 
 - Prefer explicit names for sandboxes, jobs, webhooks, and gateway profiles.
+- When creating a sandbox with a reusable environment, pass `environment` with the environment name.
 - Keep job behavior in `job.toml`; use SDK code to deploy, schedule, trigger, or inspect.
 - Keep provider credentials in Islo integrations and gateway profiles, not in SDK config files.
 - For long-running automation, persist run IDs and correlate them with Islo events.
