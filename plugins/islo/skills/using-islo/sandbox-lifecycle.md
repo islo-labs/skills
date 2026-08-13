@@ -51,6 +51,10 @@ If the matching integration was connected before sandbox use, the agent should w
 ```bash
 islo use <name>
 islo use <name> -- npm test
+islo use <name> --environment production
+islo environment list
+islo environment get production
+islo environment create --name production --variable PUBLIC_FLAG=enabled
 islo ls
 islo status
 islo status <name>
@@ -76,12 +80,15 @@ Common `islo.yaml` fields include:
 - `sandbox`: default sandbox name
 - `image`: container or VM image (optional; defaults to `ghcr.io/islo-labs/islo-runner:latest`)
 - `gateway_profile`: optional override; omit to use `default`
+- `environment`: named reusable sandbox variables and secrets to apply when creating a sandbox
 - `sources`: repositories to clone into the sandbox during bootstrap
 - `setup_scripts`: commands to run after source checkout
 - `init`: minimal, full, or custom platform setup
 - `lifecycle`: idle pause, TTL, and auto-resume policy
 
 CLI flags should win over `islo.yaml`. `islo.yaml` should win over defaults.
+
+Use environment names in user-facing flows: `islo use --environment production` and `environment: production` in `islo.yaml`.
 
 ## Sources
 

@@ -1,6 +1,6 @@
 ---
 name: using-islo
-description: Use Islo sandboxes, automations, scheduled jobs, durable jobs, incoming webhooks, gateway profiles, gateway+, provider integrations, and SDKs. Use when the user mentions Islo, islo.dev, islo.yaml, islo use, islo job, job.toml schedules, scheduled jobs, automations, webhooks, GitHub or Slack integrations, gateway credential injection, provider tokens, or @islo-labs/sdk.
+description: Use Islo sandboxes, reusable environments, automations, scheduled jobs, durable jobs, incoming webhooks, gateway profiles, gateway+, provider integrations, and SDKs. Use when the user mentions Islo, islo.dev, islo.yaml, islo use, islo environment, islo job, job.toml schedules, scheduled jobs, automations, webhooks, GitHub or Slack integrations, gateway credential injection, provider tokens, or @islo-labs/sdk.
 ---
 
 # Using Islo
@@ -24,6 +24,7 @@ Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support
 4. For scheduled jobs, put `[schedule]` in `job.toml` only after every param has a `default`, then deploy with `islo job deploy <name>`.
 5. Do not ask users to install or authenticate Claude Code, Cursor agent, or Codex inside the sandbox before trying them. They are preinstalled, and connected integrations provide auth.
 6. Do not tell users to put GitHub, Slack, model-provider, or other provider tokens inside a sandbox unless they explicitly choose that escape hatch. Prefer connected providers and the `default` gateway profile.
+7. For reusable sandbox variables and secrets, use Islo environment names with `environment` in `islo.yaml`, `--environment`, or job `environment = "name"`.
 
 ## Choose the right reference
 
@@ -37,6 +38,7 @@ Islo gives agents secure cloud sandboxes, durable jobs with `[schedule]` support
 
 - Treat "automations" as the product area covering durable jobs, scheduled jobs, manual job runs, and webhook-triggered jobs.
 - For interactive or ad hoc sandbox work, prefer `islo use`. It creates or reconnects, then opens a shell or runs a command.
+- For reusable sandbox environment variables or environment-owned gateway-injected secrets, use `islo environment` to manage a named environment and `islo use --environment <name>` to apply it at sandbox creation.
 - For agent work, prefer `islo use --agent claude`, `islo use --agent cursor`, or `islo use --agent codex`; use `--task` for a background prompt.
 - For automations that require judgment, summarization, triage, or tool use across services, run Claude Code, Cursor agent, or Codex inside the scheduled job. Do not replace the agent with a hand-written shell script.
 - For repeatable work, prefer durable jobs and `job.toml` schedules over long shell scripts.
