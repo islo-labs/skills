@@ -46,6 +46,16 @@ islo use <name> --agent codex --task "Fix the lint errors"
 
 If the matching integration was connected before sandbox use, the agent should work without running a login flow inside the sandbox. Prefer this path over copying local key files or setting provider API keys in sandbox env.
 
+## Project setup
+
+Scaffold project defaults before day-to-day sandbox work:
+
+```bash
+islo init                    # create islo.yaml (interactive or --template)
+islo add                     # detect project signals and add setup scripts
+islo add <tool> [version]    # append a setup_scripts entry from a built-in recipe
+```
+
 ## Common commands
 
 ```bash
@@ -63,6 +73,8 @@ islo resume <name>
 islo stop <name>
 islo rm <name>
 islo cp <local> <name>:<remote>
+islo doctor                  # check auth, config, and API connectivity
+islo doctor --output json
 ```
 
 For scripts and tools, prefer JSON output where the command supports it.
@@ -155,9 +167,40 @@ Use `--task` for background agent work. Use a stable sandbox name when a task sh
 
 When writing automation, prefer lifecycle policy over manual cleanup scripts where possible.
 
-## Cache and snapshots
+## Snapshots
 
-If the user asks about warm starts, caches, or snapshots, verify current docs and CLI support before giving exact commands. The platform can reuse cached images and snapshots, but the user-facing command shape may vary.
+Save and restore sandbox state:
+
+```bash
+islo snapshot save <name>              # save snapshot of running sandbox
+islo snapshot save <name> --name snap  # save with custom name
+islo snapshot ls
+islo snapshot rm <name>
+islo use new-sandbox --snapshot <name> # restore from snapshot
+```
+
+Snapshots can also be referenced in job manifests (`snapshot_name`) and incoming webhook sandbox templates.
+
+## Port forwarding and sharing
+
+```bash
+islo port-forward <name> <port>        # forward a sandbox port locally
+islo share <name> [port]               # create shareable URL
+islo share <name> [port] --ttl 1h      # share with expiration
+islo shares <name>
+islo unshare <name> <slug>
+```
+
+## SSH, logs, and API keys
+
+```bash
+islo ssh <name>                        # SSH into sandbox
+islo logs <name>                       # view sandbox logs
+islo api-key create                    # create an API key
+islo api-key ls
+islo region ls                         # list available regions
+islo switch <tenant>                   # switch active tenant
+```
 
 ## Good defaults
 

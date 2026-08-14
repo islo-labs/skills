@@ -1,294 +1,101 @@
 # Islo automations
 
-Use this reference for durable jobs, scheduled jobs, manual runs, incoming webhooks, and automation templates.
+Use this reference for Factory lines — Islo's primary automation product. Jobs and webhooks are lower-level building blocks that lines compose.
 
 ## Mental model
 
-Islo automations are repeatable work that runs in managed sandboxes:
-
-- A job defines the work and sandbox requirements.
-- A deployment creates a versioned job definition.
-- A run executes a version with parameters.
-- A `[schedule]` section in `job.toml` creates or updates the job schedule on deploy.
-- An incoming webhook reacts to an external event and can manage sandboxes or trigger a job.
-
-## Discovery
-
-- Use `islo schema`, `islo schema job`, `ISLO_HELP=full islo`, and `islo job --help` for job commands.
-- Use `[schedule]` in `job.toml` for scheduled jobs.
-- The control plane validates schedule cron expressions at deploy time, stores one active schedule per job, and registers the next run through the workflow scheduler.
-
-## Before writing `job.toml`
-
-**Required workflow.** Do not skip this and write a manifest from memory or partial examples.
-
-```bash
-islo job init <name>
-# edit jobs/<name>/job.toml
-islo job deploy <name> --dry-run
-islo job deploy <name>
+```text
+Factory line  →  orchestrates multi-stage work with routing, loops, and decisions
+Job           →  one stage's execution unit (sandbox + steps)
+Webhook       →  HTTP event ingress/egress primitive
+Manager       →  decision agent for line pause points
 ```
 
-Always start from `islo job init <name>`. The scaffold sets section layout, field names, the platform default sandbox image, and a param example you can adapt.
+**Default recommendation:** when automation spans multiple stages, needs routing or loops, runs on a schedule or integration event, or requires decision points — build a Factory line. Use jobs or webhooks directly only for simpler, single-purpose work.
 
-## Job manifests
+## Factory-first workflow
 
-The standard manifest path is:
+1. **Design the line** — identify stages, routing, triggers, and decision points.
+2. **Write stage jobs** — one `job.toml` per stage. See `jobs.md`.
+3. **Write the manager** — `manager.toml` with harness, model, and instructions.
+4. **Write the line** — `line.toml` wiring stages, transitions, and triggers.
+5. **Deploy in order:**
+
+```bash
+islo job deploy review-job
+islo job deploy fix-job
+islo factory manager deploy manager.toml
+islo factory line deploy line.toml --dry-run
+islo factory line deploy line.toml
+```
+
+6. **Run and monitor:**
+
+```bash
+islo factory line run pr-review --param repo=org/repo --param pr_number=42
+islo factory line status <run-id>
+```
+
+For manifest details, transitions, decisions, triggers, and validation rules, read `factory.md`.
+
+## Choosing harness and model
+
+Each stage job's `run_agent` step declares harness and model. Managers declare their own harness and model for decision points.
+
+- **Codex** — Islo-managed inference; no provider key needed. See `agents-and-inference.md`.
+- **Claude / Cursor** — provider-managed via gateway integrations.
+
+Pick harness and model before writing job manifests. Query `GET /inference/models` for current Islo inference models rather than hardcoding lists.
+
+## Triggers
+
+Factory lines support four trigger types in `line.toml`:
+
+| Trigger | When to use |
+|---------|-------------|
+| `manual` | Operator or API invocation |
+| `schedule` | Cron-based recurring runs |
+| `webhook` | External HTTP events → `POST /factory/lines/{name}/webhook` |
+| `integration_trigger` | GitHub, Linear, or Slack events with selector + filters |
+
+For standalone webhook receivers (sandbox lifecycle, job triggers without a line), see `webhooks.md`.
+
+## Recipes and templates
+
+The Islo UI includes built-in Factory recipes (PR review, bug fix, QA, CI fix). For runnable template repos:
 
 ```text
-jobs/<name>/job.toml
+https://github.com/islo-labs/islo-agents
 ```
 
-Typical manifest sections:
+See `templates.md` for how to adopt templates.
 
-- `[job]`: name, version, description.
-- `[job.params.*]`: parameter schema and validation.
-- `[run]`: fail-fast, fanout, timeout, workdir, teardown policy.
-- `[run.sandbox]`: sandbox mode, name, image, snapshot, CPU, memory, gateway profile, environment.
-- `[[run.tasks]]` and `[[run.tasks.steps]]`: ordered commands to run inside the sandbox.
-- `[schedule]`: optional schedule for recurring runs.
-- Optional verification sections when supported by the target CLI/control plane.
+## Knowledge in automations
 
-Use `gateway_profile = "default"` when the job needs provider API access. Do not invent a custom gateway profile unless the job needs egress or auth rules that `default` does not cover.
-
-Use `environment = "production"` when a job sandbox should receive the environment's sandbox env vars or environment-owned gateway-injected secrets.
-
-### Run parameters
-
-Declare params under `[job.params.<name>]`.
-
-Islo substitutes `{param_name}` in `exec` strings **before the step runs**. Declare every referenced param under `[job.params.*]` or deploy validation fails. Reserved: `{run_id}`. Do not use `${param}` — that is bash expansion.
-
-**Inline exec** (no heredoc):
+Attach tenant knowledge to agent-powered job stages:
 
 ```toml
-[job.params.ticket_id]
-type = "string"
-default = "ENG-1"
-
 [[run.tasks.steps]]
-name = "summarize"
-exec = ["bash", "-lc", "claude -p 'Fetch ticket {ticket_id} and post to {slack_channel}'"]
+type = "run_agent"
+mode = "session"
+harness = "claude"
+knowledge = ["auth-rules", "pr-policy"]
 ```
 
-**Inside a `<<'PROMPT'` heredoc** (single-quoted delimiter — no shell expansion): write `{{param_name}}` in the manifest. That prevents premature substitution at deploy time and leaves `{param_name}` in the exec payload for Islo to fill at run time before bash executes.
+Manage items with `islo knowledge`. See `knowledge.md`.
 
-```toml
-exec = [
-  "bash",
-  "-lc",
-  '''
-claude -p "$(cat <<'PROMPT'
-Fetch ticket {{ticket_id}} and post to {{slack_channel}}.
-PROMPT
-)"
-''',
-]
-```
+## Lower-level primitives
 
-Alternatively, avoid heredocs and pass the prompt as a single quoted `claude -p '...'` string with `{param_name}` placeholders.
+When a Factory line is more than you need:
 
-### Params and schedules
-
-If `[schedule]` is present, **every param the scheduled run needs must have a `default`**. The scheduler fires without a human passing `--param`.
-
-- `required = true` with no `default` → deploy fails with `VALIDATION_ERROR`
-- you cannot set both `required = true` and `default` on the same param
-- optional params (`required = false`) without defaults are allowed, but scheduled runs will not receive a value unless you add a default
-
-```toml
-[job.params.ticket_id]
-type = "string"
-default = "ENG-123"
-
-[job.params.slack_channel]
-type = "string"
-default = "#standup"
-
-[schedule]
-cron = "0 9 * * *"
-timezone = "UTC"
-enabled = true
-```
-
-Manual runs can override defaults: `islo job run <name> --param ticket_id=ENG-456 --watch`.
-
-If deploy fails with only `VALIDATION_ERROR` / `Invalid request parameters`, remove `[schedule]` temporarily to confirm, then add `default = "..."` to each param the scheduled run needs.
-
-## Agent-first automations
-
-When the automation asks an agent to understand, summarize, triage, plan, comment, or coordinate work across tools, the job should run an agent inside the sandbox. Do not turn that request into a hand-written shell script that calls APIs directly.
-
-Good examples for agent-first jobs:
-
-- "Take one Linear ticket and post a daily summary to Slack."
-- "Review open PRs every morning and leave GitHub comments."
-- "Check failed CI runs, investigate, and open a fix PR."
-- "Triage new support issues and label them."
-
-In these cases, shell is only a launcher. The actual behavior should live in the prompt passed to Claude Code, Cursor agent, Codex, or a small agent harness such as `islo-labs/islo-agents`.
-
-Agent entrypoints available in Islo sandboxes:
-
-- Claude Code: `claude -p "<prompt>"`
-- Cursor agent: `agent --yolo --trust -p "<prompt>"`
-- Codex: `codex --sandbox danger-full-access -c model_provider=islo exec --skip-git-repo-check "<prompt>"`
-
-### Verified example: Linear ticket → Slack summary
-
-Copy-paste starting point. Requires Linear and Slack integrations connected. Uses the `default` gateway profile.
-
-```toml
-[job]
-name = "linear-to-slack"
-version = "1.0.0"
-description = "Fetch a Linear ticket and post a daily AI summary to Slack using Claude Code"
-
-[job.params.ticket_id]
-type = "string"
-description = "Linear ticket identifier, e.g. ENG-123"
-default = "ENG-1"
-
-[job.params.slack_channel]
-type = "string"
-description = "Slack channel to post to, e.g. #standup"
-default = "#general"
-
-[run]
-fail_fast = true
-fanout = false
-
-[run.sandbox]
-mode = "provision"
-image = "ghcr.io/islo-labs/islo-runner:latest"
-gateway_profile = "default"
-
-[[run.tasks]]
-name = "post-summary"
-
-[[run.tasks.steps]]
-name = "run-agent"
-exec = [
-  "bash",
-  "-lc",
-  '''
-set -euo pipefail
-claude -p "$(cat <<'PROMPT'
-You are running inside an Islo sandbox with Linear and Slack access via gateway-managed credentials.
-
-Fetch the Linear ticket with ID {{ticket_id}} and post a concise daily standup update to {{slack_channel}}.
-
-Do not ask for API tokens and do not write tokens to disk — the gateway handles authentication.
-
-1. Fetch ticket {{ticket_id}}: read its title, description, comments, status, assignee, priority, and URL.
-2. Write a 2-3 sentence standup summary: current status, key context, and any blockers or next steps.
-3. Post to {{slack_channel}} using Slack Block Kit: linked ticket ID, title, status, assignee, and summary.
-4. Confirm what you posted and the ticket ID.
-PROMPT
-)"
-''',
-]
-
-[schedule]
-cron = "0 9 * * *"
-timezone = "UTC"
-enabled = true
-```
-
-Deploy and test:
-
-```bash
-islo job init linear-to-slack   # or use the file above at jobs/linear-to-slack/job.toml
-islo job deploy linear-to-slack --dry-run
-islo job deploy linear-to-slack
-islo job run linear-to-slack --watch
-```
-
-For larger automations, prefer a prompt file or the `islo-agents` harness over embedding a long prompt directly in `job.toml`.
-
-## Common job workflow
-
-The durable job flow is:
-
-```bash
-islo job init <name>
-islo job deploy <name>
-islo job run <name> --param KEY=VALUE --watch
-islo job status <name> <run-id>
-islo job runs <name>
-islo job versions <name>
-islo job event <compute-command-id>
-```
-
-## Scheduled jobs
-
-Use `[schedule]` in `job.toml` for recurring Islo job runs.
-
-```toml
-[schedule]
-cron = "0 * * * *"
-timezone = "UTC"
-enabled = true
-```
-
-Deploying the job creates or updates the schedule:
-
-```bash
-islo job deploy <name>
-```
-
-The control plane behavior:
-
-- `cron` is required for an active schedule and must be a valid cron expression.
-- `timezone` defaults to `UTC`.
-- `enabled` defaults to `true`.
-- Removing `[schedule]`, omitting `cron`, or setting `enabled = false` disables the existing schedule on the next deploy.
-- One active schedule exists per job.
-- `GET /jobs/{name}/schedule` returns `cron`, `timezone`, `enabled`, and `schedule_generation`.
-- `DELETE /jobs/{name}/schedule` disables the schedule.
-
-Scheduled runs execute the latest deployed job behavior registered by deploy. Keep scheduled job tasks idempotent because retries and repeated runs are part of the model.
-
-## Incoming webhooks
-
-Incoming webhooks are for external systems such as GitHub, Stripe, Slack, or a custom service.
-
-Use them when an external HTTP event should:
-
-- ensure a sandbox exists
-- resume a sandbox
-- pause a sandbox
-- delete a sandbox
-- deliver a request to a port inside a running sandbox
-- trigger a job run, when supported by the target API/CLI
-
-Webhook auth and verification are separate from outbound provider credentials. Inbound webhook secrets verify the sender. Outbound provider credentials should still use gateway profiles and integrations.
-
-Keep webhook filtering separate from job behavior. The webhook should verify and decide whether an event should invoke work. The job should assume it was invoked for a valid event and run the work with a small set of stable params.
-
-If the target CLI does not expose a supported webhook action yet, check whether `--request-json`, SDK calls, or the HTTP API exposes it.
-
-## Templates
-
-For runnable examples, link to `https://github.com/islo-labs/islo-agents`.
-
-That repo currently covers:
-
-- GitHub PR review
-- CI babysitting through `islo-babysit`
-- E2E verification through `islo-verify`
-- Linear-triggered task execution
-
-Do not copy templates into this skills repo. Point users to the template repo and explain which template matches their use case.
+- **Single-stage durable work** — deploy and run a job directly. See `jobs.md`.
+- **HTTP event without orchestration** — create an incoming webhook. See `webhooks.md`.
+- **Outgoing notifications** — configure outgoing webhooks in job steps or via `islo webhook outgoing`. See `webhooks.md`.
 
 ## Things to avoid
 
-- Do not hand-write `[run.sandbox]` schema from memory. Use `islo schema job` or `islo job init <name>` before changing sandbox fields.
-- Do not use unqualified image names like `islo/default`; use the platform default image or a fully qualified registry reference.
-- Do not write `job.toml` from skill examples without running `islo job init` and `islo job deploy --dry-run` first.
-- Do not add `[schedule]` until every param has a `default`.
-- Do not turn a one-off shell command into a job unless it needs repeatability, scheduling, retries, or auditability.
-- Do not implement judgment-heavy agent work as shell business logic. Use shell only to launch the agent, load a prompt, or run a small harness.
-- Do not put provider tokens in job params or sandbox environment variables by default.
-- Do not create a separate scheduler around Islo jobs when `[schedule]` in `job.toml` is enough.
-- Do not assume all job orchestration lives in the CLI. The CLI deploys and starts work; the control plane owns durable job versioning, runs, schedules, and orchestration.
+- Do not build multi-stage orchestration in shell when a Factory line handles routing, loops, and decisions.
+- Do not write manifests from memory. Validate with `--dry-run` before deploy.
+- Do not put provider tokens in manifests or sandbox env by default.
+- Do not replace agent judgment with hand-written shell business logic.
+- Do not hardcode inference model lists — query `/inference/models`.

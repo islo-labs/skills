@@ -2,6 +2,8 @@
 
 Use this reference when the user wants runnable examples instead of conceptual guidance.
 
+For Factory line recipes, start in the Islo UI at `/factory` or read `factory.md` for manifest patterns.
+
 The template repo is:
 
 ```text

@@ -34,10 +34,10 @@ islo login --tool slack
 islo use <sandbox>
 ```
 
-Inspect the default profile if something fails:
+Inspect gateway profiles if something fails:
 
 ```bash
-islo gateway default
+islo gateway ls
 islo status
 ```
 
@@ -102,6 +102,17 @@ Example distinction:
 
 Keep those paths separate in explanations and code.
 
+## Islo inference
+
+Islo-managed models are separate from provider integrations. They route through `/inference/*` on the gateway with platform-owned upstream credentials and credit-based billing.
+
+- List enabled models: `GET /inference/models` or docs MCP.
+- OpenAI-compatible base: `https://gateway.islo.dev/inference/openai/v1`
+- Anthropic-compatible base: `https://gateway.islo.dev/inference/anthropic`
+- Codex in sandboxes uses Islo inference by default.
+
+For harness selection, model picking, and SDK examples, read `agents-and-inference.md`.
+
 ## Escape hatches
 
 Users can override env vars or pass their own tokens. If they ask for that, warn that it weakens the no-token-in-sandbox model. Keep examples scoped and avoid logging secrets.
@@ -111,7 +122,7 @@ Users can override env vars or pass their own tokens. If they ask for that, warn
 If provider calls fail:
 
 - Run `islo status` and confirm the integration is connected.
-- Check the sandbox is on the expected gateway profile — usually `default` (`islo gateway default`).
+- Check the sandbox is on the expected gateway profile — usually `default` (`islo gateway ls`).
 - If using a custom profile, check allow rules cover the destination host (`api.github.com`, `github.com`, `slack.com`, etc.).
 - If you changed gateway rules after the sandbox was created, recreate or reconnect the sandbox.
 

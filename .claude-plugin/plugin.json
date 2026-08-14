@@ -1,7 +1,7 @@
 {
   "name": "islo-plugin",
   "metadata": {
-    "description": "Agent skills for using Islo sandboxes, automations, gateway integrations, and SDKs."
+    "description": "Agent skills for using Islo sandboxes, Factory lines, harness and model selection, knowledge, jobs, webhooks, gateway integrations, and SDKs."
   },
   "owner": {
     "name": "Islo Labs"
