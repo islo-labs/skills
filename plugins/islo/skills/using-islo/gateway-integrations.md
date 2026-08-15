@@ -12,12 +12,12 @@ The sandbox may also expose phantom placeholder env vars (`GITHUB_TOKEN`, `GH_TO
 
 Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes. If the user connected the matching integration before using the sandbox, these agents can run without an in-sandbox login. Do not copy local auth files or API keys into the sandbox just to make the agent start.
 
-Use Islo environment names when the same sandbox env vars or environment-owned gateway-injected secrets should be reused across sandboxes. Apply them with `islo use <sandbox> --environment production` or `environment: production` in `islo.yaml`.
+Use Islo environment names when the same sandbox env vars or environment-owned gateway-injected secrets should be reused across sandboxes. Apply them with `islo use <sandbox> --environment production` or the environment field in `islo.yaml` per `islo schema use`.
 
 ## Flow
 
 1. Connect providers outside the sandbox: `islo login --tool github` (and slack, openai, etc. as needed).
-2. Use the `default` gateway profile. Sandboxes pick it up automatically; only set `--gateway-profile` or `gateway_profile:` when the user needs a non-default profile.
+2. Use the `default` gateway profile. Sandboxes pick it up automatically; only set `--gateway-profile` or the gateway profile field in `islo.yaml` when the user needs a non-default profile. Check `islo schema use`.
 3. Tools inside the sandbox call provider APIs on allowed hosts; the gateway injects credentials automatically.
 
 Real provider tokens stay in the control plane or integration store. The sandbox gets the profile name and phantom placeholders only.

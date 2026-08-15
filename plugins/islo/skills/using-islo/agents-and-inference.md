@@ -2,9 +2,17 @@
 
 Use this reference when choosing a harness, picking a model, or routing inference through Islo. For manifest field shapes, use `islo schema job` and `islo schema factory` — do not write them from memory.
 
-## Harnesses in jobs and managers
+## Three agent surfaces
 
-Job stages run agents via `run_agent` steps. Factory managers declare the agent identity used at line decision points.
+| Surface | Entry point | When to use |
+|---------|-------------|-------------|
+| Interactive sandbox | `islo use --agent <harness>` | Ad hoc or exploratory agent work in a sandbox |
+| Job stage | `run_agent` step in `job.toml` | Durable or scheduled single-stage automation |
+| Factory manager | `manager.toml` deployed separately | Decision agent at line pause points |
+
+Check `islo schema job` and `islo schema factory` for harness values and step shapes on each surface.
+
+## Harnesses
 
 | Harness | When to use |
 |---------|-------------|
@@ -13,13 +21,14 @@ Job stages run agents via `run_agent` steps. Factory managers declare the agent 
 | `cursor` | Cursor agent models via connected integration |
 | `custom` | Exec-mode only; user-defined command |
 
-Check `islo schema job` for the current harness values and step shapes.
-
 ## Factory managers
 
 A **manager** is the decision agent for a Factory line. When a line run hits a decision pause — a loop exhausted, no matching transition, or an operator follow-up — the manager's harness, model, and instructions define how that pause is handled.
 
-Managers are deployed separately (`islo factory manager deploy manager.toml`) and referenced from `line.toml`. They are not the same as stage jobs: stage jobs do the work; the manager is the identity attached to decision points.
+Managers are deployed separately (`islo factory manager deploy manager.toml`) and referenced from `line.toml`. They are not the same as stage jobs:
+
+- **Stage jobs** do the work (review, fix, notify).
+- **Managers** decide what happens at pause points (retry, branch, escalate, stop).
 
 Check `islo schema factory` and `factory.md` for manager deploy and line wiring.
 
@@ -83,4 +92,6 @@ Attach tenant knowledge to agent-powered job stages instead of embedding long po
 
 ## Default pattern
 
-Prefer `run_agent` steps in job manifests. The control plane passes harness, model, and prompt to compute directly. Do not shell-wrap `claude`, `agent`, or `codex` CLI entrypoints unless `islo schema job` shows an exec-mode path that requires it.
+Prefer `run_agent` steps in job manifests. The control plane passes harness, model, and prompt to compute directly.
+
+Do not shell-wrap `claude`, `agent`, or `codex` CLI entrypoints in job exec steps unless `islo schema job` shows an exec-mode path that requires it.

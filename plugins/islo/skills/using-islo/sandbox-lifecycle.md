@@ -83,11 +83,11 @@ For scripts and tools, prefer JSON output where the command supports it.
 
 Sandbox creation can use CLI flags, `islo.yaml`, or account defaults. Check `islo schema use` for the current `islo.yaml` shape and flag precedence.
 
-Use environment names in user-facing flows: `islo use --environment production` and `environment: production` in `islo.yaml`.
+Use environment names in user-facing flows: `islo use --environment production` and the environment field in `islo.yaml` per `islo schema use`.
 
 ## Sources
 
-Clone repos during sandbox bootstrap with `--source` or `sources:` in `islo.yaml`. Check exact formats with `islo schema use`.
+Clone repos during sandbox bootstrap with `--source` or the sources field in `islo.yaml`. Check exact formats with `islo schema use`.
 
 ```bash
 islo login --tool github   # required for private repos
@@ -96,7 +96,7 @@ islo use my-sandbox --source github://owner/repo:main
 islo use my-sandbox --source https://github.com/owner/repo:feat/branch
 ```
 
-In `islo.yaml`, check `islo schema use` for the current `sources` shape.
+In `islo.yaml`, check `islo schema use` for the current sources configuration.
 
 Islo runs source checkout during sandbox bootstrap before your command or shell. For private GitHub repos, connect the integration first (`islo login --tool github`). Do not tell users to manually embed tokens in clone URLs for normal `islo use` source checkout.
 
@@ -154,7 +154,7 @@ islo snapshot rm <name>
 islo use new-sandbox --snapshot <name> # restore from snapshot
 ```
 
-Snapshots can also be referenced in job manifests (`snapshot_name`) and incoming webhook sandbox templates.
+Snapshots can also be referenced in job manifests and incoming webhook sandbox templates. Check `islo schema job` and `islo schema webhook`.
 
 ## Port forwarding and sharing
 

@@ -58,7 +58,7 @@ islo factory line status <run-id>
 
 ## Triggers
 
-Factory lines can start manually, on a schedule, via webhook, or from integration events (GitHub, Linear, Slack). Check `islo schema factory` for the current trigger types and wiring.
+Factory lines can start manually, on a schedule, via webhook, or from integration events (GitHub, Linear, Slack). Check `islo schema factory` for the current trigger types, selectors, and wiring.
 
 For standalone HTTP ingress without line orchestration, see `webhooks.md`.
 

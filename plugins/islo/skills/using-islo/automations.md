@@ -17,8 +17,8 @@ Manager       →  decision agent for line pause points
 
 1. **Design the line** — identify stages, routing, triggers, and decision points.
 2. **Write stage jobs** — one `job.toml` per stage. See `jobs.md`.
-3. **Write the manager** — `manager.toml` for decision pause points. See `factory.md`.
-4. **Write the line** — `line.toml` wiring stages, transitions, and triggers.
+3. **Write the manager** — `manager.toml` for decision pause points. See `factory.md` and `agents-and-inference.md`.
+4. **Write the line** — `line.toml` wiring stages, transitions, and triggers. Check `islo schema factory`.
 5. **Deploy in order:**
 
 ```bash
@@ -37,6 +37,19 @@ islo factory line status <run-id>
 ```
 
 For deploy commands and line runs, read `factory.md`. For manifest shapes, use `islo schema factory` and `islo schema job`.
+
+## Triggers
+
+Factory lines can start manually, on a schedule, via webhook, or from integration events (GitHub, Linear, Slack). Check `islo schema factory` for the current trigger types, selectors, and wiring.
+
+| Trigger kind | Use when |
+|--------------|----------|
+| Manual | Operator or API starts a run |
+| Schedule | Recurring cron-based runs |
+| Webhook | External HTTP events should start a line run |
+| Integration | GitHub, Linear, or Slack events should start a line run |
+
+For standalone webhook receivers (sandbox lifecycle, single job trigger without orchestration), see `webhooks.md`.
 
 ## Choosing harness and model
 
@@ -59,7 +72,7 @@ See `templates.md` for how to adopt templates.
 
 ## Knowledge in automations
 
-Attach tenant knowledge to agent-powered job stages instead of embedding long policy text in manifests. Manage items with `islo knowledge` — see `knowledge.md`.
+Attach tenant knowledge to agent-powered job stages instead of embedding long policy text in manifests. Manage items with `islo knowledge` — see `knowledge.md`. Check `islo schema job` for how knowledge links into agent steps.
 
 ## Lower-level primitives
 
@@ -74,5 +87,5 @@ When a Factory line is more than you need:
 - Do not build multi-stage orchestration in shell when a Factory line handles routing, loops, and decisions.
 - Do not write manifests from memory. Use `islo schema <command>` and `--dry-run`.
 - Do not put provider tokens in manifests or sandbox env by default.
-- Do not replace agent judgment with hand-written shell business logic.
+- Do not replace agent judgment with hand-written shell business logic or shell-wrapped agent CLIs.
 - Do not hardcode inference model lists — query `/inference/models`.
