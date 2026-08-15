@@ -4,7 +4,7 @@ Agent skills and plugin metadata for working with [Islo](https://islo.dev), the 
 
 This repo teaches coding agents how to use Islo for:
 
-- **Factory lines**: multi-stage orchestration with managers, transitions, and triggers
+- **Factory lines**: multi-stage orchestration with typed transitions, integration triggers, and `islo factory line-run` controls
 - **Harness and model selection**: Codex (Islo inference), Claude, Cursor
 - **Jobs**: lower-level durable stage execution units
 - **Webhooks**: lower-level HTTP event ingress and egress
@@ -69,7 +69,7 @@ Agents that support the common plugin layout can load `plugins/islo`. Agents tha
 plugins/islo/skills/using-islo/
 ├── SKILL.md
 ├── automations.md          # Factory-first automation guide
-├── factory.md              # line.toml, manager.toml, stages, transitions
+├── factory.md              # line.toml, transitions, triggers, line-run
 ├── agents-and-inference.md # harness, model, Islo inference
 ├── jobs.md                 # lower-level job.toml reference
 ├── webhooks.md             # lower-level incoming/outgoing webhooks

@@ -12,6 +12,8 @@ islo job --help
 ISLO_HELP=full islo job
 ```
 
+The schema example shows the current `run_agent` shape: nested `[run.tasks.steps.run_agent]` with `[run.tasks.steps.run_agent.prompt]` bindings, plus top-level `[outputs.<name>]` for structured agent results.
+
 ## Required workflow
 
 ```bash
@@ -33,7 +35,27 @@ Good examples:
 - Review open PRs every morning and leave GitHub comments.
 - Check failed CI runs, investigate, and open a fix PR.
 
-Use `run_agent` steps in the job manifest. See `agents-and-inference.md` for harness and model selection. Check `islo schema job` for the current `run_agent` shape.
+Use session-mode `run_agent` steps. Pattern (validate against `islo schema job`):
+
+```toml
+[[run.tasks.steps]]
+name = "summarize"
+
+[run.tasks.steps.run_agent]
+mode = "session"
+harness = "claude"
+model = "claude-sonnet-4"
+
+[run.tasks.steps.run_agent.prompt]
+type = "literal"
+value = "Summarize {ticket_id} and return JSON with a summary field."
+
+[outputs.summary]
+type = "string"
+required = true
+```
+
+Prompt bindings can also reference knowledge: `{ type = "knowledge", slug = "..." }`. See `knowledge.md` and `agents-and-inference.md` for harness and model selection.
 
 Do not shell-wrap `claude`, `agent`, or `codex` CLI entrypoints in exec steps when `run_agent` is available.
 
@@ -58,7 +80,7 @@ For runnable examples, see `templates.md` and `https://github.com/islo-labs/islo
 Narrative pattern (not a drop-in manifest):
 
 1. `islo job init linear-to-slack`
-2. Edit `jobs/linear-to-slack/job.toml` using `islo schema job` — params for ticket ID and Slack channel, a `run_agent` step with harness `claude`, sandbox on the default runner image, `default` gateway profile.
+2. Edit `jobs/linear-to-slack/job.toml` using `islo schema job` — params for ticket ID and Slack channel, a session-mode `run_agent` step with harness `claude`, nested prompt binding, declared `outputs`, sandbox on the default runner image, `default` gateway profile.
 3. Connect Linear and Slack integrations before deploy (`islo login --tool` as needed).
 4. Add a daily schedule only after every param has a default.
 5. `islo job deploy linear-to-slack --dry-run`, then deploy.

@@ -17,7 +17,7 @@ islo knowledge list --level rule --repo owner/repo
 islo knowledge list --tag auth --query namespace
 islo knowledge get <identifier>
 islo knowledge create auth-rule --level rule --body @rule.md --tag auth --repo owner/repo
-islo knowledge update <identifier> --body @rule.md --tag auth
+islo knowledge update <identifier> --body @rule.md --tag auth --repo owner/repo
 islo knowledge delete <identifier> --force
 islo knowledge render --repo owner/repo --tag policy
 ```
@@ -26,11 +26,21 @@ Use `--output json` for structured output.
 
 ## Using knowledge in jobs and Factory
 
-- Attach knowledge to agent-powered job stages instead of embedding long policy text in manifests.
-- Manager instructions can reference policies inline; knowledge items keep instructions reusable across jobs and lines.
-- The Factory UI renders knowledge-backed prompts in the line description view.
+Attach knowledge to agent-powered job stages instead of embedding long policy text in manifests.
 
-Check `islo schema job` for how knowledge links into agent steps.
+**Stage job prompts** — use a knowledge binding on `run_agent`:
+
+```toml
+[run.tasks.steps.run_agent.prompt]
+type = "knowledge"
+slug = "auth-rule"
+```
+
+**Line routing instructions** — optional `[agent.instructions]` on `line.toml` can also use knowledge bindings. Check `islo schema factory`.
+
+Ambient declarative context can also be attached via `run_agent.knowledge` — check `islo schema job` for the array binding shape.
+
+The Factory UI renders knowledge-backed prompts in the line description view.
 
 ## Linking
 
@@ -39,4 +49,4 @@ Items can be linked to repositories and tags. Use `islo knowledge render` to con
 ## Things to avoid
 
 - Do not embed long policy text directly in manifests when a knowledge item keeps it reusable.
-- Do not assume knowledge field shapes from memory — check `islo schema job`.
+- Do not assume knowledge field shapes from memory — check `islo schema job` and `islo schema factory`.

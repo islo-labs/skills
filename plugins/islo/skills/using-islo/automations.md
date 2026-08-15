@@ -8,32 +8,33 @@ Use this reference for Factory lines — Islo's primary automation product. Jobs
 Factory line  →  orchestrates multi-stage work with routing, loops, and decisions
 Job           →  one stage's execution unit (sandbox + steps)
 Webhook       →  HTTP event ingress/egress primitive
-Manager       →  decision agent for line pause points
+Interaction   →  how a paused line run continues (operator or agent)
 ```
 
 **Default recommendation:** when automation spans multiple stages, needs routing or loops, runs on a schedule or integration event, or requires decision points — build a Factory line. Use jobs or webhooks directly only for simpler, single-purpose work.
 
 ## Factory-first workflow
 
-1. **Design the line** — identify stages, routing, triggers, and decision points.
-2. **Write stage jobs** — one `job.toml` per stage. See `jobs.md`.
-3. **Write the manager** — `manager.toml` for decision pause points. See `factory.md` and `agents-and-inference.md`.
-4. **Write the line** — `line.toml` wiring stages, transitions, and triggers. Check `islo schema factory`.
-5. **Deploy in order:**
+1. **Design the line** — identify stages, routing, triggers, and where decision pauses need operator or agent follow-up.
+2. **Write stage jobs** — `islo job init <name>` for each stage. See `jobs.md` and `agents-and-inference.md` for `run_agent` steps and Islo inference (`codex` harness).
+3. **Write the line** — `line.toml` with typed `conditional` or `agentic` transitions per `islo schema factory`. Optional `[agent.instructions]` for routing at decision pauses — see `factory.md`.
+4. **Deploy in order:**
 
 ```bash
+islo job deploy review-job --dry-run
 islo job deploy review-job
+islo job deploy fix-job --dry-run
 islo job deploy fix-job
-islo factory manager deploy manager.toml
 islo factory line deploy line.toml --dry-run
 islo factory line deploy line.toml
 ```
 
-6. **Run and monitor:**
+5. **Run and monitor:**
 
 ```bash
 islo factory line run pr-review --param repo=org/repo --param pr_number=42
-islo factory line status <run-id>
+islo factory line-run status <run-id>
+islo factory line-run events <run-id>
 ```
 
 For deploy commands and line runs, read `factory.md`. For manifest shapes, use `islo schema factory` and `islo schema job`.
@@ -41,6 +42,15 @@ For deploy commands and line runs, read `factory.md`. For manifest shapes, use `
 ## Triggers
 
 Factory lines can start manually, on a schedule, via webhook, or from integration events (GitHub, Linear, Slack). Check `islo schema factory` for the current trigger types, selectors, and wiring.
+
+Discover integration triggers before authoring a line:
+
+```bash
+islo factory triggers list --with-status
+islo factory triggers get github pull_request.opened
+islo factory triggers get linear issue.updated
+islo factory triggers get slack message.received
+```
 
 | Trigger kind | Use when |
 |--------------|----------|
@@ -53,9 +63,9 @@ For standalone webhook receivers (sandbox lifecycle, single job trigger without 
 
 ## Choosing harness and model
 
-Each stage job's agent step declares harness and model. Managers declare their own harness and model for decision points.
+Each stage job's `run_agent` step declares harness and model. For Islo inference, use `harness = "codex"` and an inference model id — see the **Islo inference in Factory** section in `agents-and-inference.md`.
 
-- **Codex** — Islo-managed inference; no provider key needed. See `agents-and-inference.md`.
+- **Codex** — Islo-managed inference; no provider key needed.
 - **Claude / Cursor** — provider-managed via gateway integrations.
 
 Query `GET /inference/models` for current Islo inference models rather than hardcoding lists.
@@ -72,7 +82,7 @@ See `templates.md` for how to adopt templates.
 
 ## Knowledge in automations
 
-Attach tenant knowledge to agent-powered Factory stage jobs instead of embedding long policy text in manifests. Manage items with `islo knowledge` — see `knowledge.md`. Check `islo schema job` for how knowledge links into agent steps.
+Attach tenant knowledge to agent-powered Factory stage jobs via `run_agent` prompt or knowledge bindings — see `knowledge.md`. Check `islo schema job` for binding shapes.
 
 ## Escape hatches
 
