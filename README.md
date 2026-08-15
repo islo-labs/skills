@@ -68,8 +68,7 @@ Agents that support the common plugin layout can load `plugins/islo`. Agents tha
 ```text
 plugins/islo/skills/using-islo/
 ├── SKILL.md
-├── automations.md          # Factory-first automation guide
-├── factory.md              # line.toml, transitions, triggers, line-run
+├── factory.md              # Factory lines: workflow, transitions, triggers, line-run
 ├── agents-and-inference.md # harness, model, Islo inference
 ├── jobs.md                 # lower-level job.toml reference
 ├── webhooks.md             # lower-level incoming/outgoing webhooks

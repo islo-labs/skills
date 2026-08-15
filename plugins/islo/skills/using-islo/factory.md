@@ -1,29 +1,48 @@
 # Factory lines
 
-Use this reference for Factory lines, deploy, line runs, and interaction at decision pauses. For manifest field shapes, use `islo schema factory` and validate with `--dry-run` — do not write manifests from memory.
+Use this reference for Factory lines — Islo's primary automation product. Jobs and webhooks are lower-level building blocks that lines compose. For manifest field shapes, use `islo schema factory` and validate with `--dry-run` — do not write manifests from memory.
 
 ## Mental model
 
 ```text
-job.toml   →  one stage's work (deploy separately)
-line.toml  →  orchestration graph (stages, transitions, triggers)
+Factory line  →  orchestrates multi-stage work with routing, loops, and decisions
+Job           →  one stage's execution unit (sandbox + steps); deploy job.toml separately
+Webhook       →  HTTP event ingress/egress primitive
+line.toml     →  orchestration graph (stages, transitions, triggers)
 ```
 
-Factory is Islo's orchestration layer. **Jobs** are stage-level work units. **Lines** wire jobs through stages, transitions, and triggers. When a run pauses for a decision, the operator or line routing agent continues it — retry a stage, send another agent turn, or cancel.
+**Default recommendation:** when automation spans multiple stages, needs routing or loops, runs on a schedule or integration event, or requires decision points — build a Factory line. Use jobs or webhooks directly only for simpler, single-purpose work.
 
-## Deploy order
+When a run pauses for a decision, the operator or line routing agent continues it — retry a stage, send another agent turn, or cancel.
 
-1. Deploy each job referenced by line stages: `islo job deploy <name>`
-2. Validate, then deploy the line:
-   ```bash
-   islo factory line deploy line.toml --dry-run
-   islo factory line deploy line.toml
-   ```
-3. If the tenant Factory Manager runtime is disabled, enable it before lines that need routing decisions:
-   ```bash
-   islo factory manager status
-   islo factory manager enable
-   ```
+## Workflow
+
+1. **Design the line** — identify stages, routing, triggers, and where decision pauses need operator or agent follow-up.
+2. **Write stage jobs** — `islo job init <name>` for each stage. See `jobs.md` and `agents-and-inference.md` for `run_agent` steps and Islo inference (`codex` harness).
+3. **Write the line** — `line.toml` with typed `conditional` or `agentic` transitions per `islo schema factory`. Optional `[agent.instructions]` for routing at decision pauses.
+4. **Deploy in order:**
+
+```bash
+islo job deploy review-job --dry-run
+islo job deploy review-job
+islo factory line deploy line.toml --dry-run
+islo factory line deploy line.toml
+```
+
+5. If the tenant Factory Manager runtime is disabled, enable it before lines that need routing decisions:
+
+```bash
+islo factory manager status
+islo factory manager enable
+```
+
+6. **Run and monitor:**
+
+```bash
+islo factory line run pr-review --param repo=org/repo --param pr_number=42
+islo factory line-run status <run-id>
+islo factory line-run events <run-id>
+```
 
 The first stage's job defines the line's external input contract. Later stages receive params from transition mappings or job defaults.
 
@@ -31,13 +50,16 @@ The first stage's job defines the line's external input contract. Later stages r
 
 ```bash
 islo schema factory
+islo schema job
 islo factory --help
 ISLO_HELP=full islo factory
 islo factory triggers list --with-status
 islo factory triggers get github pull_request.opened
+islo factory triggers get linear issue.updated
+islo factory triggers get slack message.received
 ```
 
-## Line workflow
+## Line commands
 
 ```bash
 islo factory line validate line.toml
@@ -74,7 +96,7 @@ Line routing uses typed transitions declared in `line.toml`. Check `islo schema 
 
 Every line needs exactly one entry transition from `trigger` with `when = { op = "always" }`. Completion must target the reserved `done` sink explicitly.
 
-## Interaction at decision pauses
+## Decision pauses
 
 A line run can pause when routing is ambiguous, a loop is exhausted, or an operator needs to weigh in. Continue the run with `islo factory line-run` commands above.
 
@@ -82,23 +104,56 @@ Optional per-line instructions for the product-managed line routing agent go in 
 
 ## Triggers
 
-Factory lines can start manually, on a schedule, via webhook, or from integration events (GitHub, Linear, Slack). Check `islo schema factory` for the current trigger types, selectors, and wiring. Discover integration triggers with `islo factory triggers list` and `islo factory triggers get`.
+Factory lines can start manually, on a schedule, via webhook, or from integration events (GitHub, Linear, Slack). Check `islo schema factory` for the current trigger types, selectors, and wiring.
 
-For standalone HTTP ingress without line orchestration, see `webhooks.md`.
+| Trigger kind | Use when |
+|--------------|----------|
+| Manual | Operator or API starts a run |
+| Schedule | Recurring cron-based runs |
+| Webhook | External HTTP events should start a line run |
+| Integration | GitHub, Linear, or Slack events should start a line run |
+
+For standalone webhook receivers (sandbox lifecycle, single job trigger without orchestration), see `webhooks.md`.
+
+## Harness and model
+
+Each stage job's `run_agent` step declares harness and model. For Islo inference, use `harness = "codex"` and an inference model id — see **Islo inference in Factory** in `agents-and-inference.md`.
+
+- **Codex** — Islo-managed inference; no provider key needed.
+- **Claude / Cursor** — provider-managed via gateway integrations.
+
+Query `GET /inference/models` for current Islo inference models rather than hardcoding lists.
+
+## Knowledge
+
+Attach tenant knowledge to agent-powered stage jobs via `run_agent` prompt or knowledge bindings — see `knowledge.md`. Check `islo schema job` for binding shapes.
 
 ## Shared sandbox across stages
 
-When stages should share workspace state, configure the stage jobs to reuse the same sandbox. Check `islo schema job` for sandbox `mode` options and `islo schema factory` for how stages reference jobs.
+When stages should share workspace state, configure the stage jobs to reuse the same sandbox. Check `islo schema job` for sandbox `mode` options.
 
-## When to use jobs or webhooks directly
+## Recipes and templates
 
-- **Single-stage, no routing** — a job alone is enough. See `jobs.md`.
-- **HTTP ingress without orchestration** — an incoming webhook alone may be enough. See `webhooks.md`.
-- **Multi-stage, loops, decisions, or integration triggers** — use a Factory line.
+The Islo UI includes built-in Factory recipes (PR review, bug fix, QA, CI fix). For runnable template repos:
 
-For harness, model, and Islo inference in stage jobs, see `agents-and-inference.md`.
+```text
+https://github.com/islo-labs/islo-agents
+```
+
+See `templates.md` for how to adopt templates.
+
+## Escape hatches
+
+Users rarely need these. Prefer a Factory line first.
+
+- **Standalone single-stage job** — only when the user explicitly wants durable or scheduled work without line orchestration. See `jobs.md`.
+- **HTTP event without orchestration** — create an incoming webhook. See `webhooks.md`.
+- **Outgoing notifications** — configure outgoing webhooks. See `webhooks.md` and `islo schema webhook`.
 
 ## Things to avoid
 
 - Do not write line or stage job manifests from memory. Use `islo schema factory`, `islo schema job`, and `--dry-run`.
 - Do not build multi-stage orchestration in shell when a Factory line handles routing, loops, and decisions.
+- Do not put provider tokens in manifests or sandbox env by default.
+- Do not replace agent judgment with hand-written shell business logic or shell-wrapped agent CLIs.
+- Do not hardcode inference model lists — query `/inference/models`.

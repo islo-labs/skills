@@ -1,6 +1,6 @@
 # Jobs
 
-Use this reference when a user **explicitly** wants a standalone durable job (`job.toml`) — without Factory line orchestration. In normal flows, jobs are **stage building blocks inside Factory lines**; start with `automations.md` and `factory.md` instead.
+Use this reference when a user **explicitly** wants a standalone durable job (`job.toml`) — without Factory line orchestration. In normal flows, jobs are **stage building blocks inside Factory lines**; start with `factory.md` instead.
 
 ## Discovery
 

@@ -33,7 +33,7 @@ Islo gives agents secure cloud sandboxes, **Factory lines** for multi-stage auto
 
 | User goal | Start here |
 |-----------|------------|
-| Automation (default) | Factory line — `automations.md`, `factory.md` |
+| Automation (default) | Factory line — `factory.md` |
 | Interactive sandbox or ad hoc agent work | `islo use` — `sandbox-lifecycle.md` |
 | Harness, model, or inference routing | `agents-and-inference.md` |
 | HTTP event → sandbox, no line orchestration | Incoming webhook — `webhooks.md` |
@@ -47,7 +47,7 @@ Islo gives agents secure cloud sandboxes, **Factory lines** for multi-stage auto
 
 ## Choose the right reference
 
-- **Factory lines, stages, transitions, triggers, line runs, and decision pauses:** read `automations.md` and `factory.md`.
+- **Factory lines, stages, transitions, triggers, line runs, and decision pauses:** read `factory.md`.
 - **Harness, model, and Islo inference selection (including Islo inference in Factory):** read `agents-and-inference.md`.
 - **Standalone jobs (advanced):** read `jobs.md` only when the user explicitly wants a single-stage job without line orchestration.
 - **Lower-level incoming/outgoing webhooks:** read `webhooks.md`.
