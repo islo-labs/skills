@@ -12,12 +12,12 @@ The sandbox may also expose phantom placeholder env vars (`GITHUB_TOKEN`, `GH_TO
 
 Claude Code, Cursor agent, and Codex are already installed inside Islo sandboxes. If the user connected the matching integration before using the sandbox, these agents can run without an in-sandbox login. Do not copy local auth files or API keys into the sandbox just to make the agent start.
 
-Use Islo environment names when the same sandbox env vars or environment-owned gateway-injected secrets should be reused across sandboxes. Apply them with `islo use <sandbox> --environment production` or `environment: production` in `islo.yaml`.
+Use Islo environment names when the same sandbox env vars or environment-owned gateway-injected secrets should be reused across sandboxes. Apply them with `islo use <sandbox> --environment production` or the environment field in `islo.yaml` per `islo schema use`.
 
 ## Flow
 
 1. Connect providers outside the sandbox: `islo login --tool github` (and slack, openai, etc. as needed).
-2. Use the `default` gateway profile. Sandboxes pick it up automatically; only set `--gateway-profile` or `gateway_profile:` when the user needs a non-default profile.
+2. Use the `default` gateway profile. Sandboxes pick it up automatically; only set `--gateway-profile` or the gateway profile field in `islo.yaml` when the user needs a non-default profile. Check `islo schema use`.
 3. Tools inside the sandbox call provider APIs on allowed hosts; the gateway injects credentials automatically.
 
 Real provider tokens stay in the control plane or integration store. The sandbox gets the profile name and phantom placeholders only.
@@ -34,10 +34,10 @@ islo login --tool slack
 islo use <sandbox>
 ```
 
-Inspect the default profile if something fails:
+Inspect gateway profiles if something fails:
 
 ```bash
-islo gateway default
+islo gateway ls
 islo status
 ```
 
@@ -49,12 +49,7 @@ islo gateway my-profile add-rule --host api.example.com --action allow --provide
 islo use <sandbox> --gateway-profile my-profile
 ```
 
-Set a non-default profile in `islo.yaml` only when the project needs it:
-
-```yaml
-gateway_profile: my-profile
-environment: production
-```
+Set a non-default profile or environment in `islo.yaml` only when the project needs it. Check `islo schema use` for the current shape.
 
 If you change gateway rules after a sandbox was created, recreate or reconnect the sandbox and retest.
 
@@ -102,6 +97,17 @@ Example distinction:
 
 Keep those paths separate in explanations and code.
 
+## Islo inference
+
+Islo-managed models are separate from provider integrations. They route through `/inference/*` on the gateway with platform-owned upstream credentials and credit-based billing.
+
+- List enabled models: `GET /inference/models` or docs MCP.
+- OpenAI-compatible base: `https://gateway.islo.dev/inference/openai/v1`
+- Anthropic-compatible base: `https://gateway.islo.dev/inference/anthropic`
+- Codex in sandboxes uses Islo inference by default.
+
+For harness selection, model picking, and SDK examples, read `agents-and-inference.md`.
+
 ## Escape hatches
 
 Users can override env vars or pass their own tokens. If they ask for that, warn that it weakens the no-token-in-sandbox model. Keep examples scoped and avoid logging secrets.
@@ -111,7 +117,7 @@ Users can override env vars or pass their own tokens. If they ask for that, warn
 If provider calls fail:
 
 - Run `islo status` and confirm the integration is connected.
-- Check the sandbox is on the expected gateway profile — usually `default` (`islo gateway default`).
+- Check the sandbox is on the expected gateway profile — usually `default` (`islo gateway ls`).
 - If using a custom profile, check allow rules cover the destination host (`api.github.com`, `github.com`, `slack.com`, etc.).
 - If you changed gateway rules after the sandbox was created, recreate or reconnect the sandbox.
 

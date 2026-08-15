@@ -46,6 +46,16 @@ islo use <name> --agent codex --task "Fix the lint errors"
 
 If the matching integration was connected before sandbox use, the agent should work without running a login flow inside the sandbox. Prefer this path over copying local key files or setting provider API keys in sandbox env.
 
+## Project setup
+
+Scaffold project defaults before day-to-day sandbox work:
+
+```bash
+islo init                    # create islo.yaml (interactive or --template)
+islo add                     # detect project signals and add setup scripts
+islo add <tool> [version]    # append a setup_scripts entry from a built-in recipe
+```
+
 ## Common commands
 
 ```bash
@@ -63,36 +73,21 @@ islo resume <name>
 islo stop <name>
 islo rm <name>
 islo cp <local> <name>:<remote>
+islo doctor                  # check auth, config, and API connectivity
+islo doctor --output json
 ```
 
 For scripts and tools, prefer JSON output where the command supports it.
 
 ## Creation inputs
 
-Sandbox creation can use:
+Sandbox creation can use CLI flags, `islo.yaml`, or account defaults. Check `islo schema use` for the current `islo.yaml` shape and flag precedence.
 
-- CLI flags
-- `islo.yaml`
-- defaults from the current account and region
-
-Common `islo.yaml` fields include:
-
-- `sandbox`: default sandbox name
-- `image`: container or VM image (optional; defaults to `ghcr.io/islo-labs/islo-runner:latest`)
-- `gateway_profile`: optional override; omit to use `default`
-- `environment`: named reusable sandbox variables and secrets to apply when creating a sandbox
-- `sources`: repositories to clone into the sandbox during bootstrap
-- `setup_scripts`: commands to run after source checkout
-- `init`: minimal, full, or custom platform setup
-- `lifecycle`: idle pause, TTL, and auto-resume policy
-
-CLI flags should win over `islo.yaml`. `islo.yaml` should win over defaults.
-
-Use environment names in user-facing flows: `islo use --environment production` and `environment: production` in `islo.yaml`.
+Use environment names in user-facing flows: `islo use --environment production` and the environment field in `islo.yaml` per `islo schema use`.
 
 ## Sources
 
-Clone repos during sandbox bootstrap with `--source` or `sources:` in `islo.yaml`. Check exact formats with `islo schema use`.
+Clone repos during sandbox bootstrap with `--source` or the sources field in `islo.yaml`. Check exact formats with `islo schema use`.
 
 ```bash
 islo login --tool github   # required for private repos
@@ -101,14 +96,7 @@ islo use my-sandbox --source github://owner/repo:main
 islo use my-sandbox --source https://github.com/owner/repo:feat/branch
 ```
 
-In `islo.yaml`:
-
-```yaml
-sources:
-  - url: github://owner/repo
-  - url: https://github.com/owner/other-repo
-    branch: main
-```
+In `islo.yaml`, check `islo schema use` for the current sources configuration.
 
 Islo runs source checkout during sandbox bootstrap before your command or shell. For private GitHub repos, connect the integration first (`islo login --tool github`). Do not tell users to manually embed tokens in clone URLs for normal `islo use` source checkout.
 
@@ -125,8 +113,7 @@ ghcr.io/islo-labs/islo-runner:latest
 It is pre-pulled on Islo infrastructure for fast startup and includes common dev tools plus preinstalled agents (Claude Code, Cursor agent, Codex).
 
 - For `islo use` and `islo.yaml`, omitting `image` uses this default.
-- For `job.toml` with `mode = "provision"` or `"ensure"`, `image` is **required** — `islo job init` sets the platform default; use a fully qualified registry reference if you override it.
-- Do not use unqualified image names like `islo/default` in job manifests. Do not use bare-string `init` values; omit `init` unless docs show the correct table form.
+- For `job.toml` with sandbox provisioning or ensure modes, check `islo schema job` for image requirements.
 
 ## Bootstrap
 
@@ -155,9 +142,40 @@ Use `--task` for background agent work. Use a stable sandbox name when a task sh
 
 When writing automation, prefer lifecycle policy over manual cleanup scripts where possible.
 
-## Cache and snapshots
+## Snapshots
 
-If the user asks about warm starts, caches, or snapshots, verify current docs and CLI support before giving exact commands. The platform can reuse cached images and snapshots, but the user-facing command shape may vary.
+Save and restore sandbox state:
+
+```bash
+islo snapshot save <name>              # save snapshot of running sandbox
+islo snapshot save <name> --name snap  # save with custom name
+islo snapshot ls
+islo snapshot rm <name>
+islo use new-sandbox --snapshot <name> # restore from snapshot
+```
+
+Snapshots can also be referenced in job manifests and incoming webhook sandbox templates. Check `islo schema job` and `islo schema webhook`.
+
+## Port forwarding and sharing
+
+```bash
+islo port-forward <name> <port>        # forward a sandbox port locally
+islo share <name> [port]               # create shareable URL
+islo share <name> [port] --ttl 1h      # share with expiration
+islo shares <name>
+islo unshare <name> <slug>
+```
+
+## SSH, logs, and API keys
+
+```bash
+islo ssh <name>                        # SSH into sandbox
+islo logs <name>                       # view sandbox logs
+islo api-key create                    # create an API key
+islo api-key ls
+islo region ls                         # list available regions
+islo switch <tenant>                   # switch active tenant
+```
 
 ## Good defaults
 

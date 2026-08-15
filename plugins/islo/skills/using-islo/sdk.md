@@ -9,7 +9,7 @@ Do not build per-language deep dives in this skill. The SDKs are generated from 
 Use the SDK when code needs to:
 
 - create or manage sandboxes programmatically
-- start durable jobs or schedule-backed launchers from an internal tool
+- start durable jobs, Factory line runs, or schedule-backed launchers from an internal tool
 - create or manage incoming webhooks
 - configure gateway profiles and rules
 - inspect runs, events, sessions, or sandbox status
@@ -77,6 +77,6 @@ Confirm current names in docs MCP or package docs before giving exact deployment
 
 ## Before writing code
 
-1. Search docs MCP for the entity, such as `sandbox SDK`, `jobs SDK`, `incoming webhooks SDK`, or `gateway profiles SDK`.
+1. Search docs MCP for the entity, such as `sandbox SDK`, `jobs SDK`, `factory lines SDK`, `incoming webhooks SDK`, or `gateway profiles SDK`.
 2. Check the package README/reference for current generated method names.
 3. Use the smallest SDK example that answers the user. Do not paste a generated reference into the chat.
