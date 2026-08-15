@@ -28,15 +28,9 @@ Use `--output json` for structured output.
 
 Attach knowledge to agent-powered job stages instead of embedding long policy text in manifests.
 
-**Stage job prompts** — use a knowledge binding on `run_agent`:
+**Stage job prompts** — attach knowledge through `run_agent` prompt bindings per `islo schema job`.
 
-```toml
-[run.tasks.steps.run_agent.prompt]
-type = "knowledge"
-slug = "auth-rule"
-```
-
-**Line routing instructions** — optional `[agent.instructions]` on `line.toml` can also use knowledge bindings. Check `islo schema factory`.
+**Line routing instructions** — optional `agent.instructions` on `line.toml` can also use knowledge bindings per `islo schema factory`.
 
 Ambient declarative context can also be attached via `run_agent.knowledge` — check `islo schema job` for the array binding shape.
 

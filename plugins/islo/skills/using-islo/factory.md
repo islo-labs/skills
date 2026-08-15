@@ -19,7 +19,7 @@ When a run pauses for a decision, the operator or line routing agent continues i
 
 1. **Design the line** — identify stages, routing, triggers, and where decision pauses need operator or agent follow-up.
 2. **Write stage jobs** — `islo job init <name>` for each stage. See `jobs.md` and `agents-and-inference.md` for `run_agent` steps and Islo inference (`codex` harness).
-3. **Write the line** — `line.toml` with typed `conditional` or `agentic` transitions per `islo schema factory`. Optional `[agent.instructions]` for routing at decision pauses.
+3. **Write the line** — `line.toml` with typed `conditional` or `agentic` transitions per `islo schema factory`. Optional `agent.instructions` for routing at decision pauses.
 4. **Deploy in order:**
 
 ```bash
@@ -94,13 +94,13 @@ Line routing uses typed transitions declared in `line.toml`. Check `islo schema 
 | `conditional` | Deterministic routing on stage status, outputs, trigger fields, or loop exhaustion (`max_iterations`) |
 | `agentic` | The product-managed line routing agent chooses among named options at a decision pause |
 
-Every line needs exactly one entry transition from `trigger` with `when = { op = "always" }`. Completion must target the reserved `done` sink explicitly.
+Every line needs exactly one entry transition from `trigger` with an always-when entry transition. Completion must target the reserved `done` sink explicitly. Check `islo schema factory` for the condition AST.
 
 ## Decision pauses
 
 A line run can pause when routing is ambiguous, a loop is exhausted, or an operator needs to weigh in. Continue the run with `islo factory line-run` commands above.
 
-Optional per-line instructions for the product-managed line routing agent go in `line.toml` as `[agent.instructions]` — check `islo schema factory` for binding shapes (`literal` or `knowledge`). They guide routing for this line; they do not replace stage job prompts.
+Optional per-line instructions for the product-managed line routing agent go in `agent.instructions` per `islo schema factory` (`literal` or `knowledge` bindings). They guide routing for this line; they do not replace stage job prompts.
 
 ## Triggers
 

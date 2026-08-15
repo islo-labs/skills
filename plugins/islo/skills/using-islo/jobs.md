@@ -12,7 +12,7 @@ islo job --help
 ISLO_HELP=full islo job
 ```
 
-The schema example shows the current `run_agent` shape: nested `[run.tasks.steps.run_agent]` with `[run.tasks.steps.run_agent.prompt]` bindings, plus top-level `[outputs.<name>]` for structured agent results.
+The schema includes the current `run_agent`, `outputs`, and prompt-binding shapes — read it before editing.
 
 ## Required workflow
 
@@ -35,27 +35,7 @@ Good examples:
 - Review open PRs every morning and leave GitHub comments.
 - Check failed CI runs, investigate, and open a fix PR.
 
-Use session-mode `run_agent` steps. Pattern (validate against `islo schema job`):
-
-```toml
-[[run.tasks.steps]]
-name = "summarize"
-
-[run.tasks.steps.run_agent]
-mode = "session"
-harness = "claude"
-model = "claude-sonnet-4"
-
-[run.tasks.steps.run_agent.prompt]
-type = "literal"
-value = "Summarize {ticket_id} and return JSON with a summary field."
-
-[outputs.summary]
-type = "string"
-required = true
-```
-
-Prompt bindings can also reference knowledge: `{ type = "knowledge", slug = "..." }`. See `knowledge.md` and `agents-and-inference.md` for harness and model selection.
+Use session-mode `run_agent` steps. Check `islo schema job` for harness, model, prompt bindings, and `outputs` when the job should publish structured results. See `knowledge.md` and `agents-and-inference.md` for harness and model selection.
 
 Do not shell-wrap `claude`, `agent`, or `codex` CLI entrypoints in exec steps when `run_agent` is available.
 
