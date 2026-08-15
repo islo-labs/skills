@@ -1,6 +1,6 @@
 # Jobs
 
-Use this reference for lower-level durable jobs (`job.toml`), schedules, and single-stage agent runs. Factory lines compose jobs as stage execution units — see `automations.md` and `factory.md` for orchestration.
+Use this reference when a user **explicitly** wants a standalone durable job (`job.toml`) — without Factory line orchestration. In normal flows, jobs are **stage building blocks inside Factory lines**; start with `automations.md` and `factory.md` instead.
 
 ## Discovery
 

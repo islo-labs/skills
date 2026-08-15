@@ -72,13 +72,13 @@ See `templates.md` for how to adopt templates.
 
 ## Knowledge in automations
 
-Attach tenant knowledge to agent-powered job stages instead of embedding long policy text in manifests. Manage items with `islo knowledge` — see `knowledge.md`. Check `islo schema job` for how knowledge links into agent steps.
+Attach tenant knowledge to agent-powered Factory stage jobs instead of embedding long policy text in manifests. Manage items with `islo knowledge` — see `knowledge.md`. Check `islo schema job` for how knowledge links into agent steps.
 
-## Lower-level primitives
+## Escape hatches
 
-When a Factory line is more than you need:
+Users rarely need these. Prefer a Factory line first.
 
-- **Single-stage durable work** — deploy and run a job directly. See `jobs.md`.
+- **Standalone single-stage job** — only when the user explicitly wants durable or scheduled work without line orchestration. See `jobs.md`.
 - **HTTP event without orchestration** — create an incoming webhook. See `webhooks.md`.
 - **Outgoing notifications** — configure outgoing webhooks. See `webhooks.md` and `islo schema webhook`.
 

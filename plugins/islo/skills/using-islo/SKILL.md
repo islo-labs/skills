@@ -32,23 +32,23 @@ Islo gives agents secure cloud sandboxes, **Factory lines** for multi-stage auto
 
 | User goal | Start here |
 |-----------|------------|
-| Multi-stage automation, routing, loops, decisions, integration triggers | Factory line — `automations.md`, `factory.md` |
-| Single durable or scheduled agent run | Job — `jobs.md` |
-| HTTP event → sandbox or one job, no orchestration | Incoming webhook — `webhooks.md` |
+| Automation (default) | Factory line — `automations.md`, `factory.md` |
 | Interactive sandbox or ad hoc agent work | `islo use` — `sandbox-lifecycle.md` |
 | Harness, model, or inference routing | `agents-and-inference.md` |
+| HTTP event → sandbox, no line orchestration | Incoming webhook — `webhooks.md` |
 | Reusable policy, skills, or rules for agent steps | `islo knowledge` — `knowledge.md` |
 | Provider credentials without tokens in sandbox | `gateway-integrations.md` |
 | Product integration in code | SDK — `sdk.md` |
 | Runnable starting points | `templates.md` and `https://github.com/islo-labs/islo-agents` |
+| Standalone single-stage job (advanced) | Job — `jobs.md` |
 
-**Default recommendation:** prefer a Factory line when work spans multiple stages, needs routing or loops, runs on a schedule or integration event, or requires decision points. Use jobs or webhooks directly only for simpler, single-purpose work.
+**Default recommendation:** use a Factory line for automation. Jobs are stage building blocks inside lines — users rarely author `job.toml` directly unless they explicitly want a single-stage durable or scheduled run without line orchestration.
 
 ## Choose the right reference
 
 - **Factory lines, managers, stages, transitions, triggers, and line runs:** read `automations.md` and `factory.md`.
 - **Harness, model, and Islo inference selection:** read `agents-and-inference.md`.
-- **Lower-level job manifests, schedules, and single-stage agent runs:** read `jobs.md`.
+- **Standalone jobs (advanced):** read `jobs.md` only when the user explicitly wants a single-stage job without line orchestration.
 - **Lower-level incoming/outgoing webhooks:** read `webhooks.md`.
 - **Knowledge items (memories, skills, rules):** read `knowledge.md`.
 - **Sandbox create/connect/exec/pause/resume/stop/delete flows:** read `sandbox-lifecycle.md`.
@@ -59,11 +59,11 @@ Islo gives agents secure cloud sandboxes, **Factory lines** for multi-stage auto
 ## Working rules
 
 - Treat **Factory lines** as the primary automation product. Prefer a line when work spans multiple stages, loops, decisions, schedules, webhooks, or integration triggers.
-- Use **jobs** for single-stage execution units that a line stage references, or for simple one-off durable work.
+- Use **jobs** as stage building blocks inside Factory lines. Suggest standalone `job.toml` only when the user explicitly wants single-stage durable or scheduled work without line orchestration — see `jobs.md`.
 - Use **webhooks** for HTTP event ingress/egress; Factory lines can also be triggered by webhook or integration events.
 - For interactive or ad hoc sandbox work, prefer `islo use`. It creates or reconnects, then opens a shell or runs a command.
 - For reusable sandbox environment variables or environment-owned gateway-injected secrets, use `islo environment` to manage a named environment and `islo use --environment <name>` to apply it at sandbox creation.
 - For agent work in sandboxes, prefer `islo use --agent claude`, `islo use --agent cursor`, or `islo use --agent codex`; use `--task` for a background prompt.
-- For agent work in jobs, prefer `run_agent` steps. Do not shell-wrap `claude`, `agent`, or `codex` CLI entrypoints unless `islo schema job` shows an exec-mode path that requires it.
+- For agent work in Factory stage jobs, prefer `run_agent` steps. Do not shell-wrap `claude`, `agent`, or `codex` CLI entrypoints unless `islo schema job` shows an exec-mode path that requires it.
 - For judgment-heavy automation, run an agent inside the job stage or sandbox. Do not replace the agent with hand-written shell business logic.
 - For internal tools, dashboards, and custom launchers, prefer the SDK.
