@@ -1,46 +1,33 @@
 # Agents, harnesses, models, and inference
 
-Use this reference when choosing a harness, picking a model, or routing inference through Islo.
+Use this reference when choosing a harness, picking a model, or routing inference through Islo. For manifest field shapes, use `islo schema job` and `islo schema factory` — do not write them from memory.
 
-## Harnesses
+## Harnesses in jobs and managers
 
-Supported harness values:
+Job stages run agents via `run_agent` steps. Factory managers declare the agent identity used at line decision points.
 
-| Harness | Session mode | Exec mode | Typical inference path |
-|---------|--------------|-----------|------------------------|
-| `codex` | Yes | Yes | **Islo inference** (platform-managed models) |
-| `claude` | Yes | Yes | Provider integration / gateway proxy |
-| `cursor` | Yes | Yes | Provider integration / gateway proxy |
-| `custom` | No | Yes only | User-defined `command` |
+| Harness | When to use |
+|---------|-------------|
+| `codex` | Islo-managed inference; no provider API key needed |
+| `claude` | Anthropic models via connected integration; structured outputs and knowledge |
+| `cursor` | Cursor agent models via connected integration |
+| `custom` | Exec-mode only; user-defined command |
 
-In `job.toml`, agent steps use `run_agent`:
+Check `islo schema job` for the current harness values and step shapes.
 
-```toml
-[[run.tasks.steps]]
-name = "review"
-type = "run_agent"
-mode = "session"
-harness = "codex"
-model = "kimi-k2.7-code"
-prompt = "Review the PR and summarize findings."
-```
+## Factory managers
 
-Session mode requires `prompt` or `prompt_ref` (not both). Exec mode requires `command` instead.
+A **manager** is the decision agent for a Factory line. When a line run hits a decision pause — a loop exhausted, no matching transition, or an operator follow-up — the manager's harness, model, and instructions define how that pause is handled.
 
-Factory managers also declare harness and model:
+Managers are deployed separately (`islo factory manager deploy manager.toml`) and referenced from `line.toml`. They are not the same as stage jobs: stage jobs do the work; the manager is the identity attached to decision points.
 
-```toml
-[manager]
-name = "my-agent"
-harness = "claude"
-model = "claude-sonnet-4-6"
-```
+Check `islo schema factory` and `factory.md` for manager deploy and line wiring.
 
 ## Picking a harness
 
-- **Codex + Islo inference** — no provider API key needed. Islo bills inference usage and routes to enabled upstream models. Best default when the user wants Islo-managed models.
-- **Claude** — use when the user wants Anthropic models via connected integration. Good for structured outputs and knowledge-aware stages.
-- **Cursor** — use when the user wants Cursor agent models (`composer-2.5`, `auto`, etc.) via connected integration.
+- **Codex** — best default when the user wants Islo-managed models and billing through Islo inference.
+- **Claude** — use when the user wants Anthropic models via connected integration.
+- **Cursor** — use when the user wants Cursor agent models via connected integration.
 
 Interactive sandbox use:
 
@@ -52,25 +39,10 @@ islo use --agent cursor --task "Add tests for the auth flow"
 
 ## Model selection
 
-### Job stages
+Do not hardcode model lists from memory.
 
-- `model` is optional on `run_agent` session steps; omit to use harness defaults.
-- No catalog validation at deploy — any string is accepted.
-- Exec mode does not send `model`; the command owns the protocol.
-
-### Managers
-
-- `model` is **required** on `[manager]`.
-
-### Discovering Islo inference models
-
-Do not hardcode model lists from memory. Query the catalog:
-
-```bash
-curl -H "Authorization: Bearer $ISLO_API_KEY" https://api.islo.dev/inference/models
-```
-
-Or check docs MCP for `GET /inference/models`. Enabled models include ids like `kimi-k2.7-code`, `minimax-m3`, `qwen3.7-plus` (availability varies by tenant).
+- For **Islo inference models**: query `GET /inference/models` or docs MCP.
+- For **job and manager manifests**: check `islo schema job` and `islo schema factory` for how `model` is set on each surface.
 
 ## Islo inference vs provider-managed
 
@@ -78,8 +50,9 @@ Or check docs MCP for `GET /inference/models`. Enabled models include ids like `
 
 - Routes: `https://gateway.islo.dev/inference/openai/v1` and `https://gateway.islo.dev/inference/anthropic`
 - Platform-owned upstream credentials; tenant billed via credits.
-- Codex in sandboxes uses `model_provider=islo` (CLI) or `model_provider=islo_inference` (UI/onboarding) — both target Islo-managed inference.
-- Direct SDK usage:
+- Codex in sandboxes targets Islo-managed inference by default.
+
+Direct SDK usage:
 
 ```python
 from islo.custom.auth import SyncTokenProvider
@@ -98,44 +71,16 @@ response = client.chat.completions.create(
 ### Provider-managed (gateway proxy)
 
 - Routes: `/gateway/proxy/{*path}` with customer-connected credentials.
-- Used by Claude/Cursor/Codex CLIs calling provider APIs from sandboxes.
+- Used by Claude/Cursor agent CLIs calling provider APIs from sandboxes.
 - Connect integrations: `islo login --tool github`, `islo login --tool slack`, etc.
 - Real tokens stay in the control plane; sandboxes get phantom placeholders.
 
-Do not mix these paths. Inference URLs are for direct model calls; gateway proxy is for provider SDK/CLI egress.
+Do not mix these paths. Inference URLs are for direct model calls; gateway proxy is for provider SDK/CLI egress. See `gateway-integrations.md`.
 
 ## Knowledge in agent steps
 
-Session-mode `run_agent` steps on `claude` or `codex` can reference tenant knowledge:
+Attach tenant knowledge to agent-powered job stages instead of embedding long policy text in manifests. Manage items with `islo knowledge` — see `knowledge.md`. Check `islo schema job` for how knowledge links into `run_agent` steps.
 
-```toml
-[[run.tasks.steps]]
-type = "run_agent"
-mode = "session"
-harness = "claude"
-prompt_ref = "my-review-rules"
-knowledge = ["auth-rules", "pr-policy"]
-```
+## Default pattern
 
-Manage knowledge with `islo knowledge` — see `knowledge.md`.
-
-## Structured outputs
-
-`[outputs]` in `job.toml` require exactly one session-mode `run_agent` step with harness `claude` or `codex`. See `jobs.md` for the full job manifest reference.
-
-## Agent entrypoints in jobs
-
-Shell is a launcher; the agent does the work:
-
-```bash
-# Claude
-claude -p "<prompt>"
-
-# Cursor
-agent --yolo --trust -p "<prompt>"
-
-# Codex (Islo inference)
-codex --sandbox danger-full-access -c model_provider=islo exec --skip-git-repo-check "<prompt>"
-```
-
-For Factory lines, put `run_agent` steps in the stage job manifest rather than raw shell entrypoints when possible — the control plane passes harness, model, and prompt to compute directly.
+Prefer `run_agent` steps in job manifests. The control plane passes harness, model, and prompt to compute directly. Do not shell-wrap `claude`, `agent`, or `codex` CLI entrypoints unless `islo schema job` shows an exec-mode path that requires it.

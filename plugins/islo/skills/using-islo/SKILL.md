@@ -17,14 +17,14 @@ Islo gives agents secure cloud sandboxes, **Factory lines** for multi-stage auto
    - `islo schema <command>`
    - `ISLO_HELP=full islo`
 3. **Before writing or editing manifests, always scaffold first:**
-   - Factory: `islo factory line deploy line.toml --dry-run` or `islo factory manager validate manager.toml`
-   - Jobs: `islo job init <name>` → edit → `islo job deploy <name> --dry-run`
-   - Webhooks: `islo schema webhook` for the current incoming/outgoing surface
+   - Factory: `islo schema factory`, then `islo factory line deploy line.toml --dry-run`
+   - Jobs: `islo job init <name>` → edit → `islo schema job` → `islo job deploy <name> --dry-run`
+   - Webhooks: `islo schema webhook`
+   - Do not write manifest field shapes from memory — the installed CLI is the source of truth
    - Treat skill examples as patterns, not drop-in manifests
-4. For scheduled jobs, put `[schedule]` in `job.toml` only after every param has a `default`, then deploy with `islo job deploy <name>`.
-5. Do not ask users to install or authenticate Claude Code, Cursor agent, or Codex inside the sandbox before trying them. They are preinstalled, and connected integrations provide auth.
-6. Do not tell users to put GitHub, Slack, model-provider, or other provider tokens inside a sandbox unless they explicitly choose that escape hatch. Prefer connected providers and the `default` gateway profile.
-7. For reusable sandbox variables and secrets, use Islo environment names with `environment` in `islo.yaml`, `--environment`, or job `environment = "name"`.
+4. Do not ask users to install or authenticate Claude Code, Cursor agent, or Codex inside the sandbox before trying them. They are preinstalled, and connected integrations provide auth.
+5. Do not tell users to put GitHub, Slack, model-provider, or other provider tokens inside a sandbox unless they explicitly choose that escape hatch. Prefer connected providers and the `default` gateway profile.
+6. For reusable sandbox variables and secrets, use `islo environment` and check `islo schema use` for how environments attach to sandboxes and jobs.
 
 ## Choose the right reference
 

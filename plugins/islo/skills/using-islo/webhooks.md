@@ -1,30 +1,21 @@
 # Webhooks
 
-Use this reference for lower-level incoming and outgoing webhooks. Factory lines can also be triggered by webhook or integration events — see `factory.md` for line-level triggers.
+Use this reference for lower-level incoming and outgoing webhooks. Factory lines can also be triggered by webhook or integration events — see `factory.md`.
 
-## Incoming webhooks
-
-Incoming webhooks react to external HTTP events (GitHub, Stripe, Slack, custom services).
-
-Discovery:
+## Discovery
 
 ```bash
 islo schema webhook
 islo webhook incoming --help
 ```
 
-### Actions
+Do not write webhook config from memory. `islo schema webhook` includes the CLI surface and sandbox template shape.
 
-| Action | Purpose |
-|--------|---------|
-| `ensure-sandbox` | Create or ensure a sandbox from a template |
-| `resume-sandbox` | Resume a paused sandbox |
-| `pause-sandbox` | Pause a running sandbox |
-| `delete-sandbox` | Delete a sandbox |
-| `deliver-to-port` | Forward the request to a port inside a running sandbox |
-| `trigger-job` | Start a job run with params from the payload |
+## Incoming webhooks
 
-### Create example
+Incoming webhooks react to external HTTP events (GitHub, Stripe, Slack, custom services). Check `islo schema webhook` for available actions and configuration.
+
+### Create examples
 
 ```bash
 islo webhook incoming create \
@@ -40,8 +31,6 @@ islo webhook incoming create \
   --hmac-secret-value "$GITHUB_WEBHOOK_SECRET"
 ```
 
-Trigger a job from an incoming webhook:
-
 ```bash
 islo webhook incoming create \
   --name trigger-review \
@@ -49,12 +38,6 @@ islo webhook incoming create \
   --job-name pr-review \
   --path /webhooks/review
 ```
-
-### Sandbox template fields
-
-For `ensure-sandbox`, the sandbox template requires `image`, `vcpus`, `memory_mb`, and `disk_gb`. See `islo schema webhook` for the full `IncomingWebhookSandboxTemplate` schema including `init`, `lifecycle`, `sources`, `snapshot_name`, and `setup_scripts`.
-
-Default image: `ghcr.io/islo-labs/islo-runner:latest`
 
 ### Management
 
@@ -64,11 +47,11 @@ islo webhook incoming get <id>
 islo webhook incoming rm <id> --force
 ```
 
-Use `--output json` for structured output. Use `--request-json` or `--request-toml` for full configuration when the CLI flags are not enough.
+Use `--output json` for structured output. Use `--request-json` or `--request-toml` when CLI flags are not enough.
 
 ## Outgoing webhooks
 
-Outgoing webhooks send HTTP notifications from job steps or automation events. Check `islo schema webhook` and docs MCP for the current outgoing surface.
+Check `islo schema webhook` and docs MCP for the current outgoing surface.
 
 ## Auth separation
 
@@ -78,14 +61,14 @@ Incoming webhook secrets verify the **sender** (HMAC, bearer, basic auth). Outbo
 
 | | Factory line webhook trigger | Incoming webhook |
 |--|------------------------------|------------------|
-| **Config** | `[trigger] type = "webhook"` in `line.toml` | `islo webhook incoming create` |
+| **Setup** | Deploy a line with a webhook trigger | `islo webhook incoming create` |
 | **Target** | Starts a line run | Sandbox lifecycle, port delivery, or job trigger |
 | **Use when** | Multi-stage orchestration needed | Simple event → sandbox or single job |
 
-For integration-triggered lines (GitHub PR opened, Linear issue updated), use `integration_trigger` in `line.toml` instead. See `factory.md`.
+For integration-triggered lines (GitHub PR opened, Linear issue updated), use a Factory line with an integration trigger. See `factory.md` and `islo schema factory`.
 
 ## Things to avoid
 
 - Do not store webhook HMAC secrets or provider API tokens in job params or sandbox env.
 - Do not use incoming webhooks for multi-stage orchestration when a Factory line is the right abstraction.
-- Do not assume webhook CLI flags from memory — run `islo schema webhook` for the current surface.
+- Do not assume webhook flags or template fields from memory — run `islo schema webhook`.

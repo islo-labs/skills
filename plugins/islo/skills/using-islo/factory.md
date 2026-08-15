@@ -1,175 +1,70 @@
 # Factory lines
 
-Use this reference for `manager.toml`, `line.toml`, stages, transitions, decisions, triggers, deploy, and line runs.
-
-Factory is Islo's orchestration layer. **Jobs** are stage-level work units. **Lines** wire jobs through stages, transitions, and optional manager decisions. **Managers** define the decision agent for pause points.
+Use this reference for Factory managers, lines, deploy, and line runs. For manifest field shapes, use `islo schema factory` and validate with `--dry-run` — do not write manifests from memory.
 
 ## Mental model
 
 ```text
-manager.toml  →  decision agent identity (harness + model + instructions)
-job.toml      →  one stage's work (sandbox + steps, including run_agent)
-line.toml     →  orchestration graph (stages, transitions, triggers, limits)
+manager.toml  →  decision agent identity for line pause points
+job.toml      →  one stage's work (deploy separately)
+line.toml     →  orchestration graph (stages, transitions, triggers)
 ```
 
-Deploy order:
+Factory is Islo's orchestration layer. **Jobs** are stage-level work units. **Lines** wire jobs through stages, transitions, and optional manager decisions. **Managers** define the decision agent for pause points.
+
+## Deploy order
 
 1. Deploy each job referenced by line stages: `islo job deploy <name>`
 2. Deploy the manager: `islo factory manager deploy manager.toml`
-3. Validate, then deploy the line: `islo factory line deploy line.toml --dry-run` → `islo factory line deploy line.toml`
+3. Validate, then deploy the line:
+   ```bash
+   islo factory line deploy line.toml --dry-run
+   islo factory line deploy line.toml
+   ```
 
 The first stage's job defines the line's external input contract. Later stages receive params from transition mappings or job defaults.
 
-## Manager manifest (`manager.toml`)
+## Discovery
 
-```toml
-[manager]
-name = "pr-review-agent"
-harness = "claude"
-model = "claude-sonnet-4-6"
-
-[manager.instructions]
-text = """
-You help operators decide what to do when a line stage needs human or agent judgment.
-"""
+```bash
+islo schema factory
+islo factory --help
+ISLO_HELP=full islo factory
 ```
 
-CLI:
+## Manager workflow
+
+Managers are the decision agent for a line. Deploy and validate before referencing a manager from a line:
 
 ```bash
 islo factory manager validate manager.toml
 islo factory manager deploy manager.toml
 islo factory manager list
-islo factory manager get pr-review-agent
+islo factory manager get <name>
 ```
 
-## Line manifest (`line.toml`)
-
-```toml
-[line]
-name = "pr-review"
-description = "Review a PR, fix if needed, loop until approved"
-
-[manager]
-ref = "pr-review-agent"
-
-[trigger]
-type = "manual"   # manual | webhook | schedule | integration_trigger
-
-[[stages]]
-id = "review"
-job = "pr-review-job"
-
-[[stages]]
-id = "fix"
-job = "pr-fix-job"
-
-[[transitions]]
-from = "review"
-to = "fix"
-when = "result.outputs.passed == false"
-label = "needs work"
-max_iterations = 3
-
-[transitions.params]
-pr_number = { source = "inputs.pr_number" }
-summary = { source = "outputs.review.summary" }
-
-[[transitions]]
-from = "fix"
-to = "review"
-when = "always"
-
-[[decisions]]
-after_stage = "review"
-when = "exhausted(review:fix:result.outputs.passed == false)"
-manager = "pr-review-agent"
-allowed_actions = ["retry-stage", "stop", "cancel"]
-
-[limits]
-max_iterations = 10
-timeout = "1h"
-```
-
-### Stages
-
-- Each stage runs one job per visit.
-- `id` must be unique; use `[a-zA-Z0-9_-]`, 1–63 chars.
-- `job` references a deployed job name.
-- Optional `job_version_id` pins a specific job version.
-
-### Transitions
-
-- `from` / `to` reference stage ids or `done` (terminal).
-- `when` expressions:
-  - `""`, `"true"`, `"always"` — always match
-  - `result.<path> == <literal>` or `!=`
-  - bare `result.<path>` — truthy check
-  - job outputs: `result.outputs.<name>`
-- `params` wire inputs to the target stage job:
-  - `{ source = "inputs.<param>" }` — from line run entry params
-  - `{ source = "outputs.<stage_id>.<output>" }` — from a prior stage
-  - `{ value = <literal> }` — inline value
-- `max_iterations` caps loop trips on that transition.
-- Transition id defaults to `{from}:{to}:{when}` if omitted.
-
-### Decisions
-
-- Fire when no transition matches or a loop is exhausted.
-- `when = "exhausted(<transition_id>)"` for capped loops.
-- `allowed_actions`: `stop`, `complete`, `done`, `cancel`, `retry-stage`, `rerun-from-stage`, `follow-up`.
-
-### Triggers
-
-| Type | Use |
-|------|-----|
-| `manual` | Operator or API run with entry params |
-| `webhook` | `POST /factory/lines/{name}/webhook` |
-| `schedule` | Cron; entry job must run with `{}` params (all params need defaults) |
-| `integration_trigger` | GitHub, Linear, Slack events with selector + filters |
-
-Schedule example:
-
-```toml
-[trigger]
-type = "schedule"
-cron = "0 9 * * *"
-timezone = "UTC"
-```
-
-## CLI workflow
+## Line workflow
 
 ```bash
 islo factory line validate line.toml
 islo factory line deploy line.toml --dry-run
 islo factory line deploy line.toml
 islo factory line list
-islo factory line get pr-review
-islo factory line run pr-review --param repo=org/repo --param pr_number=42
-islo factory line runs pr-review
+islo factory line get <name>
+islo factory line run <name> --param KEY=VALUE
+islo factory line runs <name>
 islo factory line status <run-id>
 ```
 
+## Triggers
+
+Factory lines can start manually, on a schedule, via webhook, or from integration events (GitHub, Linear, Slack). Check `islo schema factory` for the current trigger types and wiring.
+
+For standalone HTTP ingress without line orchestration, see `webhooks.md`.
+
 ## Shared sandbox across stages
 
-Use `mode = "ensure"` with a stable sandbox name in each stage job so later stages see earlier work:
-
-```toml
-[run.sandbox]
-mode = "ensure"
-name = "pr-42"
-image = "ghcr.io/islo-labs/islo-runner:latest"
-gateway_profile = "default"
-```
-
-## Common validation failures
-
-- Line `name` must match the deploy path name.
-- `manager.ref` must reference a deployed manager.
-- Each stage `job` must exist.
-- Transition `when` referencing `result.outputs.X` requires the source job to declare output `X`.
-- Transition `params` must satisfy the target job's required params.
-- Schedule triggers require entry job params to have defaults.
+When stages should share workspace state, configure the stage jobs to reuse the same sandbox. Check `islo schema job` for sandbox `mode` options and `islo schema factory` for how stages reference jobs.
 
 ## When to use jobs or webhooks directly
 
@@ -177,4 +72,9 @@ gateway_profile = "default"
 - **HTTP ingress without orchestration** — an incoming webhook alone may be enough. See `webhooks.md`.
 - **Multi-stage, loops, decisions, or integration triggers** — use a Factory line.
 
-For harness and model selection in job stages and managers, see `agents-and-inference.md`.
+For harness and model selection, see `agents-and-inference.md`.
+
+## Things to avoid
+
+- Do not write `line.toml`, `manager.toml`, or stage `job.toml` from memory. Use `islo schema factory`, `islo schema job`, and `--dry-run`.
+- Do not build multi-stage orchestration in shell when a Factory line handles routing, loops, and decisions.

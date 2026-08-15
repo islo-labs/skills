@@ -1,14 +1,13 @@
 # Knowledge
 
-Use this reference for tenant knowledge items — memories, skills, and rules that agent-powered job stages and Factory managers can reference.
+Use this reference for tenant knowledge items — memories, skills, and rules that agent-powered job stages can reference.
 
-## Levels
+## Discovery
 
-| Level | Purpose |
-|-------|---------|
-| `memory` | Persistent context the agent should remember |
-| `skill` | Reusable capability or workflow instructions |
-| `rule` | Policy or constraint the agent must follow |
+```bash
+islo schema knowledge
+islo knowledge --help
+```
 
 ## CLI
 
@@ -23,43 +22,21 @@ islo knowledge delete <identifier> --force
 islo knowledge render --repo owner/repo --tag policy
 ```
 
-Use `--output json` for structured output. Identifiers are lowercase, hyphen-separated, and immutable after creation.
+Use `--output json` for structured output.
 
-## Using knowledge in jobs
+## Using knowledge in jobs and Factory
 
-Session-mode `run_agent` steps on `claude` or `codex` can reference knowledge by slug:
-
-```toml
-[[run.tasks.steps]]
-type = "run_agent"
-mode = "session"
-harness = "claude"
-prompt = "Review this PR following our policies."
-knowledge = ["auth-rules", "pr-policy"]
-```
-
-Or use `prompt_ref` to reference a knowledge item as the prompt body:
-
-```toml
-[[run.tasks.steps]]
-type = "run_agent"
-mode = "session"
-harness = "claude"
-prompt_ref = "pr-review-prompt"
-knowledge = ["pr-policy"]
-```
-
-## Using knowledge in Factory
-
-- Attach knowledge to stage job `run_agent` steps (see above).
-- Manager instructions in `manager.toml` can reference policies inline; link knowledge items to keep instructions maintainable.
+- Attach knowledge to agent-powered job stages instead of embedding long policy text in manifests.
+- Manager instructions can reference policies inline; knowledge items keep instructions reusable across jobs and lines.
 - The Factory UI renders knowledge-backed prompts in the line description view.
+
+Check `islo schema job` for how knowledge links into agent steps.
 
 ## Linking
 
-Items can be linked to repositories (`--repo owner/repo`) and tags (`--tag auth`). Use `islo knowledge render` to concatenate matching bodies as Markdown for a given repo and tag filter.
+Items can be linked to repositories and tags. Use `islo knowledge render` to concatenate matching bodies as Markdown for a given repo and tag filter. Check `islo schema knowledge` for level and linking options.
 
 ## Things to avoid
 
-- Do not embed long policy text directly in `job.toml` when a knowledge item keeps it reusable across jobs and lines.
-- Knowledge is supported on `claude` and `codex` harnesses only — not `cursor` or `custom`.
+- Do not embed long policy text directly in manifests when a knowledge item keeps it reusable.
+- Do not assume knowledge field shapes from memory — check `islo schema job`.

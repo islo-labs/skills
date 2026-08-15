@@ -49,12 +49,7 @@ islo gateway my-profile add-rule --host api.example.com --action allow --provide
 islo use <sandbox> --gateway-profile my-profile
 ```
 
-Set a non-default profile in `islo.yaml` only when the project needs it:
-
-```yaml
-gateway_profile: my-profile
-environment: production
-```
+Set a non-default profile or environment in `islo.yaml` only when the project needs it. Check `islo schema use` for the current shape.
 
 If you change gateway rules after a sandbox was created, recreate or reconnect the sandbox and retest.
 
