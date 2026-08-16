@@ -85,6 +85,8 @@ islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<messa
 islo factory line-run cancel <run-id> --reason "<reason>"
 ```
 
+`line-run status` and `line-run events` now surface a step-level timeline for the currently running stage, not just stage-level completion — poll these to watch live progress instead of shelling into the stage sandbox.
+
 ## Transitions
 
 Line routing uses typed transitions declared in `line.toml`. Check `islo schema factory` for the full condition AST and param bindings.

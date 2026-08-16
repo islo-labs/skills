@@ -83,6 +83,8 @@ islo job versions <name>
 islo job rm <name>
 ```
 
+`islo job status <name> <run-id>` includes an in-progress step timeline, not just the final result — use it to watch a run's steps live instead of polling logs.
+
 ## Scheduled jobs
 
 Scheduled jobs use a schedule section in `job.toml`. Deploy updates the schedule on the control plane. Check `islo schema job` for schedule fields, enable/disable behavior, and param-default requirements before adding one.
