@@ -134,7 +134,7 @@ When stages should share workspace state, configure the stage jobs to reuse the 
 
 ## Recipes and templates
 
-Runnable job and Factory line examples live in [`islo-labs/islo-agents`](https://github.com/islo-labs/islo-agents), including lines under `lines/`. See `templates.md` for how to adopt them.
+Runnable job and Factory line examples live in [`islo-labs/islo-agents`](https://github.com/islo-labs/islo-agents), including lines under `lines/`.
 
 ## Escape hatches
 

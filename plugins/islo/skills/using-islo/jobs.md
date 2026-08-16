@@ -39,7 +39,7 @@ Use session-mode `run_agent` steps. Check `islo schema job` for harness, model, 
 
 Do not shell-wrap `claude`, `agent`, or `codex` CLI entrypoints in exec steps when `run_agent` is available.
 
-For runnable examples, see `templates.md` and `https://github.com/islo-labs/islo-agents`.
+For runnable examples, see [`islo-labs/islo-agents`](https://github.com/islo-labs/islo-agents).
 
 ## Params and runs
 

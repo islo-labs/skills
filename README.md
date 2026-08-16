@@ -75,8 +75,7 @@ plugins/islo/skills/using-islo/
 ├── knowledge.md            # tenant knowledge items
 ├── sandbox-lifecycle.md
 ├── gateway-integrations.md
-├── sdk.md
-└── templates.md
+└── sdk.md
 ```
 
 Start with `SKILL.md`. It loads the focused references only when the user asks about that part of Islo.

@@ -40,7 +40,7 @@ Islo gives agents secure cloud sandboxes, **Factory lines** for multi-stage auto
 | Reusable policy, skills, or rules for agent steps | `islo knowledge` — `knowledge.md` |
 | Provider credentials without tokens in sandbox | `gateway-integrations.md` |
 | Product integration in code | SDK — `sdk.md` |
-| Runnable starting points | `templates.md` and `https://github.com/islo-labs/islo-agents` |
+| Runnable starting points | `factory.md` — [`islo-labs/islo-agents`](https://github.com/islo-labs/islo-agents) |
 | Standalone single-stage job (advanced) | Job — `jobs.md` |
 
 **Default recommendation:** use a Factory line for automation. Jobs are stage building blocks inside lines — users rarely author `job.toml` directly unless they explicitly want a single-stage durable or scheduled run without line orchestration.
@@ -55,7 +55,7 @@ Islo gives agents secure cloud sandboxes, **Factory lines** for multi-stage auto
 - **Sandbox create/connect/exec/pause/resume/stop/delete flows:** read `sandbox-lifecycle.md`.
 - **Gateway profiles, provider integrations, phantom tokens, GitHub, Slack, and no-token-in-sandbox patterns:** read `gateway-integrations.md`.
 - **Programmatic usage with generated SDKs instead of shelling out to the CLI:** read `sdk.md`.
-- **Runnable automation examples (e.g. PR review):** read `templates.md`.
+- **Runnable automation examples (e.g. PR review):** read `factory.md`.
 
 ## Working rules
 
