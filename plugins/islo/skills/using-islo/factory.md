@@ -134,13 +134,7 @@ When stages should share workspace state, configure the stage jobs to reuse the 
 
 ## Recipes and templates
 
-The Islo UI includes built-in Factory recipes (PR review, bug fix, QA, CI fix). For runnable template repos:
-
-```text
-https://github.com/islo-labs/islo-agents
-```
-
-See `templates.md` for how to adopt templates.
+Runnable job and Factory line examples live in [`islo-labs/islo-agents`](https://github.com/islo-labs/islo-agents), including lines under `lines/`.
 
 ## Escape hatches
 
