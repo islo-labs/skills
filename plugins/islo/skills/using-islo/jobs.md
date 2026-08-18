@@ -55,6 +55,30 @@ For runnable examples, see [`islo-labs/islo-agents`](https://github.com/islo-lab
 - Do not hand-write sandbox provisioning fields from memory. Use `islo job init` and `islo schema job`.
 - Use the platform default image (`ghcr.io/islo-labs/islo-runner:latest`) or a fully qualified image reference — not unqualified image names.
 
+## Harness and scripts in snapshots
+
+When a stage job runs **harness code** (Python servers, CLIs, test runners, bundled assets), that code must live in a **sandbox snapshot**, not inside `job.toml`.
+
+| Do | Don't |
+|----|-------|
+| Keep harness source in the line repo under `snapshot-src/` (or equivalent) | Embed harness in `job.toml` via **base64** tarballs or blobs |
+| Build a snapshot (e.g. `voice-qa-baseline`) with files at a fixed path like `/workspace/<line>/` | Giant **heredoc bootstrap** steps that copy Python/JS into the VM on every run |
+| Set `snapshot_name` on `[run.sandbox]` and run harness with short `exec` steps | Ship harness only in deploy-time generated job manifests |
+
+Prompts for `run_agent` steps, declared `outputs`, and orchestration shell glue are fine in `job.toml`. **Executable harness trees and scenario assets belong in the snapshot.**
+
+Typical layout in a Factory line repo:
+
+```text
+<line>/
+  snapshot-src/setup-snapshot.sh   # rsync harness into /workspace on a build VM
+  harness/                       # source of truth (dev + snapshot build)
+  jobs/<stage>/job.toml            # snapshot_name + exec; no harness bytes
+  line.toml
+```
+
+After harness edits: rebuild the snapshot, then `islo job deploy` / `islo factory line deploy`. See `sandbox-lifecycle.md` for `islo snapshot save`.
+
 ## Example workflow: Linear ticket → Slack summary
 
 Narrative pattern (not a drop-in manifest):
@@ -98,3 +122,4 @@ Scheduled jobs use a schedule section in `job.toml`. Deploy updates the schedule
 - Do not turn a one-off shell command into a job unless it needs repeatability, scheduling, or auditability.
 - Do not replace agent judgment with hand-written shell business logic or shell-wrapped agent CLIs.
 - Do not put provider tokens in job params or sandbox env by default.
+- Do not package harness code in `job.toml` (base64, tarballs, or multi-hundred-line heredocs). Put harness in a snapshot and reference `snapshot_name`.
