@@ -132,6 +132,12 @@ Attach tenant knowledge to agent-powered stage jobs via `run_agent` prompt or kn
 
 When stages should share workspace state, configure the stage jobs to reuse the same sandbox. Check `islo schema job` for sandbox `mode` options.
 
+## Harness code in line snapshots
+
+Factory lines that run **harness code** (HTTP servers, CLIs, Playwright trees, scenario YAML) must ship that code in a **sandbox snapshot** referenced by stage jobs (`snapshot_name` on `[run.sandbox]`). The line/job repo holds harness source under `snapshot-src/`; `job.toml` stays thin — prompts, params, `run_agent`, and short `exec` steps only.
+
+**Never** embed harness in `job.toml` with base64 blobs or bootstrap heredocs. That bloats manifests, hides diffs, and breaks the snapshot model. See **Harness and scripts in snapshots** in `jobs.md`.
+
 ## Recipes and templates
 
 Runnable job and Factory line examples live in [`islo-labs/islo-agents`](https://github.com/islo-labs/islo-agents), including lines under `lines/`.
@@ -151,3 +157,4 @@ Users rarely need these. Prefer a Factory line first.
 - Do not put provider tokens in manifests or sandbox env by default.
 - Do not replace agent judgment with hand-written shell business logic or shell-wrapped agent CLIs.
 - Do not hardcode inference model lists — query `/inference/models`.
+- Do not embed harness scripts or assets in `job.toml` (base64 or heredoc bootstrap). Use a line snapshot — see **Harness code in line snapshots** above.
