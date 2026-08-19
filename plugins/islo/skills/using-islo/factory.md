@@ -13,7 +13,7 @@ line.toml     →  orchestration graph (stages, transitions, triggers)
 
 **Default recommendation:** when automation spans multiple stages, needs routing or loops, runs on a schedule or integration event, or requires decision points — build a Factory line. Use jobs or webhooks directly only for simpler, single-purpose work.
 
-When a run pauses for a decision, the operator or line routing agent continues it — retry a stage, send another agent turn, or cancel.
+When a run pauses for a decision, the operator or line routing agent can provide follow-up input. Operators can also stop active work, steer a parked or completed run to a stage, or retry its latest failed stage.
 
 ## Workflow
 
@@ -78,12 +78,14 @@ Inspect and control a run after `islo factory line run`:
 ```bash
 islo factory line-run status <run-id>
 islo factory line-run events <run-id>
-islo factory line-run retry-stage <run-id> --stage-name <stage> --reason "<reason>"
-islo factory line-run rerun-from-stage <run-id> --stage-name <stage> --reason "<reason>"
+islo factory line-run stop <run-id> --reason "<reason>"
+islo factory line-run steer <run-id> <stage> --param KEY=VALUE
+islo factory line-run retry <run-id>
 islo factory line-run follow-up <run-id> --stage-name <stage> --reason "<reason>"
 islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<message>"
-islo factory line-run cancel <run-id> --reason "<reason>"
 ```
+
+`stop` interrupts active stage work and parks the line without terminal cancellation. `steer` does not interrupt an active line: stop it first, wait until its status is `stopped`, then steer it. `retry` is shorthand for continuing a failed line from its latest failed stage.
 
 ## Transitions
 
@@ -98,7 +100,7 @@ Every line needs exactly one entry transition from `trigger` with an always-when
 
 ## Decision pauses
 
-A line run can pause when routing is ambiguous, a loop is exhausted, or an operator needs to weigh in. Continue the run with `islo factory line-run` commands above.
+A line run can pause when routing is ambiguous, a loop is exhausted, or an operator needs to weigh in. Use `follow-up` at a pending decision. Use `stop` and then `steer` when active work needs to be redirected, or `retry` after a stage failure.
 
 Optional per-line instructions for the product-managed line routing agent go in `agent.instructions` per `islo schema factory` (`literal` or `knowledge` bindings). They guide routing for this line; they do not replace stage job prompts.
 
