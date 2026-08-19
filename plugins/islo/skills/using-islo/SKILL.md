@@ -66,7 +66,7 @@ Islo gives agents secure cloud sandboxes, **Factory lines** for multi-stage auto
 - For reusable sandbox environment variables or environment-owned gateway-injected secrets, use `islo environment` to manage a named environment and `islo use --environment <name>` to apply it at sandbox creation.
 - For agent work in sandboxes, prefer `islo use --agent claude`, `islo use --agent cursor`, or `islo use --agent codex`; use `--task` for a background prompt.
 - For agent work in Factory stage jobs, prefer `run_agent` steps with nested prompt bindings per `islo schema job`. Do not shell-wrap `claude`, `agent`, or `codex` CLI entrypoints unless `islo schema job` shows an exec-mode path that requires it.
-- For Factory line run control after a run starts, use `islo factory line-run` (`status`, `events`, `retry-stage`, `agent-turn`, `cancel`).
+- For Factory line run control after a run starts, use `islo factory line-run` (`status`, `events`, `stop`, `steer`, `retry`, `follow-up`, `agent-turn`). `stop` parks rather than terminally cancels a line; steer only parked or completed runs, and use `retry` for the latest failed stage.
 - For judgment-heavy automation, run an agent inside the job stage or sandbox. Do not replace the agent with hand-written shell business logic.
 - Harness code (servers, CLIs, scenario assets) lives in **sandbox snapshots** referenced by stage jobs — never base64 or heredoc bootstrap in `job.toml`. See `jobs.md` and `factory.md`.
 - For internal tools, dashboards, and custom launchers, prefer the SDK.

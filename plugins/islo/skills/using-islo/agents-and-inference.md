@@ -25,7 +25,7 @@ Within a Factory line, harness and model are set on **stage jobs** (`run_agent` 
 
 ## Line interaction at decision pauses
 
-A line run can pause when routing is ambiguous, a loop is exhausted, or an operator needs to weigh in. Continue the run with `islo factory line-run` commands (`retry-stage`, `agent-turn`, `cancel`). Optional per-line routing instructions are set in `line.toml` per `islo schema factory` — see `factory.md`.
+A line run can pause when routing is ambiguous, a loop is exhausted, or an operator needs to weigh in. Use `islo factory line-run follow-up` at a pending decision. Use `stop` and then `steer` to redirect active work, `retry` for the latest failed stage, or `agent-turn` to continue a successful stage's agent session. Optional per-line routing instructions are set in `line.toml` per `islo schema factory` — see `factory.md`.
 
 ## Picking a harness
 
@@ -74,7 +74,7 @@ islo factory line deploy line.toml
 islo factory line run pr-review-line --param repo=org/repo --param pr_number=42
 ```
 
-For multi-stage lines, each stage job can use `codex` + an inference model the same way. Optional per-line routing instructions go in `agent.instructions` per `islo schema factory` — see `factory.md`. At decision pauses, use `islo factory line-run retry-stage`, `agent-turn`, or `cancel`.
+For multi-stage lines, each stage job can use `codex` + an inference model the same way. Optional per-line routing instructions go in `agent.instructions` per `islo schema factory` — see `factory.md`. At decision pauses, use `islo factory line-run follow-up`; use `stop`, `steer`, and `retry` for execution control.
 
 ## Islo inference vs provider-managed
 
