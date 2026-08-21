@@ -79,6 +79,16 @@ Typical layout in a Factory line repo:
 
 After harness edits: rebuild the snapshot, then `islo job deploy` / `islo factory line deploy`. See `sandbox-lifecycle.md` for `islo snapshot save`.
 
+## Claude context hygiene (large monorepos)
+
+Some repos ship bulky `.claude/` trees or marketplace plugins that blow past inference context on turn 1. Before `run_agent`, add a short `exec` step that:
+
+1. Clears auto-enabled marketplace plugins in `.claude/settings.json` (`enabledPlugins`, `extraKnownMarketplaces`).
+2. Parks bulky `.claude/{commands,agents}` (and optional rules subtrees) to a temp directory.
+3. Keeps high-signal rules and curated knowledge bindings.
+
+Restore specific skills on demand inside the agent prompt when a task needs them — do not re-enable the full marketplace at session start. Pair with Islo **knowledge** items for conventions the agent always needs.
+
 ## Example workflow: Linear ticket → Slack summary
 
 Narrative pattern (not a drop-in manifest):
