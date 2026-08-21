@@ -130,9 +130,57 @@ Query `GET /inference/models` for current Islo inference models rather than hard
 
 Attach tenant knowledge to agent-powered stage jobs via `run_agent` prompt or knowledge bindings — see `knowledge.md`. Check `islo schema job` for binding shapes.
 
+## Deploy order
+
+Deploy **every stage job first**, then the line. The line pins `job_version_id` at deploy time — deploying a job alone does not refresh what an already-deployed line runs.
+
+```bash
+islo job deploy stage-a --dry-run && islo job deploy stage-a
+islo job deploy stage-b --dry-run && islo job deploy stage-b
+islo factory line deploy line.toml --dry-run && islo factory line deploy line.toml
+```
+
+## Sandbox modes across stages
+
+| Mode | Use when |
+|------|----------|
+| `provision` + `teardown_on_complete = true` | One-shot stage jobs; fresh env every run; hand off via git branch or typed outputs |
+| `ensure` + named sandbox | Multiple stages intentionally share one VM and workspace |
+| `session` on `run_agent` | Resume agent turns within a sandbox that supports sessions (`ensure` / reuse) |
+
+Prefer **provision per stage** when stages only need a pushed branch — avoids stale env from `ensure` reconnects and delete/create races.
+
+## Failure routing
+
+Use **conditional** transitions to route hard failures to `done` when no human decision is wanted:
+
+```toml
+[transitions.when]
+left = { type = "stage", path = "$.status" }
+op = "eq"
+right = { type = "literal", value = "failed" }
+```
+
+Use **`agentic`** transitions only when the line routing agent (or operator) should choose retry vs cancel. For automated loops, use conditional transitions with `max_iterations` on the back-edge.
+
+## Multi-stage verify loops
+
+Common pattern for agent implement → review → verify → open-pr:
+
+```text
+implement → review → verify → open-pr → done
+     ↑_________|         ↑_______|
+   review_feedback    verify_feedback
+```
+
+- **Implement** pushes a branch; does not open a PR until verify passes.
+- **Review** checks diff vs acceptance criteria (no full CI).
+- **Verify** runs CI-equivalent checks.
+- Pass feedback from review/verify outputs into the next implement run via transition param mappings (`type = "output"`, `stage = "review"`, `name = "feedback"`).
+
 ## Shared sandbox across stages
 
-When stages should share workspace state, configure the stage jobs to reuse the same sandbox. Check `islo schema job` for sandbox `mode` options.
+When stages should share workspace state, configure the stage jobs to reuse the same sandbox (`ensure`). Check `islo schema job` for sandbox `mode` options.
 
 ## Harness code in line snapshots
 
