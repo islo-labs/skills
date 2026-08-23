@@ -1,0 +1,8 @@
+# line-run verbs documented ahead of the islo-cli rename release
+# (cancel->stop, retry-stage->retry, rerun-from-stage->steer, agent-turn->ask).
+# Delete each entry once the installed CLI ships it; the validator fails on
+# stale entries.
+factory line-run stop
+factory line-run retry
+factory line-run steer
+factory line-run ask
