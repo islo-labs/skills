@@ -21,3 +21,20 @@ jobs:
           else
             echo "templates not pinned yet; skipping drift check"
           fi
+
+  skills:
+    runs-on: ubuntu-latest
+    env:
+      ISLO_API_KEY: ${{ secrets.ISLO_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate skill commands and manifest examples against the islo CLI
+        run: |
+          if [ -z "$ISLO_API_KEY" ]; then
+            echo "ISLO_API_KEY secret not set; skipping CLI-backed validation (run locally instead)"
+            exit 0
+          fi
+          curl -fsSL https://islo.dev/install.sh | bash
+          export PATH="$HOME/.islo/bin:$PATH"
+          bash plugins/islo/skills/factory-lines/scripts/validate_commands.sh
+          bash plugins/islo/skills/factory-lines/scripts/validate_examples.sh
