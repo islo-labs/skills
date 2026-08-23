@@ -65,20 +65,23 @@ Agents that support the common plugin layout can load `plugins/islo`. Agents tha
 
 ## Contents
 
+The plugin ships two skills:
+
 ```text
-plugins/islo/skills/using-islo/
-├── SKILL.md
-├── factory.md              # Factory lines: workflow, transitions, triggers, line-run
-├── agents-and-inference.md # harness, model, Islo inference
-├── jobs.md                 # lower-level job.toml reference
-├── webhooks.md             # lower-level incoming/outgoing webhooks
-├── knowledge.md            # tenant knowledge items
-├── sandbox-lifecycle.md
-├── gateway-integrations.md
-└── sdk.md
+plugins/islo/skills/
+├── factory-lines/            # TASK skill: create and operate factory lines
+│   ├── SKILL.md              # router + iron rules
+│   ├── references/           # create-a-line workflow, manifest anatomy, triggers,
+│   │                         # run control and debugging, harness/model/knowledge
+│   ├── templates/            # synced from islo-labs/islo-agents at a pinned ref
+│   └── scripts/              # validate_commands.sh, validate_examples.sh, sync_templates.sh
+└── platform/                 # REFERENCE skill: Islo infrastructure
+    ├── SKILL.md
+    └── references/           # sandboxes and snapshots, gateway integrations,
+                              # webhooks and SDK, knowledge
 ```
 
-Start with `SKILL.md`. It loads the focused references only when the user asks about that part of Islo.
+Each SKILL.md is a router that loads a focused reference only when the task needs it.
 
 ## Updating skills in sandboxes
 
@@ -99,17 +102,20 @@ npx skills add islo-labs/skills -y --copy --all
 
 ## Development
 
-Keep the skill concise and move details into one-level reference files. Before publishing, validate JSON and check that the expected terms are present:
+Keep each SKILL.md a lean router and move details into one-level reference files. CI runs these; run them locally before publishing:
 
 ```bash
-python -m json.tool .mcp.json
-python -m json.tool .cursor-plugin/marketplace.json
-python -m json.tool .claude-plugin/plugin.json
-python -m json.tool .claude-plugin/marketplace.json
-python -m json.tool .agents/plugins/marketplace.json
-python -m json.tool plugins/islo/plugin.json
-python -m json.tool plugins/islo/.cursor-plugin/plugin.json
-python -m json.tool plugins/islo/.claude-plugin/plugin.json
-python -m json.tool plugins/islo/.codex-plugin/plugin.json
-rg "https://docs.islo.dev/_mcp/server|using-islo|factory|islo factory|islo knowledge|islo webhook|islo job|islo use|@islo-labs/sdk|islo-agents" .
+python3 scripts/validate_manifest_shapes.py
+bash scripts/sync_plugin_manifests.sh --check
+bash plugins/islo/skills/factory-lines/scripts/validate_commands.sh
+bash plugins/islo/skills/factory-lines/scripts/validate_examples.sh
+bash plugins/islo/skills/factory-lines/scripts/sync_templates.sh --check
 ```
+
+The canonical plugin manifest is `plugins/islo/.claude-plugin/plugin.json`; edit it and run `scripts/sync_plugin_manifests.sh` to refresh the per-platform copies. Never hand-edit `factory-lines/templates/`; it is synced from islo-labs/islo-agents at the ref pinned in `templates/.pinned-ref`.
+
+## Release
+
+1. Bump `version` in `plugins/islo/.claude-plugin/plugin.json` and sync the copies.
+2. Merge to `islo-labs/skills` on GitHub.
+3. Rebuild `ghcr.io/islo-labs/islo-runner:latest` so new sandboxes ship the new skills (the installed cache lags until this happens).
