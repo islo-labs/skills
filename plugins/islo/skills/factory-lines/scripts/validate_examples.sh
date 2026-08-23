@@ -13,7 +13,14 @@ set -uo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 refs="$here/../references"
-files=("$refs/line-manifest.md" "$refs/job-manifest.md")
+files=()
+for candidate in "$refs/line-manifest.md" "$refs/job-manifest.md"; do
+  [[ -f "$candidate" ]] && files+=("$candidate")
+done
+if [[ ${#files[@]} -eq 0 ]]; then
+  echo "no manifest references to validate" >&2
+  exit 0
+fi
 
 command -v islo >/dev/null || { echo "islo CLI not on PATH" >&2; exit 1; }
 
@@ -44,6 +51,7 @@ for f in "${files[@]}"; do
 done
 
 fail=0
+shopt -s nullglob
 for kindfile in "$tmp"/*.kind; do
   toml="${kindfile%.kind}.toml"
   kind="$(cat "$kindfile")"

@@ -2,11 +2,6 @@
 # Validate every `islo ...` command in fenced bash blocks across both skills
 # against the installed CLI: the subcommand path must resolve and every --flag
 # must appear in that subcommand's --help output.
-#
-# scripts/pending_commands.txt lists subcommand paths documented ahead of a CLI
-# release (one per line, e.g. "factory line-run stop"). A command that fails
-# resolution but matches a pending entry reports PENDING, not FAIL. A pending
-# entry that now resolves FAILS the run: delete the stale entry.
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 exec python3 - "$here" <<'PY'
@@ -18,7 +13,6 @@ from pathlib import Path
 
 here = Path(sys.argv[1])
 skills_root = here.parent.parent
-pending_file = here / "pending_commands.txt"
 
 if subprocess.run(["which", "islo"], capture_output=True).returncode != 0:
     sys.exit("islo CLI not on PATH")
@@ -30,13 +24,6 @@ md_files = sorted(
 )
 if not md_files:
     sys.exit(f"no skill markdown found under {skills_root}")
-
-pending = []
-if pending_file.is_file():
-    for line in pending_file.read_text().splitlines():
-        line = line.strip()
-        if line and not line.startswith("#"):
-            pending.append(line)
 
 
 @lru_cache(maxsize=None)
@@ -79,10 +66,6 @@ for md in md_files:
                 words.append(t)
 
         full = " ".join(words)
-        match = next((p for p in pending if full.startswith(p)), None)
-        if match:
-            print(f"PENDING {rel}: islo {full} (awaiting CLI release: {match})")
-            continue
 
         # Resolve the deepest path the CLI recognizes; trailing words may be
         # positional values that only look like subcommands.
@@ -109,12 +92,6 @@ for md in md_files:
         if not bad:
             suffix = f" [{' '.join(flags)}]" if flags else ""
             print(f"ok   {rel}: islo {resolved or '<root>'}{suffix}")
-
-for p in pending:
-    ok, _ = get_help(p)
-    if ok:
-        print(f"FAIL stale pending entry (CLI now ships it): {p}")
-        fail = True
 
 sys.exit(1 if fail else 0)
 PY

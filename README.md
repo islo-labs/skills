@@ -73,8 +73,7 @@ plugins/islo/skills/
 │   ├── SKILL.md              # router + iron rules
 │   ├── references/           # create-a-line workflow, manifest anatomy, triggers,
 │   │                         # run control and debugging, harness/model/knowledge
-│   ├── templates/            # synced from islo-labs/islo-agents at a pinned ref
-│   └── scripts/              # validate_commands.sh, validate_examples.sh, sync_templates.sh
+│   └── scripts/              # validate_commands.sh, validate_examples.sh
 └── platform/                 # REFERENCE skill: Islo infrastructure
     ├── SKILL.md
     └── references/           # sandboxes and snapshots, gateway integrations,
@@ -109,10 +108,9 @@ python3 scripts/validate_manifest_shapes.py
 bash scripts/sync_plugin_manifests.sh --check
 bash plugins/islo/skills/factory-lines/scripts/validate_commands.sh
 bash plugins/islo/skills/factory-lines/scripts/validate_examples.sh
-bash plugins/islo/skills/factory-lines/scripts/sync_templates.sh --check
 ```
 
-The canonical plugin manifest is `plugins/islo/.claude-plugin/plugin.json`; edit it and run `scripts/sync_plugin_manifests.sh` to refresh the per-platform copies. Never hand-edit `factory-lines/templates/`; it is synced from islo-labs/islo-agents at the ref pinned in `templates/.pinned-ref`.
+The canonical plugin manifest is `plugins/islo/.claude-plugin/plugin.json`; edit it and run `scripts/sync_plugin_manifests.sh` to refresh the per-platform copies.
 
 ## Release
 

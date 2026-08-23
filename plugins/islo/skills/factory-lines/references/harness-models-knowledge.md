@@ -15,7 +15,7 @@ Session outputs (declared `outputs.*` set by the agent) require `claude`, `codex
 
 ## Models
 
-Never write a model id from memory. For Islo inference (`codex` harness), query the live list: `GET /inference/models` on the API, or the docs MCP server. For `claude` and `cursor`, the provider integration governs available models; omit `model` to take the harness default when the user has no preference.
+Never write a model id from memory. Query the live catalog (`GET /inference/models` on the API, or the docs MCP server) — it is the same list for every harness — and pick from that. Omit `model` only when the user has no preference and the harness default is acceptable.
 
 Islo inference routes through platform-owned credentials and bills the tenant credits; provider-managed harnesses call out through the gateway with the customer's connected credentials. The plumbing (inference URLs, gateway proxy, phantom tokens) is in the platform skill's gateway reference.
 

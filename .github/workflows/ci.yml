@@ -14,13 +14,6 @@ jobs:
         run: python3 scripts/validate_manifest_shapes.py
       - name: Check plugin manifest copies match canonical
         run: bash scripts/sync_plugin_manifests.sh --check
-      - name: Check templates match pinned islo-agents ref
-        run: |
-          if [ -f plugins/islo/skills/factory-lines/templates/.pinned-ref ]; then
-            bash plugins/islo/skills/factory-lines/scripts/sync_templates.sh --check
-          else
-            echo "templates not pinned yet; skipping drift check"
-          fi
 
   skills:
     runs-on: ubuntu-latest

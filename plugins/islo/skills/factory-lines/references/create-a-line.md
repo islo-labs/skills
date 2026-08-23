@@ -8,7 +8,6 @@ Run these before asking the user anything, so the questions are informed:
 
 ```bash
 islo status
-islo factory manager status
 islo schema factory --short
 islo schema job --short
 ```
@@ -44,8 +43,9 @@ Runtime profile (confirm or override):
 - Sandbox    the VM each stage runs in. Default: fresh per stage
              (provision + teardown); isolated, no stale state.
 - Snapshot   prebuilt sandbox image with your harness code. Default:
-             none; propose <line>-v1 from snapshot-src/ only if
-             stages run servers, test harnesses, or bundled assets.
+             none. Only propose one if the approved profile needs
+             servers, test harnesses, or bundled assets; then create
+             it with the platform skill before deploy.
 - Repos      what each stage's checkout step clones: <owner/repo,
              detected from the request or the current repo>. GitHub
              integration: <connected | not connected, run islo login
@@ -66,11 +66,11 @@ Present one summary and wait for explicit approval. Do not create, deploy, or sc
 
 ## Phase 3: author
 
-- Copy the nearest template from `templates/` and treat it as a pattern, not a drop-in.
+- Copy the nearest example from [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents) (`examples/`) and treat it as a pattern, not a drop-in. Clone or browse that repo if it is not already on disk.
 - `islo job init <name>` per stage. Add `--with-verification` on stages whose outputs gate transitions.
-- Write the `job.toml` files first: params and outputs are the line's contract. Then `line.toml`. See `job-manifest.md` and `line-manifest.md`.
-- Harness code (servers, test runners, assets) goes in `snapshot-src/` and a sandbox snapshot, referenced by `snapshot_name`. See the platform skill's sandboxes reference.
-- Repo skills and prompts stay in the repo: check it out with an idempotent fetch-or-clone exec step before the agent step (the pattern in `job-manifest.md`; the default gateway profile injects GitHub credentials) and keep the `run_agent` prompt a short literal, for example "Read and follow `.claude/skills/<x>/SKILL.md` in the checkout". Never copy procedural content into Knowledge; deploy rejects procedural knowledge.
+- Write the `job.toml` files first: params and outputs are the line's contract. Then `line.toml`. Confirm every field against `islo schema job --short` and `islo schema factory --short`; see `job-manifest.md` and `line-manifest.md` only for policy the schema does not state.
+- Do not create a snapshot unless the approved runtime profile named one. If it did, follow the platform skill's sandboxes reference, put harness code in `snapshot-src/`, and set `snapshot_name`.
+- Agent instructions: if the user's repo already contains skills, check it out with an idempotent fetch-or-clone exec step before the agent step (the pattern in `job-manifest.md`; the default gateway profile injects GitHub credentials) and keep the `run_agent` prompt a short literal pointing at that skill. If there is no repo, or the repo has no skills, write the prompt in the job. Never copy procedural content into Knowledge; deploy rejects procedural knowledge.
 
 ## Phase 4: static validation
 
@@ -104,7 +104,7 @@ islo job deploy --path jobs/<stage>/job.toml   # each stage
 islo factory line deploy line.toml             # last
 ```
 
-Schedule only via the manifest `[trigger]`; a schedule created any other way is reverted by the next deploy. If the manager is disabled, `islo factory manager enable`.
+Schedule only via the manifest `[trigger]`; a schedule created any other way is reverted by the next deploy.
 
 ## Phase 7: end-to-end verify
 
@@ -121,13 +121,8 @@ Integration lines: fire ONE real trigger event (post one message in the selected
 If no run appears:
 
 ```bash
-islo factory manager status
-islo factory manager runs
+islo factory line-run list --line <name>
 islo factory triggers list --with-status
 ```
 
 For failures and run control, see `run-control-and-debugging.md`.
-
-## Phase 8: handoff
-
-Generate `RUNBOOK.md` in the user's line directory: the deploy commands in order, the test-one-event procedure with its checklist, and the snapshot rebuild steps. The runbook is what makes the line operable by someone who was not in this session.

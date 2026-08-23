@@ -1,5 +1,0 @@
-# Subcommand paths documented ahead of a CLI release (one per line).
-# Delete each entry once the installed CLI ships it; the validator fails on
-# stale entries that already resolve.
-#
-# stop / retry / steer / follow-up / ask ship with islo-cli #522.
