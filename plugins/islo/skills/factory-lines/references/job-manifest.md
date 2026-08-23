@@ -109,6 +109,8 @@ session = "bug-fix-reproduce"
 
 **Repos carry prompts and skills.** Check the repo out with an idempotent fetch-or-clone exec step before the agent step, as in the example, and keep the `run_agent` prompt a short literal that points at the checked-out skill or prompt file. The `default` gateway profile injects `GH_TOKEN`/`GITHUB_TOKEN` on egress, so private clones need no token in the manifest. Do not copy procedural content into Islo Knowledge; deploy rejects procedural knowledge anyway. Warning: `sandbox.sources[]` validates (it is declared in the server schema) but is currently not implemented on the live platform, so the checkout silently never happens; do not use it until the backend fix ships.
 
+The safe checkout path depends on whether the agent's working tree shares the directory. When the snapshot pre-clones working repos under `/workspace/`, put prompt and skill checkouts in a separate directory (the templates use `/workspace/.islo-prompts/<repo>`) so a forced checkout can never discard an in-progress branch. When the working branch lives in the same checkout, as in the example above, fetch and branch without a force-checkout.
+
 **Schedules on standalone jobs** use a `[schedule]` section (cron, timezone, enabled) and require a default for every param. For a line, schedule the line trigger instead; see `triggers.md` and `standalone-jobs.md`.
 
 **Verification.** `islo job init <name> --with-verification` scaffolds the optional evaluation layer (`[verification] enabled = true`). Use it on stages whose outputs gate transitions.
