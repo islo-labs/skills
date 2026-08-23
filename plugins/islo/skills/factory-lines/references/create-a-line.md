@@ -26,18 +26,39 @@ Query live models for the candidate harness instead of recalling a list; see `ha
 Ask once, as one batch. Do not dribble questions across the conversation.
 
 1. Outcome and stage breakdown. 2 to 6 stages, one responsibility each. Propose a breakdown from the request and let the user correct it.
-2. Trigger. Manual, schedule (cron and timezone), webhook, or integration (provider, event, selector). See `triggers.md`.
-3. Harness per agent stage (claude, cursor, codex, custom) and model from the live list.
-4. Integrations needed and whether they are connected (`islo factory triggers list --with-status`, `islo status`).
-5. Sandbox strategy. Fresh per stage is the default; shared only when stages must hand off a live workspace. Snapshot needs for harness code.
-6. Limits: `max_iterations`, `timeout`, budget.
-7. Where results land: PR, Slack message, knowledge item, outputs.
+2. Trigger. Manual, schedule (cron and timezone), webhook, or integration (provider, event, selector), and whether the trigger's provider is connected (`islo factory triggers list --with-status`). See `triggers.md`.
+3. Runtime profile: ONE confirm-or-override block, not five questions. See below.
+4. Limits: `max_iterations`, `timeout`, budget.
+5. Where results land: PR, Slack message, knowledge item, outputs.
+
+### The runtime profile block
+
+Sandbox, snapshot, harness, model, and repositories are the five load-bearing runtime concepts of a line. Present them as one compact block for the whole line, splitting per stage only where stages genuinely differ. Each concept gets a one-line explanation and a prescriptive default with its rationale, filled in from Phase 0 (live models, `islo status` for the GitHub connection). End the block with a single question: confirm, or override any line.
+
+```text
+Runtime profile (confirm or override):
+- Harness    the agent CLI each stage runs. Default: codex
+             (Islo-managed inference, no provider key to wire).
+- Model      what the harness thinks with. Default: <recommended
+             from the live model list for that harness>.
+- Sandbox    the VM each stage runs in. Default: fresh per stage
+             (provision + teardown); isolated, no stale state.
+- Snapshot   prebuilt sandbox image with your harness code. Default:
+             none; propose <line>-v1 from snapshot-src/ only if
+             stages run servers, test harnesses, or bundled assets.
+- Repos      what stages check out via sandbox.sources[]: <owner/repo,
+             detected from the request or the current repo>. GitHub
+             integration: <connected | not connected, run islo login
+             --tool github>.
+```
+
+Do not re-ask any of the five separately afterward; an override lands in the design summary and that is where the user re-checks it.
 
 ## Phase 2: design summary and APPROVAL GATE
 
 Present one summary and wait for explicit approval. Do not create, deploy, or scaffold anything before it. The summary contains:
 
-- Stage table: id, job name, harness/model, sandbox mode.
+- Stage table: id, job name, description, and a runtime line per stage in the form `harness / model / sandbox mode / snapshot / repos` (identical rows collapse to one "all stages" line above the table).
 - ASCII transition graph, including loops and failure routes.
 - Trigger sketch: type, selector, filters, trigger outputs.
 - Deploy sequence you will run (Phase 6 order).
