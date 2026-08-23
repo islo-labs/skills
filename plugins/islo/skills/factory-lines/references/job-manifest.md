@@ -68,14 +68,6 @@ gateway_profile = "default"
 internet_enabled = true
 init = { type = "full" }
 
-# Repo checkout at sandbox create. This keeps repo skills and prompts the
-# source of truth: the agent reads them from the checkout at run time
-# instead of a copy pasted into the manifest or Knowledge.
-[[run.sandbox.sources]]
-repo_url = "https://github.com/your-org/your-app"
-branch = "main"
-target_path = "/workspace/your-app"
-
 [run.sandbox.lifecycle]
 pause_after_idle = 1800
 delete_after = 172800
@@ -83,14 +75,16 @@ delete_after = 172800
 [[run.tasks]]
 name = "reproduce"
 
-# exec steps for deterministic setup. Array form preferred. Keep them short;
-# anything bigger belongs in the snapshot or the repo.
+# Idempotent fetch-or-clone before the agent step. The default gateway
+# profile injects GitHub credentials on egress, so the plain https URL works
+# with no token in the manifest. The checkout keeps repo skills and prompts
+# the source of truth: the agent reads them at run time, never a copy.
 [[run.tasks.steps]]
-name = "prepare-branch"
+name = "checkout"
 exec = [
   "bash",
   "-lc",
-  "set -euo pipefail\ncd /workspace/your-app\ngit fetch origin main\ngit checkout -B fix/{{work_key}} origin/main\n",
+  "set -euo pipefail\nif [ ! -d /workspace/your-app/.git ]; then\n  git clone https://github.com/your-org/your-app /workspace/your-app\nfi\ncd /workspace/your-app\ngit fetch origin main\ngit checkout -B fix/{{work_key}} origin/main\n",
 ]
 
 # run_agent for the judgment work. Harness: claude, cursor, codex, or custom.
@@ -113,7 +107,7 @@ session = "bug-fix-reproduce"
 
 **Snapshots carry harness code.** Executable trees, test harnesses, and assets live in a snapshot named by `snapshot_name`, built from `snapshot-src/` in your line repo. Never embed code in `job.toml` as base64 or heredoc bootstrap. See the platform skill's sandboxes reference for building snapshots.
 
-**Repos carry prompts and skills.** Check the repo out via `[[run.sandbox.sources]]` and keep the `run_agent` prompt a short literal that points at the checked-out skill or prompt file. Do not copy procedural content into Islo Knowledge; deploy rejects procedural knowledge anyway. Note: `sources` is accepted by the control plane; if `islo schema job --short` does not list it yet, trust `--dry-run`.
+**Repos carry prompts and skills.** Check the repo out with an idempotent fetch-or-clone exec step before the agent step, as in the example, and keep the `run_agent` prompt a short literal that points at the checked-out skill or prompt file. The `default` gateway profile injects `GH_TOKEN`/`GITHUB_TOKEN` on egress, so private clones need no token in the manifest. Do not copy procedural content into Islo Knowledge; deploy rejects procedural knowledge anyway. Warning: `sandbox.sources[]` validates (it is declared in the server schema) but is currently not implemented on the live platform, so the checkout silently never happens; do not use it until the backend fix ships.
 
 **Schedules on standalone jobs** use a `[schedule]` section (cron, timezone, enabled) and require a default for every param. For a line, schedule the line trigger instead; see `triggers.md` and `standalone-jobs.md`.
 

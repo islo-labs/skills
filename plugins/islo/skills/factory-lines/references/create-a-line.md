@@ -46,7 +46,7 @@ Runtime profile (confirm or override):
 - Snapshot   prebuilt sandbox image with your harness code. Default:
              none; propose <line>-v1 from snapshot-src/ only if
              stages run servers, test harnesses, or bundled assets.
-- Repos      what stages check out via sandbox.sources[]: <owner/repo,
+- Repos      what each stage's checkout step clones: <owner/repo,
              detected from the request or the current repo>. GitHub
              integration: <connected | not connected, run islo login
              --tool github>.
@@ -70,7 +70,7 @@ Present one summary and wait for explicit approval. Do not create, deploy, or sc
 - `islo job init <name>` per stage. Add `--with-verification` on stages whose outputs gate transitions.
 - Write the `job.toml` files first: params and outputs are the line's contract. Then `line.toml`. See `job-manifest.md` and `line-manifest.md`.
 - Harness code (servers, test runners, assets) goes in `snapshot-src/` and a sandbox snapshot, referenced by `snapshot_name`. See the platform skill's sandboxes reference.
-- Repo skills and prompts stay in the repo: check the repo out via `sandbox.sources[]` and keep the `run_agent` prompt a short literal, for example "Read and follow `.claude/skills/<x>/SKILL.md` in the checkout". Never copy procedural content into Knowledge; deploy rejects procedural knowledge.
+- Repo skills and prompts stay in the repo: check it out with an idempotent fetch-or-clone exec step before the agent step (the pattern in `job-manifest.md`; the default gateway profile injects GitHub credentials) and keep the `run_agent` prompt a short literal, for example "Read and follow `.claude/skills/<x>/SKILL.md` in the checkout". Never copy procedural content into Knowledge; deploy rejects procedural knowledge.
 
 ## Phase 4: static validation
 

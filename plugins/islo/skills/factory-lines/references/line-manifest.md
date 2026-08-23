@@ -258,7 +258,7 @@ For selector and filter shapes per provider, run `islo factory triggers get <pro
 
 ## Agentic transitions
 
-A transition with `type = "agentic"` lets the product-managed routing agent choose among named options at a decision pause. At most one agentic transition per source; each option names a target stage, `done`, or `wait`. None of the production lines use them today; prefer conditional routing on declared outputs and reserve agentic transitions for genuinely ambiguous routing.
+A transition with `type = "agentic"` lets the product-managed routing agent choose among named options at a decision pause. At most one agentic transition per source; each option names a target stage, `done`, or `wait`. Option names are manifest identifiers, not CLI verbs, and the API reserves `cancel` and `stop` (deploy rejects them with "reserved for line controls"); names like `retry`, `steer`, `follow-up`, `ask`, `agent-turn`, and `cancel-run` are allowed. None of the production lines use agentic transitions today; prefer conditional routing on declared outputs and reserve them for genuinely ambiguous routing.
 
 ## Validation
 

@@ -27,6 +27,6 @@ Knowledge items are for declarative content: conventions, policies, house rules 
 - Line routing instructions (`[agent.instructions]` in line.toml) can also bind knowledge.
 - Deploy knowledge items before the jobs that reference them (Phase 6 order in `create-a-line.md`).
 
-Procedural content (skills, step-by-step prompts, playbooks) is rejected at knowledge deploy, and copying it would fork it from the repo anyway. Keep it in the repo and hand it to the agent via `sandbox.sources[]` checkout plus a short literal prompt pointing at the file, per `job-manifest.md`.
+Procedural content (skills, step-by-step prompts, playbooks) is rejected at knowledge deploy, and copying it would fork it from the repo anyway. Keep it in the repo, check it out with the fetch-or-clone step from `job-manifest.md`, and point a short literal prompt at the file.
 
 Browsing and creating knowledge items (`islo knowledge` CRUD) is in the platform skill.
