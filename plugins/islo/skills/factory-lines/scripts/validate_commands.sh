@@ -78,10 +78,18 @@ for md in md_files:
             elif not flags and WORD.match(t):
                 words.append(t)
 
+        full = " ".join(words)
+        match = next((p for p in pending if full.startswith(p)), None)
+        if match:
+            print(f"PENDING {rel}: islo {full} (awaiting CLI release: {match})")
+            continue
+
         # Resolve the deepest path the CLI recognizes; trailing words may be
         # positional values that only look like subcommands.
+        # The root command has no positionals, so a real invocation must
+        # resolve at least its first word (n >= 1).
         resolved = None
-        for n in range(len(words), -1, -1):
+        for n in range(len(words), 0, -1):
             path = " ".join(words[:n])
             ok, _ = get_help(path)
             if ok:
@@ -89,11 +97,6 @@ for md in md_files:
                 break
 
         if resolved is None:
-            full = " ".join(words)
-            match = next((p for p in pending if full.startswith(p)), None)
-            if match:
-                print(f"PENDING {rel}: islo {full} (awaiting CLI release: {match})")
-                continue
             print(f"FAIL {rel}: cannot resolve: {line}")
             fail = True
             continue
