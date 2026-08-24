@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate manifest JSON shapes
+        run: python3 scripts/validate_manifest_shapes.py
+      - name: Check plugin manifest copies match canonical
+        run: bash scripts/sync_plugin_manifests.sh --check
+
+  skills:
+    runs-on: ubuntu-latest
+    env:
+      ISLO_API_KEY: ${{ secrets.ISLO_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate skill commands and manifest examples against the islo CLI
+        run: |
+          if [ -z "$ISLO_API_KEY" ]; then
+            echo "ISLO_API_KEY secret not set; skipping CLI-backed validation (run locally instead)"
+            exit 0
+          fi
+          curl -fsSL https://islo.dev/install.sh | bash
+          export PATH="$HOME/.islo/bin:$PATH"
+          bash plugins/islo/skills/factory-lines/scripts/validate_commands.sh
+          bash plugins/islo/skills/factory-lines/scripts/validate_examples.sh
