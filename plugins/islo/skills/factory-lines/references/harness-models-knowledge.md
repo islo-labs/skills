@@ -6,10 +6,12 @@ Harness and model are declared per stage on the job's `run_agent` step (`job-man
 
 | Harness | Use when |
 |---------|----------|
-| `codex` | Islo-managed inference and billing; no provider key needed. Best default |
-| `claude` | Anthropic models via connected integration |
-| `cursor` | Cursor agent models via connected integration |
+| `codex` | Default agent CLI |
+| `claude` | Claude Code CLI |
+| `cursor` | Cursor CLI |
 | `custom` | Exec-mode only; user-defined command |
+
+`codex`, `claude`, and `cursor` all support Islo inference via the gateway URL (tenant credits, no provider key required). A connected Anthropic or Cursor account is optional, not a requirement of those harnesses.
 
 Session outputs (declared `outputs.*` set by the agent) require `claude`, `codex`, or `cursor`.
 
@@ -17,7 +19,7 @@ Session outputs (declared `outputs.*` set by the agent) require `claude`, `codex
 
 Never write a model id from memory. Query the live catalog (`GET /inference/models` on the API, or the docs MCP server) — it is the same list for every harness — and pick from that. Omit `model` only when the user has no preference and the harness default is acceptable.
 
-Islo inference routes through platform-owned credentials and bills the tenant credits; provider-managed harnesses call out through the gateway with the customer's connected credentials. The plumbing (inference URLs, gateway proxy, phantom tokens) is in the platform skill's gateway reference.
+The plumbing (inference URLs, gateway proxy, phantom tokens) is in the platform skill's gateway reference.
 
 ## Knowledge in lines
 

@@ -36,16 +36,17 @@ Sandbox, snapshot, harness, model, and repositories are the five load-bearing ru
 
 ```text
 Runtime profile (confirm or override):
-- Harness    the agent CLI each stage runs. Default: codex
-             (Islo-managed inference, no provider key to wire).
+- Harness    the agent CLI each stage runs. Default: codex.
+             Every harness (codex, claude, cursor) can use Islo
+             inference via the gateway URL; no special case.
 - Model      what the harness thinks with. Default: <recommended
              from the live model list for that harness>.
 - Sandbox    the VM each stage runs in. Default: fresh per stage
              (provision + teardown); isolated, no stale state.
-- Snapshot   prebuilt sandbox image with your harness code. Default:
-             none. Only propose one if the approved profile needs
-             servers, test harnesses, or bundled assets; then create
-             it with the platform skill before deploy.
+- Snapshot   prebuilt sandbox image with repos, tools, and harness
+             code. Default: yes. Most lines need one. Name it and
+             bake it with the platform skill before deploy. Skip
+             only if the user explicitly wants a bare image.
 - Repos      what each stage's checkout step clones: <owner/repo,
              detected from the request or the current repo>. GitHub
              integration: <connected | not connected, run islo login
@@ -69,8 +70,8 @@ Present one summary and wait for explicit approval. Do not create, deploy, or sc
 - Copy the nearest example from [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents) (`examples/`) and treat it as a pattern, not a drop-in. Clone or browse that repo if it is not already on disk.
 - `islo job init <name>` per stage. Add `--with-verification` on stages whose outputs gate transitions.
 - Write the `job.toml` files first: params and outputs are the line's contract. Then `line.toml`. Confirm every field against `islo schema job --short` and `islo schema factory --short`; see `job-manifest.md` and `line-manifest.md` only for policy the schema does not state.
-- Do not create a snapshot unless the approved runtime profile named one. If it did, follow the platform skill's sandboxes reference, put harness code in `snapshot-src/`, and set `snapshot_name`.
-- Agent instructions: if the user's repo already contains skills, check it out with an idempotent fetch-or-clone exec step before the agent step (the pattern in `job-manifest.md`; the default gateway profile injects GitHub credentials) and keep the `run_agent` prompt a short literal pointing at that skill. If there is no repo, or the repo has no skills, write the prompt in the job. Never copy procedural content into Knowledge; deploy rejects procedural knowledge.
+- Create a snapshot as the default. Follow the platform skill's sandboxes reference, put harness code in `snapshot-src/`, and set `snapshot_name` on the jobs. Skip the snapshot only if the approved profile explicitly opted out.
+- Agent instructions: write the stage brief in the job `run_agent` prompt so a prompt change is a new job version. If the user's repo already contains skills, check it out with an idempotent fetch-or-clone exec step (the pattern in `job-manifest.md`; the default gateway profile injects GitHub credentials) and point at that skill. Put supporting or fan-out briefs in the snapshot when they would clutter the line/job view. Never copy procedural content into Knowledge; deploy rejects procedural knowledge.
 
 ## Phase 4: static validation
 

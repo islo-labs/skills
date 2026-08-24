@@ -13,7 +13,7 @@ Factory lines are Islo's automation product: multi-stage work with typed routing
 2. Creating a line follows `references/create-a-line.md` phase by phase. Phase 2 is an approval gate: present the design summary and wait for explicit approval before creating or deploying anything.
 3. Deploy order matters and is defined once, in create-a-line.md Phase 6: knowledge, then every stage job, then the line last.
 4. Schedules live in the line manifest `[trigger]` and nowhere else; anything else is reverted on the next deploy.
-5. Harness code ships in sandbox snapshots; repo skills and prompts reach agents via a fetch-or-clone checkout step plus a short literal prompt, never copied into manifests or Knowledge.
+5. Harness code ships in sandbox snapshots. Put the stage brief in the job `run_agent` prompt so a prompt change is a new job version. Leave supporting or fan-out briefs in the snapshot when they would clutter the line/job view. Repo skills may be a fetch-or-clone checkout plus a short pointer. Never copy procedural content into Knowledge.
 6. Agents do the judgment work via `run_agent`. Do not replace them with hand-written shell business logic or shell-wrapped agent CLIs, and do not put provider tokens in manifests or sandbox env.
 
 ## Where to go

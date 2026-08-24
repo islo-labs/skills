@@ -14,4 +14,4 @@ Unknown keys 422. Treat every TOML example in this repo as a pattern, not a drop
 - Harness and model live on the `run_agent` step, never in `line.toml`.
 - `[[run.sandbox.sources]]` is accepted and never checked out. Clone with an idempotent `exec` step instead (see the checkout pattern in the islo-agents examples).
 - Reserved agentic option names (`cancel`, `stop`, and the rest listed by `islo schema factory --short`) belong to line controls. Do not reuse them as option labels.
-- If the user's repo already has skills, check it out and point a short literal prompt at the skill file. Otherwise write the prompt in the job. Never copy procedural content into Knowledge.
+- Write the stage brief in the job. If the user's repo already has skills, check it out and point a short literal at the skill file. Supporting or fan-out briefs may live in the snapshot. Never copy procedural content into Knowledge.
