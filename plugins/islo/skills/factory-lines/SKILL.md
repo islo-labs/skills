@@ -9,8 +9,8 @@ Factory lines are Islo's automation product: multi-stage work with typed routing
 
 ## Iron rules
 
-1. Never write or edit a manifest from memory. Scaffold with `islo job init`, read `islo schema factory --short` and `islo schema job --short`, validate with `--dry-run`. Treat every example as a pattern, not a drop-in.
-2. Creating a line follows `references/create-a-line.md` phase by phase. Phase 2 is an approval gate: present the design summary and wait for explicit approval before creating or deploying anything.
+1. Never write or edit a manifest from memory. Scaffold with `islo job init`, read `islo schema factory --short` and `islo schema job --short`, validate with `--dry-run`. Treat every example as a pattern, not a drop-in. Nearby lines supply stage shape only — never copy repo, Linear team/project, Slack channel, snapshot, or gateway without the user naming them in this request.
+2. Creating a line follows `references/create-a-line.md` phase by phase. Phase 1 is an intake gate: ask identity (repos, Linear team/project, Slack channel) and stop. Phase 2 is an approval gate: present the design summary and wait for explicit approval before creating or deploying anything.
 3. Deploy order matters and is defined once, in create-a-line.md Phase 6: knowledge, then every stage job, then the line last.
 4. Schedules live in the line manifest `[trigger]` and nowhere else; anything else is reverted on the next deploy.
 5. Harness code ships in sandbox snapshots. Put the stage brief in the job `run_agent` prompt so a prompt change is a new job version. Leave supporting or fan-out briefs in the snapshot when they would clutter the line/job view. Repo skills may be a fetch-or-clone checkout plus a short pointer. Never copy procedural content into Knowledge.

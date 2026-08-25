@@ -22,17 +22,27 @@ Query live models for the candidate harness instead of recalling a list; see `ha
 
 ## Phase 1: intake questions, all up front
 
-Ask once, as one batch. Do not dribble questions across the conversation.
+Ask once, as one batch, then **stop**. Do not dribble questions across the conversation. Do not attach a design summary, a filled-in runtime profile copied from a nearby line, or a Phase 2 approval question in the same turn.
+
+When the host provides a structured interactive question tool, **use it for the entire Phase 1 intake** instead of rendering the questions as prose. Put every intake question in one tool call. Offer discovered or recommended choices where useful, and always retain the tool's "Other / I'll specify" path for free-text identities such as repositories, Linear projects, labels, and states. Fall back to prose only when no interactive question tool is available.
+
+Identity vs pattern: nearby lines, `islo-agents` examples, and the current workspace may suggest stage shape (how many jobs, routing). They must not fill identity. If the user did not name a value **in this request**, ask. A guess is not an answer. Never present a single inferred option as the only choice; always include "other / I'll specify".
 
 1. Outcome and stage breakdown. 2 to 6 stages, one responsibility each. Propose a breakdown from the request and let the user correct it.
-2. Trigger. Manual, schedule (cron and timezone), webhook, or integration (provider, event, selector), and whether the trigger's provider is connected (`islo factory triggers list --with-status`). See `triggers.md`.
-3. Runtime profile: ONE confirm-or-override block, not five questions. See below.
-4. Limits: `max_iterations`, `timeout`, budget.
-5. Where results land: PR, Slack message, knowledge item, outputs.
+2. Trigger. Manual, schedule (cron and timezone), webhook, or integration (provider, event). Then ask the selector the user actually wants — after `islo factory triggers get <provider> <event>`, ask the scoping questions that selector requires. Do not copy a nearby line's selector. See `triggers.md`.
+   - Linear: team, project, and any label/state filter (or "all issues in that team/project").
+   - GitHub: owner/repo (and which event).
+   - Slack: workspace and channel.
+3. Repositories. Which `owner/repo` each stage checks out. Ask unless the user named it in this request. Do not inherit from a nearby line, a snapshot name, or the current workspace.
+4. Runtime profile: ONE confirm-or-override block for harness, model, sandbox, and snapshot only. See below. Repositories are item 3, not a default inside this block.
+5. Limits: `max_iterations`, `timeout`, budget.
+6. Where results land: PR, Slack message, knowledge item, outputs.
 
 ### The runtime profile block
 
-Sandbox, snapshot, harness, model, and repositories are the five load-bearing runtime concepts of a line. Present them as one compact block for the whole line, splitting per stage only where stages genuinely differ. Each concept gets a one-line explanation and a prescriptive default with its rationale, filled in from Phase 0 (live models, `islo status` for the GitHub connection). End the block with a single question: confirm, or override any line.
+Harness, model, sandbox, and snapshot are the remaining load-bearing runtime concepts. Present them as one compact block for the whole line, splitting per stage only where stages genuinely differ. Each concept gets a one-line explanation and a prescriptive default with its rationale, filled in from Phase 0 (live models, `islo status` for the GitHub connection). End the block with a single question: confirm, or override any line.
+
+Do not put `owner/repo`, Linear team/project, Slack channel, or a nearby line's snapshot/gateway into this block as if the user already chose them.
 
 ```text
 Runtime profile (confirm or override):
@@ -44,20 +54,17 @@ Runtime profile (confirm or override):
 - Sandbox    the VM each stage runs in. Default: fresh per stage
              (provision + teardown); isolated, no stale state.
 - Snapshot   prebuilt sandbox image with repos, tools, and harness
-             code. Default: yes. Most lines need one. Name it and
-             bake it with the platform skill before deploy. Skip
-             only if the user explicitly wants a bare image.
-- Repos      what each stage's checkout step clones: <owner/repo,
-             detected from the request or the current repo>. GitHub
-             integration: <connected | not connected, run islo login
-             --tool github>.
+             code. Default: yes. Most lines need one. Propose a
+             new name for this line. Reuse an existing snapshot
+             only if the user names it. Skip only if the user
+             explicitly wants a bare image.
 ```
 
-Do not re-ask any of the five separately afterward; an override lands in the design summary and that is where the user re-checks it.
+Do not re-ask harness/model/sandbox/snapshot separately afterward; an override lands in the design summary and that is where the user re-checks it. If any identity field (repo, Linear team/project, Slack channel) is still a guess, stay in Phase 1.
 
 ## Phase 2: design summary and APPROVAL GATE
 
-Present one summary and wait for explicit approval. Do not create, deploy, or scaffold anything before it. The summary contains:
+Present one summary and wait for explicit approval. Do not create, deploy, or scaffold anything before it. Do not reach this phase until Phase 1 identity (repos, trigger selector) has answers from the user, not from a nearby line. The summary contains:
 
 - Stage table: id, job name, description, and a runtime line per stage in the form `harness / model / sandbox mode / snapshot / repos` (identical rows collapse to one "all stages" line above the table).
 - ASCII transition graph, including loops and failure routes.

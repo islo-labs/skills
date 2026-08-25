@@ -19,9 +19,18 @@ Discover what exists and whether the tenant is connected before designing around
 islo factory triggers list --with-status
 islo factory triggers get slack message.received
 islo factory triggers get github pull_request.opened
+islo factory triggers get linear issue.updated
 ```
 
 `triggers get` returns the event's payload shape, selector shape, and example filters for that provider. The selector scopes which resources fire the line (channels, repositories, issues); filters drop unwanted payloads with the condition AST; trigger outputs bind payload paths to line inputs. All three appear in the full example in `line-manifest.md`.
+
+After `triggers get`, ask the user which resource to scope to. Do not copy team, project, channel, repository, or `scope = "all"` from a nearby line.
+
+| Provider | Ask |
+|----------|-----|
+| Linear | Team, project, and any label/state filter (or all issues in that team/project) |
+| GitHub | Owner/repo (and which event) |
+| Slack | Workspace and channel |
 
 If the provider shows as not connected, connect it first (`islo login --tool slack`) and re-check with `--with-status`.
 
