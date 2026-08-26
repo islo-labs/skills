@@ -25,7 +25,7 @@ Factory lines are Islo's automation product: multi-stage work with typed routing
 | Write or fix `job.toml` | `islo schema job --short`, then `references/job-manifest.md` for policy |
 | Choose or wire a trigger; schedule rules; webhook vs incoming webhook | `references/triggers.md` |
 | Inspect, steer, or debug a run; a stage failed; no run appeared | `references/run-control-and-debugging.md` |
-| Pick harness or model; use knowledge in stages | `references/harness-models-knowledge.md` |
+| Pair harness, model catalog, and host; attach knowledge | `references/harness-models-knowledge.md` |
 | Single-stage job without orchestration (rare, explicit ask only) | `references/standalone-jobs.md` |
 
 Starting points: copy the nearest example from [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents). There is no in-skill copy; clone or browse that repo if it is not already on disk.
