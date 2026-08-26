@@ -9,11 +9,12 @@ Harness and model are declared per stage on the job's `run_agent` step (`job-man
 | `codex` | Default agent CLI |
 | `claude` | Claude Code CLI |
 | `cursor` | Cursor CLI |
+| `opencode` | OpenCode CLI |
 | `custom` | Exec-mode only; user-defined command |
 
-`codex`, `claude`, and `cursor` all support Islo inference via the gateway URL (tenant credits, no provider key required). A connected Anthropic or Cursor account is optional, not a requirement of those harnesses.
+`codex`, `claude`, `cursor`, and `opencode` all support Islo inference via the gateway URL (tenant credits, no provider key required). A connected Anthropic or Cursor account is optional, not a requirement of those harnesses.
 
-Session outputs (declared `outputs.*` set by the agent) require `claude`, `codex`, or `cursor`.
+Session outputs (declared `outputs.*` set by the agent) require `claude`, `codex`, `cursor`, or `opencode`.
 
 ## Models
 

@@ -10,7 +10,7 @@ Reference for Islo's infrastructure primitives. For automating workflows (factor
 Ground rules that apply everywhere:
 
 - The installed CLI is the source of truth. Use `islo schema <command>` and `--help` for exact flags; do not write config shapes from memory.
-- Claude Code, Cursor agent, and Codex are preinstalled in sandboxes and work without in-sandbox auth when the matching integration was connected first.
+- Claude Code, Cursor agent, Codex, and OpenCode are preinstalled in sandboxes and work without in-sandbox auth when the matching integration was connected first.
 - Provider tokens stay out of sandboxes. Connect integrations with `islo login --tool <provider>` and let the `default` gateway profile inject credentials.
 
 ## Where to go

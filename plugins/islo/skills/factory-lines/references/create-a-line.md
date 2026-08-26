@@ -47,7 +47,7 @@ Do not put `owner/repo`, Linear team/project, Slack channel, or a nearby line's 
 ```text
 Runtime profile (confirm or override):
 - Harness    the agent CLI each stage runs. Default: codex.
-             Every harness (codex, claude, cursor) can use Islo
+             Every harness (codex, claude, cursor, opencode) can use Islo
              inference via the gateway URL; no special case.
 - Model      what the harness thinks with. Default: <recommended
              from the live model list for that harness>.

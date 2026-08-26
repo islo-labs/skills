@@ -15,7 +15,7 @@ Always scaffold with `islo job init` and edit per `job-manifest.md`; the manifes
 
 ## Agent-first
 
-When the work needs judgment (triage, summarization, review, cross-service tool use), the job runs an agent via `run_agent`, not a hand-written shell script calling APIs. Do not shell-wrap `claude`, `cursor`, or `codex` CLI entrypoints in exec steps; `run_agent` is the path.
+When the work needs judgment (triage, summarization, review, cross-service tool use), the job runs an agent via `run_agent`, not a hand-written shell script calling APIs. Do not shell-wrap `claude`, `cursor`, `codex`, or `opencode` CLI entrypoints in exec steps; `run_agent` is the path.
 
 Good standalone jobs: post a daily Linear-to-Slack summary, review open PRs every morning, investigate failed CI runs and open a fix PR. If the work grows a second stage, routing, or a decision point, it is a line.
 

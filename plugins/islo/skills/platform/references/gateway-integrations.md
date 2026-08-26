@@ -53,6 +53,7 @@ Islo-managed models are separate from provider integrations: platform-owned upst
 - OpenAI-compatible base: `https://gateway.islo.dev/inference/openai/v1`
 - Anthropic-compatible base: `https://gateway.islo.dev/inference/anthropic`
 - Codex in sandboxes targets Islo inference by default.
+- OpenCode in sandboxes targets Islo inference by default.
 
 Provider-managed egress (Claude and Cursor CLIs calling provider APIs) goes through `/gateway/proxy/{*path}` with the customer's connected credentials. Do not mix the paths: inference URLs are for direct model calls, gateway proxy is for provider SDK and CLI egress.
 
