@@ -9,7 +9,11 @@ islo job init <name>
 islo job deploy --path jobs/<name>/job.toml --dry-run
 islo job deploy --path jobs/<name>/job.toml
 islo job run <name> --param KEY=VALUE --watch
+islo job status <name> <run-id>
+islo job event <command-id>
 ```
+
+Run `islo job run` with representative params and inspect step output via `islo job event` **before** wiring incoming webhooks, integration triggers, or schedules to production traffic.
 
 Always scaffold with `islo job init` and edit per `job-manifest.md`; the manifest anatomy is identical to a stage job.
 
