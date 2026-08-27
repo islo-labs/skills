@@ -12,13 +12,14 @@ islo use <sandbox-name> -- npm test
 islo use --agent claude
 islo use --agent cursor --task "Add tests for the auth flow"
 islo use --agent codex --task "Fix the failing tests"
+islo use --agent opencode
 ```
 
 There are no separate `islo create` or `islo exec` commands; `islo use <name> -- <command>` is the exec path.
 
 ## Built-in agents
 
-Claude Code, Cursor agent, and Codex are preinstalled in sandboxes. If the matching integration was connected before sandbox use, the agent runs without an in-sandbox login. Do not reinstall them, copy local key files, or set provider API keys in sandbox env to make an agent start.
+Claude Code, Cursor agent, and Codex are preinstalled in sandboxes. OpenCode is installed on first `islo use --agent opencode` (official installer into `~/.opencode/bin`). If the matching integration was connected before sandbox use, Claude/Cursor/Codex run without an in-sandbox login. OpenCode uses Islo inference via the injected config; do not copy local key files or set provider API keys in sandbox env to make an agent start.
 
 ## Project setup
 

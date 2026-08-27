@@ -11,11 +11,12 @@ Do not write field shapes from memory — confirm `model_provider` and env keys 
 | `codex` | `model_provider` on the step | `GET /inference/models` when using `islo_inference`; native OpenAI ids when using the default | `model_provider = "islo_inference"` for Islo catalog ids |
 | `claude` | `[run.sandbox.env] ANTHROPIC_BASE_URL` | Anthropic / `ship-like/…` ids, or catalog ids that advertise `anthropic_messages` | Matching `ANTHROPIC_*` env; omit `model_provider` |
 | `cursor` | Cursor cloud via the gateway | `agent --list-models` (Composer, Grok, `auto`, …) — not the Islo catalog | Omit `model_provider`; tenant Cursor key for jobs |
+| `opencode` | Injected `opencode.json` → OpenAI-compatible Islo inference | `GET /inference/models` (bare catalog ids / aliases such as `kimi-k2.7-code`) | Omit `model_provider` |
 | `custom` | Exec-mode only | n/a | User-defined command |
 
-`GET /inference/models` is **not** a shared list. Cursor ids are not in it. Anthropic / `ship-like/…` ids fail on Codex. Catalog Fireworks ids fail on Codex unless `model_provider = "islo_inference"`.
+`GET /inference/models` is **not** a shared list. Cursor ids are not in it. Anthropic / `ship-like/…` ids fail on Codex. Catalog Fireworks ids fail on Codex unless `model_provider = "islo_inference"`. OpenCode takes those catalog ids on the OpenAI-compatible base (no `model_provider`).
 
-`harness` must be a literal (`codex`, `claude`, or `cursor`) at deploy. `{{harness}}` 422s. Session outputs require one of those three harnesses.
+`harness` must be a literal (`codex`, `claude`, `cursor`, or `opencode`) at deploy. `{{harness}}` 422s. Session outputs require one of those four harnesses.
 
 ## Codex
 
@@ -73,6 +74,19 @@ Job VMs do not receive a personal Cursor key. Interactive `islo use` stamps the 
 Claimed session outputs are prompt-only. The agent must emit the claimed keys; JSON that appears only in chat while the CLI hangs will not harvest.
 
 The inference URLs, gateway proxy, and phantom tokens are in the platform skill's gateway reference.
+
+## OpenCode
+
+Omit `model_provider`. Sandboxes get a phantom `~/.config/opencode/opencode.json` pointing at `https://gateway.islo.dev/inference/openai/v1` with `{env:ISLO_API_KEY}`. Use a bare Islo catalog id (or alias) as `model`; the adapter prefixes `openai/` for OpenCode's `provider/model` flag. Slash-containing canonical ids such as `ship-like/claude-opus-5` should be passed as their alias (`claude-opus-5`) so OpenCode does not treat the prefix as a provider name.
+
+```toml
+[run.tasks.steps.run_agent]
+mode = "session"
+harness = "opencode"
+model = "kimi-k2.7-code"
+```
+
+Omit `model` to use the injected default (`kimi-k2.7-code`). Claimed session outputs are prompt-only (two-phase finalization, same as Cursor).
 
 ## Knowledge in lines
 

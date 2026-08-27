@@ -52,6 +52,8 @@ Runtime profile (confirm or override):
              need model_provider = "islo_inference". Claude
              needs ANTHROPIC_BASE_URL. Cursor uses Cursor
              model ids and a tenant cursor-org key for jobs.
+             OpenCode uses Islo catalog ids on the OpenAI-compatible
+             gateway (no model_provider).
 - Model      what the harness thinks with. Default: <from the
              catalog for that harness, not one shared list>.
 - Sandbox    the VM each stage runs in. Default: fresh per stage
