@@ -18,7 +18,7 @@ If an integration trigger is likely (the request mentions Slack, GitHub, or Line
 islo factory triggers list --with-status
 ```
 
-Query live models for the candidate harness instead of recalling a list; see `harness-models-knowledge.md`.
+Query the catalog that matches the candidate harness — not one shared list. See `harness-models-knowledge.md`.
 
 ## Phase 1: intake questions, all up front
 
@@ -47,10 +47,15 @@ Do not put `owner/repo`, Linear team/project, Slack channel, or a nearby line's 
 ```text
 Runtime profile (confirm or override):
 - Harness    the agent CLI each stage runs. Default: codex.
-             Every harness (codex, claude, cursor, opencode) can use Islo
-             inference via the gateway URL; no special case.
-- Model      what the harness thinks with. Default: <recommended
-             from the live model list for that harness>.
+             Pair harness to catalog and host (see
+             harness-models-knowledge.md). Codex catalog ids
+             need model_provider = "islo_inference". Claude
+             needs ANTHROPIC_BASE_URL. Cursor uses Cursor
+             model ids and a tenant cursor-org key for jobs.
+             OpenCode uses Islo catalog ids on the OpenAI-compatible
+             gateway (no model_provider).
+- Model      what the harness thinks with. Default: <from the
+             catalog for that harness, not one shared list>.
 - Sandbox    the VM each stage runs in. Default: fresh per stage
              (provision + teardown); isolated, no stale state.
 - Snapshot   prebuilt sandbox image with repos, tools, and harness
@@ -76,7 +81,7 @@ Present one summary and wait for explicit approval. Do not create, deploy, or sc
 
 - Copy the nearest example from [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents) (`examples/`) and treat it as a pattern, not a drop-in. Clone or browse that repo if it is not already on disk.
 - `islo job init <name>` per stage. Add `--with-verification` on stages whose outputs gate transitions.
-- Write the `job.toml` files first: params and outputs are the line's contract. Then `line.toml`. Confirm every field against `islo schema job --short` and `islo schema factory --short`; see `job-manifest.md` and `line-manifest.md` only for policy the schema does not state.
+- Write the `job.toml` files first: params and outputs are the line's contract. Then `line.toml`. Confirm every field against `islo schema job --short` and `islo schema factory --short`; see `job-manifest.md` and `line-manifest.md` only for policy the schema does not state. Wire harness/model using `harness-models-knowledge.md` — do not copy a nearby line's pairing.
 - Create a snapshot as the default. Follow the platform skill's sandboxes reference, put harness code in `snapshot-src/`, and set `snapshot_name` on the jobs. Skip the snapshot only if the approved profile explicitly opted out.
 - Agent instructions: write the stage brief in the job `run_agent` prompt so a prompt change is a new job version. If the user's repo already contains skills, check it out with an idempotent fetch-or-clone exec step (the pattern in `job-manifest.md`; the default gateway profile injects GitHub credentials) and point at that skill. Put supporting or fan-out briefs in the snapshot when they would clutter the line/job view. Never copy procedural content into Knowledge; deploy rejects procedural knowledge.
 

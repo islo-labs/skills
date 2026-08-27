@@ -5,7 +5,7 @@ Agent skills and plugin metadata for working with [Islo](https://islo.dev), the 
 This repo teaches coding agents how to use Islo for:
 
 - **Factory lines**: multi-stage orchestration with typed transitions, integration triggers, and `islo factory line-run` controls
-- **Harness and model selection**: Codex (Islo inference), Claude, Cursor
+- **Harness and model selection**: pair Codex / Claude / Cursor to the matching catalog and host (not one shared model list)
 - **Jobs**: lower-level durable stage execution units
 - **Webhooks**: lower-level HTTP event ingress and egress
 - **Knowledge**: tenant memories, skills, and rules for agent steps
