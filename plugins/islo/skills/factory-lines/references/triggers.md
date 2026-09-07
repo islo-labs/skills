@@ -36,14 +36,17 @@ If the provider shows as not connected, connect it first (`islo login --tool sla
 
 ## Schedules
 
-A scheduled line declares cron and timezone in the manifest `[trigger]` and nowhere else:
+A scheduled line declares cron, timezone, and any required entry inputs in the manifest `[trigger]` and nowhere else:
 
 ```toml
 [trigger]
 type = "schedule"
 cron = "0 7 * * *"
 timezone = "UTC"
+inputs = { key = "value" }
 ```
+
+`inputs` supplies entry parameter values for the automatic scheduled run — set it when the line's entry stage requires params that a manual or webhook trigger would otherwise provide.
 
 The manifest is the source of truth. A schedule created or edited outside it is reverted by the next line deploy, so treat "schedule reverted" as the symptom of exactly this mistake.
 

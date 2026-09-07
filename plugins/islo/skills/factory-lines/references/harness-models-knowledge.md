@@ -9,7 +9,7 @@ Do not write field shapes from memory — confirm `model_provider` and env keys 
 | Harness | How the model is reached | How to pick `model` | Required extras |
 |---------|--------------------------|---------------------|-----------------|
 | `codex` | `model_provider` on the step | `GET /inference/models` when using `islo_inference`; native OpenAI ids when using the default | `model_provider = "islo_inference"` for Islo catalog ids |
-| `claude` | `[run.sandbox.env] ANTHROPIC_BASE_URL` | Anthropic / `ship-like/…` ids, or catalog ids that advertise `anthropic_messages` | Matching `ANTHROPIC_*` env; omit `model_provider` |
+| `claude` | `[run.sandbox.env] ANTHROPIC_BASE_URL`, or `model_provider` on the step | Anthropic / `ship-like/…` ids, or catalog ids that advertise `anthropic_messages` | `model_provider = "islo_inference"` only sets `ANTHROPIC_BASE_URL` + `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS`; still set `ANTHROPIC_MODEL`/Haiku/small-fast via sandbox env |
 | `cursor` | Cursor cloud via the gateway | `agent --list-models` (Composer, Grok, `auto`, …) — not the Islo catalog | Omit `model_provider`; tenant Cursor key for jobs |
 | `opencode` | Injected `opencode.json` → OpenAI-compatible Islo inference | `GET /inference/models` (bare catalog ids / aliases such as `kimi-k2.7-code`) | Omit `model_provider` |
 | `custom` | Exec-mode only | n/a | User-defined command |
@@ -20,7 +20,7 @@ Do not write field shapes from memory — confirm `model_provider` and env keys 
 
 ## Codex
 
-`model_provider` is session-mode Codex only. Values: `islo` or `islo_inference`. Putting it on `claude` or `cursor`, or in exec mode, 422s. Templates for `model_provider` also 422.
+`model_provider` is session-mode only, for `codex` and `claude`. Values: `islo` or `islo_inference`. Putting it on `cursor` or `opencode`, or in exec mode, 422s. Templates for `model_provider` also 422.
 
 - Omit the field or set `islo` (the default) to send Codex to OpenAI (`https://api.openai.com/v1`). Use native OpenAI model ids.
 - Set `islo_inference` to send Codex to Islo inference (`https://gateway.islo.dev/inference/openai/v1`). Use ids from `GET /inference/models`. Without this field, those ids fail with `model_not_found` on OpenAI.
@@ -38,7 +38,7 @@ Claimed session outputs are filled from a native json_schema file. A model that 
 
 ## Claude
 
-Omit `model_provider`. Point Claude at Islo inference with sandbox env, and set every Claude model env to the **same** id as `run_agent.model`. Without `ANTHROPIC_BASE_URL`, Claude misses the gateway.
+Point Claude at Islo inference with sandbox env, and set every Claude model env to the **same** id as `run_agent.model`. Without `ANTHROPIC_BASE_URL`, Claude misses the gateway. `model_provider = "islo_inference"` on the step is a shortcut that sets `ANTHROPIC_BASE_URL` and `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` for you, but not `ANTHROPIC_MODEL`/Haiku/small-fast — most jobs still need the sandbox env block below for those.
 
 ```toml
 [run.sandbox.env]
@@ -86,7 +86,7 @@ harness = "opencode"
 model = "kimi-k2.7-code"
 ```
 
-Omit `model` to use the injected default (`kimi-k2.7-code`). Claimed session outputs are prompt-only (two-phase finalization, same as Cursor).
+Omit `model` to use the injected default (`kimi-k3-fast`). Claimed session outputs are prompt-only (two-phase finalization, same as Cursor).
 
 ## Knowledge in lines
 

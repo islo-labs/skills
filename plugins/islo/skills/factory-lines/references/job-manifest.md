@@ -11,8 +11,8 @@ Unknown keys 422. Treat every TOML example in this repo as a pattern, not a drop
 ## Policy the schema does not state
 
 - Params and outputs are the line's contract. Write them first. Transitions bind params from trigger outputs, literals, and prior stages' outputs.
-- Harness and model live on the `run_agent` step, never in `line.toml`. `harness` is a deploy-time literal (`codex`, `claude`, or `cursor`); `{{harness}}` 422s.
-- `model_provider` is session-mode Codex only (`islo` or `islo_inference`). Set `islo_inference` for Islo catalog ids. Omit it on Claude and Cursor — it 422s there.
+- Harness and model live on the `run_agent` step, never in `line.toml`. `harness` is a deploy-time literal (`codex`, `claude`, `cursor`, or `opencode`); `{{harness}}` 422s.
+- `model_provider` is session-mode Codex and Claude only (`islo` or `islo_inference`). Set `islo_inference` for Islo catalog ids. Omit it on Cursor and OpenCode — it 422s there.
 - Claude on Islo inference needs `[run.sandbox.env]` `ANTHROPIC_BASE_URL` plus matching `ANTHROPIC_MODEL` / Haiku / small-fast. Cursor model ids come from `agent --list-models`, not `GET /inference/models`. Pairing details: `harness-models-knowledge.md`.
 - `[[run.sandbox.sources]]` is accepted and never checked out. Clone with an idempotent `exec` step instead (see the checkout pattern in the islo-agents examples).
 - Reserved agentic option names (`cancel`, `stop`, and the rest listed by `islo schema factory --short`) belong to line controls. Do not reuse them as option labels.
