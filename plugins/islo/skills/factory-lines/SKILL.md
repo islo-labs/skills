@@ -25,7 +25,7 @@ Factory lines are Islo's automation product: multi-stage work with typed routing
 | Write or fix `job.toml` | `islo schema job --short`, then `references/job-manifest.md` for policy |
 | Choose or wire a trigger; schedule rules; webhook vs incoming webhook | `references/triggers.md` |
 | Inspect, steer, or debug a run; a stage failed; no run appeared | `references/run-control-and-debugging.md` |
-| Artifact refs: what a run produced; ArtifactRef schema and provider shapes | `references/artifact-refs.md` |
+| Artifact refs: what a run produced; ArtifactRef schema and provider shapes | `islo schema artifact-ref --short`, then `references/artifact-refs.md` for policy |
 | Pair harness, model catalog, and host; attach knowledge | `references/harness-models-knowledge.md` |
 | Single-stage job without orchestration (rare, explicit ask only) | `references/standalone-jobs.md` |
 
