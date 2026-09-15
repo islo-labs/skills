@@ -1,20 +1,26 @@
 # Artifact refs
 
-Artifact refs record the durable external resources a job step created or materially changed — pull requests, issues, comments, Slack messages, knowledge items. They appear on `JobRunResponse.artifact_refs` after a run completes.
+Jobs emit artifact refs — durable external resources a job step created or materially changed (pull requests, issues, comments, Slack messages, knowledge items). They appear on `JobRunResponse.artifact_refs` after the run completes. Lines aggregate artifact refs from their stage job runs; they do not independently create them.
 
 ## Discovery
 
-`islo schema factory` and `islo schema job` expose the line and job **manifest** schemas (what you author in `line.toml` / `job.toml`). The `ArtifactRef` type is a **run result** type, not a manifest type, so it does not appear there. To obtain the live schema with all provider `external_ref` shapes:
+The authoritative schema lives in the JobRun output contract:
+
+```bash
+islo schema job-run --short
+```
+
+This returns the full `JobRunResponse` closure including `artifact_refs` and all provider `external_ref` shapes. For just the ArtifactRef type:
 
 ```bash
 islo schema artifact-ref --short
 ```
 
-The schema is derived from the control-plane OpenAPI spec at build time. Do not reconstruct the shape from this skill; use the CLI output as the source of truth.
+Both are derived from the control-plane OpenAPI spec at build time. Do not reconstruct the shape from this skill; use the CLI output as the source of truth.
 
 ## Quick reference
 
-The table and examples below are illustrative; `islo schema artifact-ref --short` is authoritative.
+The table and examples below are illustrative; `islo schema job-run --short` is authoritative.
 
 ### Providers
 
@@ -63,10 +69,18 @@ There are two paths, and the schema contract differs:
 | Path | Schema | How the agent writes artifacts |
 |------|--------|--------------------------------|
 | `run_agent` session mode | Control plane **injects** an `artifacts` array property into the structured-output JSON schema sent to the agent. The agent fills it as part of its claimed output. | The injected schema is a strict subset of `ArtifactRef` (no `metadata` dict, no nullable wrappers — only the fields an agent can fill). The agent returns `artifacts` alongside its declared outputs. |
-| `exec` or `run_agent` exec mode (`$ISLO_OUTPUT`) | **No schema injected.** The side-channel file accepts free-form key=value lines. | Write `artifacts=<JSON array>` to `$ISLO_OUTPUT`. Each element is validated server-side against the full `ArtifactRef` model when stored, but there is no pre-flight schema constraint. |
+| `exec` or `run_agent` exec mode (`$ISLO_OUTPUT`) | **No schema injected.** The side-channel file accepts free-form key=value lines. | Write `artifacts=<JSON array>` to `$ISLO_OUTPUT`. Each element is validated against `ArtifactRef` at finalization. |
 
 If a job declares its own output named `artifacts`, the framework does not inject the built-in property — the declared output takes precedence.
 
+## Validation contract
+
+Every emitted artifact is validated against `ArtifactRef` at job run finalization. Valid artifacts persist to `JobRunResponse.artifact_refs`. Invalid artifacts are rejected and recorded as validation errors in `result_payload._artifact_validation_errors` — they do not silently disappear. Inspect with `islo job status <name> <run-id> -o json`.
+
+## Lines aggregate, not create
+
+Line runs do not have their own artifact creation path. Stage artifacts flow from `JobRun.artifact_refs` into the line run's stage projections and summary. The line displays bounded `ArtifactSummary` objects derived from the validated job run artifacts.
+
 ## When to use artifact refs
 
-Artifact refs are the structured way for the control plane to track what a job produced. Lines use them to display results, link stage outputs to external resources, and provide traceability across multi-stage runs. Always emit artifact refs for durable external resources the step creates or changes. Do not emit them for local files, logs, intermediate state, or resources the step only read.
+Always emit artifact refs for durable external resources the step creates or changes. Do not emit them for local files, logs, intermediate state, or resources the step only read.
