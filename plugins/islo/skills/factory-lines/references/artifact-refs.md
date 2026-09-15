@@ -12,6 +12,50 @@ islo schema artifact-ref --short
 
 The schema is derived from the control-plane OpenAPI spec at build time. Do not reconstruct the shape from this skill; use the CLI output as the source of truth.
 
+## Quick reference
+
+The table and examples below are illustrative; `islo schema artifact-ref --short` is authoritative.
+
+### Providers
+
+| Provider | Kind(s) |
+|----------|---------|
+| `github` | `pull_request`, `issue`, `comment` |
+| `linear` | `issue`, `comment` |
+| `slack` | `message` |
+| `islo` | `knowledge_item` |
+| `jira` | `issue`, `epic`, `comment` |
+| `url` | `url` |
+
+### Session agent example
+
+```json
+{
+  "summary": "Opened fix PR",
+  "artifacts": [
+    {
+      "type": "pull_request",
+      "provider": "github",
+      "operation": "created",
+      "external_ref": {
+        "provider": "github",
+        "kind": "pull_request",
+        "owner": "acme",
+        "repo": "backend",
+        "number": 42
+      },
+      "url": "https://github.com/acme/backend/pull/42"
+    }
+  ]
+}
+```
+
+### $ISLO_OUTPUT example
+
+```bash
+artifacts=[{"type":"issue","provider":"linear","operation":"updated","external_ref":{"provider":"linear","kind":"issue","identifier":"ENG-99"}}]
+```
+
 ## How artifacts reach a run
 
 There are two paths, and the schema contract differs:
