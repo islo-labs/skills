@@ -10,13 +10,7 @@ The authoritative schema lives in the JobRun output contract:
 islo schema job-run --short
 ```
 
-This returns the full `JobRunResponse` closure including `artifact_refs` and all provider `external_ref` shapes. For just the ArtifactRef type:
-
-```bash
-islo schema artifact-ref --short
-```
-
-Both are derived from the control-plane OpenAPI spec at build time. Do not reconstruct the shape from this skill; use the CLI output as the source of truth.
+This returns the full `JobRunResponse` closure including `artifact_refs` and all provider `external_ref` shapes. The schema is derived from the control-plane OpenAPI spec at build time. Do not reconstruct the shape from this skill; use the CLI output as the source of truth.
 
 ## Quick reference
 
