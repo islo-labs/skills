@@ -88,6 +88,10 @@ model = "kimi-k2.7-code"
 
 Omit `model` to use the injected default (`kimi-k2.7-code`). Claimed session outputs are prompt-only (two-phase finalization, same as Cursor).
 
+## Effort
+
+`effort` is optional on any harness's `run_agent` step and requires `model`. Legal tokens are per-model — the `effort_levels` list on `GET /inference/models` for that model id — not a fixed vocabulary shared across harnesses; deploy rejects a token the model does not list. Cursor's CLI has no native effort flag: the control plane resolves the `(model, effort)` pair to a real Cursor model id before dispatch, so set `effort` on a Cursor step the same way as any other harness and let the platform do the mapping. Omit the field to use the harness default.
+
 ## Knowledge in lines
 
 Knowledge items are for declarative content: conventions, policies, house rules an agent stage should always know.
