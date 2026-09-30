@@ -20,7 +20,7 @@ Factory lines are Islo's automation product: multi-stage work with typed routing
 
 | Task | Read |
 |------|------|
-| Create, inspect, update, or rebake a Factory Machine | `references/machines.md`; use `islo factory machine --help` and subcommand help for current flags |
+| Create, inspect, update, rebake, or delete a Factory Machine | `references/machines.md`; use `islo factory machine --help` and subcommand help for current flags |
 | Build a new line from a request | `references/create-a-line.md` |
 | Write or fix `line.toml` | `islo schema factory --short`, then `references/line-manifest.md` for policy |
 | Write or fix `job.toml` | `islo schema job --short`, then `references/job-manifest.md` for policy |
