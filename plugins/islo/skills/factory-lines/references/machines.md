@@ -24,6 +24,8 @@ islo factory machine rebake <name>
 
 `create` starts the first bake. `rebake` explicitly starts a new bake with the current spec. Use `get` to inspect the spec and latest bake after either operation. If the API returns 404 for Machine commands, `factory-machine-v1` may be disabled for the tenant; there is no skill-side feature flag.
 
+A Machine refresh schedule belongs to its Machine spec, not a line `[trigger]`. Set it with `--schedule` on `create` or `update`, and disable it with `--schedule-off` on `update`. These schedule edits do not start a bake.
+
 ## Updates and rebakes
 
 | Change in `update` | Starts a new bake? |

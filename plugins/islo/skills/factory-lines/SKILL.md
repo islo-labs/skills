@@ -12,7 +12,7 @@ Factory lines are Islo's automation product: multi-stage work with typed routing
 1. Never write or edit a manifest from memory. Scaffold with `islo job init`, read `islo schema factory --short` and `islo schema job --short`, validate with `--dry-run`. Treat every example as a pattern, not a drop-in. Nearby lines supply stage shape only — never copy repo, Linear team/project, Slack channel, snapshot, or gateway without the user naming them in this request.
 2. Creating a line follows `references/create-a-line.md` phase by phase. Phase 1 is an intake gate: ask identity (repos, Linear team/project, Slack channel) and stop. Phase 2 is an approval gate: present the design summary and wait for explicit approval before creating or deploying anything.
 3. Deploy order matters and is defined once, in create-a-line.md Phase 6: knowledge, then every stage job, then the line last.
-4. Schedules live in the line manifest `[trigger]` and nowhere else; anything else is reverted on the next deploy.
+4. Line run schedules live in the line manifest `[trigger]`; configuring one elsewhere is reverted on the next line deploy. Factory Machine refresh schedules live in the Machine spec and are managed with `islo factory machine`.
 5. Harness code ships in sandbox snapshots. Put the stage brief in the job `run_agent` prompt so a prompt change is a new job version. Leave supporting or fan-out briefs in the snapshot when they would clutter the line/job view. Repo skills may be a fetch-or-clone checkout plus a short pointer. Never copy procedural content into Knowledge.
 6. Agents do the judgment work via `run_agent`. Do not replace them with hand-written shell business logic or shell-wrapped agent CLIs, and do not put provider tokens in manifests or sandbox env.
 
@@ -24,7 +24,7 @@ Factory lines are Islo's automation product: multi-stage work with typed routing
 | Build a new line from a request | `references/create-a-line.md` |
 | Write or fix `line.toml` | `islo schema factory --short`, then `references/line-manifest.md` for policy |
 | Write or fix `job.toml` | `islo schema job --short`, then `references/job-manifest.md` for policy |
-| Choose or wire a trigger; schedule rules; webhook vs incoming webhook | `references/triggers.md` |
+| Choose or wire a line trigger; line run schedule rules; webhook vs incoming webhook | `references/triggers.md` |
 | Inspect, steer, or debug a run; a stage failed; no run appeared | `references/run-control-and-debugging.md` |
 | Pair harness, model catalog, and host; attach knowledge | `references/harness-models-knowledge.md` |
 | Single-stage job without orchestration (rare, explicit ask only) | `references/standalone-jobs.md` |
