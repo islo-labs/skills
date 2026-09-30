@@ -1,6 +1,6 @@
 ---
 name: factory-lines
-description: Create, deploy, run, and debug Islo Factory lines and jobs. Use when the user wants to automate a workflow on Islo, mentions factory lines, line.toml, job.toml, line runs, schedules, triggers, or asks to build or fix an Islo automation.
+description: Create and manage Islo Factory Machines, lines, and jobs. Use when the user asks for a Factory Machine or wants to automate a workflow on Islo, mentions factory lines, line.toml, job.toml, line runs, schedules, triggers, or asks to build or fix an Islo automation.
 ---
 
 # Islo Factory lines
@@ -20,6 +20,7 @@ Factory lines are Islo's automation product: multi-stage work with typed routing
 
 | Task | Read |
 |------|------|
+| Create, inspect, update, or rebake a Factory Machine | `references/machines.md`; use `islo factory machine --help` and subcommand help for current flags |
 | Build a new line from a request | `references/create-a-line.md` |
 | Write or fix `line.toml` | `islo schema factory --short`, then `references/line-manifest.md` for policy |
 | Write or fix `job.toml` | `islo schema job --short`, then `references/job-manifest.md` for policy |
