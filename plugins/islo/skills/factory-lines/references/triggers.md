@@ -69,3 +69,14 @@ islo factory triggers list --with-status
 ```
 
 The one-real-event procedure with an expected-effects checklist is Phase 7 of `create-a-line.md`.
+
+## Inspecting delivered events
+
+`triggers list --with-status` only shows whether a provider is connected, not whether a specific event made it through. When an event fired but no run (or the wrong run) appeared, inspect the dispatch itself:
+
+```bash
+islo factory trigger-events list --provider github --event pull_request.synchronize
+islo factory trigger-events get <event-id>
+```
+
+`get` shows the invocation status, outcome, failure code/summary when dispatch failed, and the per-line "effects" (which lines matched, their resulting line run id or failure). Use it before assuming the selector or filter is wrong.
