@@ -24,7 +24,7 @@ islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<messa
 
 | Symptom | Do this |
 |---------|---------|
-| Trigger fired but no run appeared | `islo factory line-run list --line <name>`, `islo factory triggers list --with-status` |
+| Trigger fired but no run appeared | `islo factory line-run list --line <name>`, `islo factory triggers list --with-status`, then `islo factory trigger-events list` / `get <event-id>` for the delivery outcome and failure reason |
 | Stage failed | `islo factory line-run events <run-id>`, then `islo job event <command-id>` for the failing step's detail |
 | Agent did the wrong thing mid-stage | `islo factory line-run agent-turn` with a corrective message; inspect with `islo ssh <sandbox>` and `islo logs <sandbox>` |
 | Manager routed wrong or you want a reassessment | `islo factory line-run ask` |
