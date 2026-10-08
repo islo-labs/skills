@@ -12,10 +12,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate manifest JSON shapes
         run: python3 scripts/validate_manifest_shapes.py
-      - name: Validate Factory Machines skill frontmatter and references
+      - name: Validate Surfaces skill frontmatter and references
         run: |
-          python3 scripts/validate_factory_machines_skill.py
-          python3 scripts/test_validate_factory_machines_skill.py
+          python3 scripts/validate_surfaces_skill.py
+          python3 scripts/test_validate_surfaces_skill.py
       - name: Check plugin manifest copies match canonical
         run: bash scripts/sync_plugin_manifests.sh --check
 

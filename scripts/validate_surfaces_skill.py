@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Validate the Factory Machines skill's static metadata and local Markdown links."""
+"""Validate the Surfaces skill metadata and local Markdown links."""
 
 import re
 from pathlib import Path
 
 
-SKILL = Path(__file__).resolve().parent.parent / "plugins/islo/skills/factory-machines/SKILL.md"
+SKILL = Path(__file__).resolve().parent.parent / "plugins/islo/skills/surfaces/SKILL.md"
 LINK = re.compile(r"\[[^]]+\]\(([^)]+)\)")
 
 
@@ -21,7 +21,7 @@ def validate() -> None:
         frontmatter.group(1),
     )
     assert fields, "frontmatter must contain valid name and description scalars"
-    assert fields.group("name") == "factory-machines"
+    assert fields.group("name") == "surfaces"
 
     files = [SKILL, *sorted((SKILL.parent / "references").glob("*.md"))]
     assert len(files) > 1, "skill needs focused references"
@@ -32,16 +32,7 @@ def validate() -> None:
                     f"{source}: missing local reference {target}"
                 )
 
-    lifecycle = (SKILL.parent / "references/lifecycle.md").read_text()
-    surfaces = (SKILL.parent / "references/surfaces.md").read_text()
-    for required in (
-        "`cli start` and `cli health`",
-        "Run `cli stop` before the inspect stage finishes",
-        "backing process start command, readiness check, and publication command",
-        "when inside a line run",
-        "Outside a line run",
-    ):
-        assert required in lifecycle, f"lifecycle guidance missing: {required}"
+    usage = (SKILL.parent / "references/usage.md").read_text()
     for required in (
         "`islo surface --help`",
         "`web` and `terminal`",
@@ -55,9 +46,9 @@ def validate() -> None:
         "Do not publish an ordinary shell",
         "Never expose databases, debug ports, internal metrics",
     ):
-        assert required in surfaces, f"Surface guidance missing: {required}"
+        assert required in usage, f"Surface guidance missing: {required}"
 
 
 if __name__ == "__main__":
     validate()
-    print("validated Factory Machines skill frontmatter and local references")
+    print("validated Surfaces skill frontmatter and local references")
