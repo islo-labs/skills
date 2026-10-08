@@ -5,6 +5,7 @@ Agent skills and plugin metadata for working with [Islo](https://islo.dev), the 
 This repo teaches coding agents how to use Islo for:
 
 - **Factory lines**: multi-stage orchestration with typed transitions, integration triggers, and `islo factory line-run` controls
+- **Run surfaces**: publish live web and terminal interfaces from line-run stage sandboxes
 - **Harness and model selection**: pair Codex / Claude / Cursor to the matching catalog and host (not one shared model list)
 - **Jobs**: lower-level durable stage execution units
 - **Webhooks**: lower-level HTTP event ingress and egress
@@ -65,7 +66,7 @@ Agents that support the common plugin layout can load `plugins/islo`. Agents tha
 
 ## Contents
 
-The plugin ships two skills:
+The plugin ships three skills:
 
 ```text
 plugins/islo/skills/
@@ -74,6 +75,9 @@ plugins/islo/skills/
 │   ├── references/           # create-a-line workflow, manifest anatomy, triggers,
 │   │                         # run control and debugging, harness/model/knowledge
 │   └── scripts/              # validate_commands.sh, validate_examples.sh
+├── surfaces/                 # TASK skill: publish live line-run interfaces
+│   ├── SKILL.md              # router
+│   └── references/           # target-specific readiness and safety
 └── platform/                 # REFERENCE skill: Islo infrastructure
     ├── SKILL.md
     └── references/           # sandboxes and snapshots, gateway integrations,
@@ -105,6 +109,8 @@ Keep each SKILL.md a lean router and move details into one-level reference files
 
 ```bash
 python3 scripts/validate_manifest_shapes.py
+python3 scripts/validate_surfaces_skill.py
+python3 scripts/test_validate_surfaces_skill.py
 bash scripts/sync_plugin_manifests.sh --check
 bash plugins/islo/skills/factory-lines/scripts/validate_commands.sh
 bash plugins/islo/skills/factory-lines/scripts/validate_examples.sh
