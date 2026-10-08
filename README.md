@@ -109,6 +109,7 @@ Keep each SKILL.md a lean router and move details into one-level reference files
 ```bash
 python3 scripts/validate_manifest_shapes.py
 python3 scripts/validate_factory_machines_skill.py
+python3 scripts/test_validate_factory_machines_skill.py
 bash scripts/sync_plugin_manifests.sh --check
 bash plugins/islo/skills/factory-lines/scripts/validate_commands.sh
 bash plugins/islo/skills/factory-lines/scripts/validate_examples.sh

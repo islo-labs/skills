@@ -13,11 +13,15 @@ def validate() -> None:
     content = SKILL.read_text()
     frontmatter = re.match(r"\A---\n(.*?)\n---\n", content, re.DOTALL)
     assert frontmatter, "SKILL.md needs YAML frontmatter"
-    fields = dict(
-        line.split(":", 1) for line in frontmatter.group(1).splitlines() if ":" in line
+    # Accept only two plain scalar fields. Excluding YAML collection, quote,
+    # comment, and block markers makes malformed YAML fail without a dependency.
+    fields = re.fullmatch(
+        r"name: (?P<name>[a-z][a-z0-9-]*)\n"
+        r"description: (?P<description>[A-Za-z][A-Za-z0-9 ,.;/()\-]*[A-Za-z0-9.])",
+        frontmatter.group(1),
     )
-    assert fields.get("name", "").strip() == "factory-machines"
-    assert fields.get("description", "").strip()
+    assert fields, "frontmatter must contain valid name and description scalars"
+    assert fields.group("name") == "factory-machines"
 
     files = [SKILL, *sorted((SKILL.parent / "references").glob("*.md"))]
     assert len(files) > 1, "skill needs focused references"
