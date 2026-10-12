@@ -20,6 +20,8 @@ Choose useful user-facing interfaces from the repository and running stack. A ru
 
 Publish a web interface only when its service is healthy and reachable through the sandbox at the intended port, and a real user-facing page or endpoint responds. Check actual content or an application-specific readiness probe. A bound port or successful TCP connection is insufficient.
 
+Before publishing a web Surface, ensure the server listens on `0.0.0.0`. After publishing, verify that the returned Surface URL works.
+
 The web server must remain running while the Surface is in use. This command creates a **public web share**. Check the exposed UI and responses for secrets, private data, privileged admin actions, or unintended access before publishing. Never expose databases, debug ports, internal metrics, or other internal services.
 
 ## Terminal
