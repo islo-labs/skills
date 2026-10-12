@@ -40,6 +40,8 @@ def validate() -> None:
         "A listening port alone",
         "blind port scanning",
         "healthy and reachable through the sandbox",
+        "`0.0.0.0`",
+        "returned Surface URL works",
         "**public web share**",
         "secrets",
         "persistent user-facing TUI, REPL, live log view",

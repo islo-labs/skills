@@ -15,6 +15,13 @@ def test_router_defines_the_stage_capability_boundary() -> None:
     assert "Line Manager" in content
 
 
+def test_web_guidance_requires_end_to_end_surface_reachability() -> None:
+    usage = (validator.SKILL.parent / "references/usage.md").read_text()
+
+    assert "0.0.0.0" in usage
+    assert "returned Surface URL works" in usage
+
+
 def test_validator_rejects_malformed_yaml_frontmatter() -> None:
     with tempfile.TemporaryDirectory() as temporary_dir:
         skill_dir = Path(temporary_dir)
@@ -38,4 +45,5 @@ def test_validator_rejects_malformed_yaml_frontmatter() -> None:
 if __name__ == "__main__":
     test_validator_rejects_malformed_yaml_frontmatter()
     test_router_defines_the_stage_capability_boundary()
+    test_web_guidance_requires_end_to_end_surface_reachability()
     print("validated Surfaces router and malformed-frontmatter rejection")
