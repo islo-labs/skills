@@ -43,13 +43,13 @@ islo webhook incoming get <id>
 islo webhook incoming rm <id> --force
 ```
 
-Use `--output json` for structured output and `--request-json` or `--request-toml` when flags are not enough. For outgoing webhooks, check `islo schema webhook` for the current surface.
+Use `--output json` for structured output and `--request-json` or `--request-toml` when flags are not enough. `islo webhook` only manages incoming webhooks — there is no outgoing-webhook feature; a stage or sandbox that needs to call out to a third party on an event just makes the HTTP call itself.
 
 Auth separation: incoming webhook secrets verify the sender; outbound provider credentials come from gateway profiles. See `gateway-integrations.md`. Store the returned receiver URL in the external provider.
 
 ## SDK
 
-For services, dashboards, bots, and custom launchers built on Islo. Use the CLI when a human or coding agent works interactively in a repo; use the SDK when code needs to manage sandboxes, start jobs or line runs, manage webhooks, configure gateway profiles, or inspect runs.
+For services, dashboards, bots, and custom launchers built on Islo. Use the CLI when a human or coding agent works interactively in a repo; use the SDK when code needs to manage sandboxes, start jobs or line runs, manage webhooks, configure gateway profiles, or inspect runs. For a one-off authenticated call to an endpoint the CLI has no subcommand for yet, use `islo api <path>` (`--plane compute` for the sandbox's compute region) instead of reaching for curl or the SDK.
 
 Packages: TypeScript `@islo-labs/sdk`, Python `islo`; generated SDKs also exist for Go. They are generated from the OpenAPI/Fern pipeline, so method names change; check docs MCP or the package reference before writing non-trivial code.
 
