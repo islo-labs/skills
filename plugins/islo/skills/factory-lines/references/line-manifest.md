@@ -10,8 +10,8 @@ Unknown keys 422. Treat every TOML example in this repo as a pattern, not a drop
 
 ## Policy the schema does not state
 
-- A line declares identity, what starts a run, the stages, and the routing between them. Harness, model, params, and outputs live on each stage's job.
+- A line declares identity, what starts a run, the stages, and the routing between them. Each stage sets exactly one of `job` or `agent` by name. For a `job` stage, harness, model, params, and outputs live on that job. For an `agent` stage, harness and model live on the Factory Agent, and params/outputs are the fixed `input`/`output` contract in `agents.md` — not customizable per line.
 - Line run schedules live in `[trigger]`; a line run schedule created any other way is reverted on the next line deploy. Factory Machine refresh schedules are separate and live in the Machine spec (see `machines.md`).
-- Deploy order is knowledge, then every stage job, then the line last. The line pins `job_version_id` at deploy time.
+- Deploy order is knowledge, then every stage job, then the line last. The line pins `job_version_id` at deploy time. An `agent` stage is not pinned this way; it resolves the Factory Agent's current version at run time.
 - Reserved agentic option names belong to line controls. Do not reuse them as option labels.
 - Trigger field shapes and the condition AST are in the schema; wiring (selectors, filters, one-real-event verify) is in `triggers.md`.
