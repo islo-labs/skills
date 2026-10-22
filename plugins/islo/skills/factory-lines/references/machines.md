@@ -37,7 +37,7 @@ Machine creation runs **Prepare**, then **Author**, then **Finalize**:
 
 1. **Prepare** runs `islo machine prepare --spec <file|->` as the sandbox user. The command validates the schema-1 spec, prepares every registered repository, and generates `/tmp/islo-machine-context.json`. A separate privileged step installs that document at `/etc/islo/machine.json` with mode `0644`, so repository files remain user-owned.
 2. **Author** explores every repository before it changes files. If setup intent is missing, Author returns a typed batch of 1 to 10 questions without editing or committing. The manager asks the user and parks the run. The manager then resumes the same Author session with the answers. Author can repeat this question loop.
-3. **Finalize** runs `islo machine verify`, saves the snapshot, and deletes the build sandbox. Verification reads only the installed context and repository files. It validates `machine.md`, component definitions, image and capacity requirements, required environment names, and the repeated component lifecycle. If validation fails, Finalize publishes the bounded structured report, does not save a snapshot, and keeps the sandbox for diagnosis.
+3. **Finalize** runs `islo machine verify`, saves the snapshot, and deletes the build sandbox. Verification reads only the installed context and repository files. It validates `machine.md`, component definitions, image and capacity requirements, required environment names, prepared refresh commits, clean Git state before and after lifecycle execution, and declared targets on each repeated verification run. If validation fails, Finalize publishes the bounded structured report, does not save a snapshot, and keeps the sandbox for diagnosis.
 
 Author writes exactly one `.islo/<machine-name>/machine.md` in the repository that owns the top-level orchestration. It writes component definitions and lifecycle entrypoints in the repositories that own them. Author commits every changed repository and leaves each checkout clean.
 
@@ -58,9 +58,9 @@ islo machine verify --output json
 
 Keep `islo components ...` for lower-level graph and lifecycle troubleshooting. `islo machine verify` is the complete acceptance check and exits non-zero when its schema-1 report has `passed: false`.
 
-The prepare spec contains `schema`, `mode`, `machine_id`, `machine_name`, `repositories`, and `capacity`. Repository entries contain `key`, `repo_url`, `checkout_path`, and optional `creation_branch`. Capacity contains `capabilities`, `vcpus`, `memory_mb`, `disk_gb`, and `image`. URLs cannot contain credentials, checkout paths must be unique children of `/workspace`, and keys and paths must be unique.
+The prepare spec contains `schema`, `mode`, `machine_id`, `machine_name`, `repositories`, and `capacity`. Repository entries contain `key`, `repo_url`, `checkout_path`, and optional `creation_branch`. Capacity contains `capabilities`, `vcpus`, `memory_mb`, `disk_gb`, and `image`. Repository URLs may use HTTPS, `ssh://`, or SCP-style SSH such as `git@github.com:owner/repository.git`, but cannot embed passwords or HTTPS credentials. Checkout paths must be non-overlapping physical children of `/workspace` without symlinked ancestors, and keys must be unique.
 
-The installed schema-1 context excludes repository URLs and credentials. It records mode, Machine identity, repository key/path registrations with optional creation branches, and typed capacity. Do not hand-edit it or depend on temporary spec files.
+The installed schema-1 context excludes repository URLs and credentials. It records mode, Machine identity, repository key/path registrations with optional creation branches and each prepared commit, and typed capacity. Refresh verification requires each checkout to remain at that prepared commit. Do not hand-edit the context or depend on temporary spec files.
 
 ## Runner image requirement
 
