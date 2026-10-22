@@ -54,6 +54,12 @@ for f in "${files[@]}"; do
   extract "$f"
 done
 
+only_missing_resource() {
+  local output="$1" expected="$2"
+  grep -Eq "^[[:space:]]+Hint: .*${expected}.*$" <<<"$output" &&
+    ! grep -Ev "^(Error: Invalid request parameters|[[:space:]]+Hint: .*${expected}.*|[[:space:]]*)$" <<<"$output"
+}
+
 fail=0
 agent_count=0
 manager_count=0
@@ -76,9 +82,9 @@ for kindfile in "$tmp"/*.kind; do
       out="$(islo factory line validate "$toml" 2>&1)"; rc=$?
       if [[ $rc -eq 0 ]]; then
         echo "ok   $name (line validate)"
-      elif [[ "$kind" == "manager-line" ]] && grep -q "manager.agent references unknown Agent" <<<"$out"; then
+      elif [[ "$kind" == "manager-line" ]] && only_missing_resource "$out" "manager\.agent references unknown Agent"; then
         echo "ok   $name (Manager schema valid; example Agent not deployed in this tenant)"
-      elif grep -q "references unknown job" <<<"$out" && ! grep -qv "references unknown job" <<<"$(grep "Error" <<<"$out")"; then
+      elif only_missing_resource "$out" "references unknown job"; then
         echo "ok   $name (schema valid; example jobs not deployed in this tenant)"
       else
         echo "FAIL $name (line validate)"; sed 's/^/  /' <<<"$out"; fail=1
