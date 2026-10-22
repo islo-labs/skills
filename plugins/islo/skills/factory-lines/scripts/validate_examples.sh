@@ -3,7 +3,9 @@
 # islo CLI, so the skill's examples cannot rot.
 #
 # Blocks tagged <!-- validate: line --> run through `islo factory line validate`.
-# Blocks tagged <!-- validate: job -->  run through `islo job deploy --dry-run`.
+# Blocks tagged <!-- validate: job --> run through `islo job deploy --dry-run`.
+# Blocks tagged <!-- validate: agent --> run through `islo agent validate`.
+# Blocks tagged <!-- validate: manager-line --> exercise the Manager contract.
 # Untagged ```toml blocks get a TOML parse check only (fragments).
 #
 # Line examples reference jobs that do not exist in the tenant; the server
@@ -19,7 +21,7 @@ for candidate in "$refs/line-manifest.md" "$refs/job-manifest.md"; do
 done
 if [[ ${#files[@]} -eq 0 ]]; then
   echo "no manifest references to validate" >&2
-  exit 0
+  exit 1
 fi
 
 command -v islo >/dev/null || { echo "islo CLI not on PATH" >&2; exit 1; }
@@ -35,6 +37,8 @@ extract() {
   awk -v out="$tmp/$base" '
     /<!-- validate: line -->/  { pending = "line"; next }
     /<!-- validate: job -->/   { pending = "job"; next }
+    /<!-- validate: agent -->/ { pending = "agent"; next }
+    /<!-- validate: manager-line -->/ { pending = "manager-line"; next }
     /^```toml/ { inblock = 1; n += 1
                  kind = pending; if (kind == "") kind = "fragment"
                  pending = ""
@@ -51,6 +55,8 @@ for f in "${files[@]}"; do
 done
 
 fail=0
+agent_count=0
+manager_count=0
 shopt -s nullglob
 for kindfile in "$tmp"/*.kind; do
   toml="${kindfile%.kind}.toml"
@@ -65,14 +71,25 @@ for kindfile in "$tmp"/*.kind; do
   case "$kind" in
     fragment)
       echo "ok   $name (parse only)" ;;
-    line)
+    line|manager-line)
+      [[ "$kind" == "manager-line" ]] && manager_count=$((manager_count + 1))
       out="$(islo factory line validate "$toml" 2>&1)"; rc=$?
       if [[ $rc -eq 0 ]]; then
         echo "ok   $name (line validate)"
+      elif [[ "$kind" == "manager-line" ]] && grep -q "manager.agent references unknown Agent" <<<"$out"; then
+        echo "ok   $name (Manager schema valid; example Agent not deployed in this tenant)"
       elif grep -q "references unknown job" <<<"$out" && ! grep -qv "references unknown job" <<<"$(grep "Error" <<<"$out")"; then
         echo "ok   $name (schema valid; example jobs not deployed in this tenant)"
       else
         echo "FAIL $name (line validate)"; sed 's/^/  /' <<<"$out"; fail=1
+      fi ;;
+    agent)
+      agent_count=$((agent_count + 1))
+      out="$(islo agent validate "$toml" 2>&1)"; rc=$?
+      if [[ $rc -eq 0 ]]; then
+        echo "ok   $name (Agent validate)"
+      else
+        echo "FAIL $name (Agent validate)"; sed 's/^/  /' <<<"$out"; fail=1
       fi ;;
     job)
       out="$(islo job deploy --path "$toml" --dry-run 2>&1)"; rc=$?
@@ -84,4 +101,8 @@ for kindfile in "$tmp"/*.kind; do
   esac
 done
 
+if [[ $agent_count -eq 0 || $manager_count -eq 0 ]]; then
+  echo "FAIL: expected nonzero Agent and Manager Line fixtures (found $agent_count Agent, $manager_count Manager)" >&2
+  fail=1
+fi
 exit $fail
