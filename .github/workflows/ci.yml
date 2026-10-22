@@ -11,7 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate manifest JSON shapes
-        run: python3 scripts/validate_manifest_shapes.py
+        run: |
+          python3 scripts/validate_manifest_shapes.py
+          python3 scripts/test_factory_examples_validation.py
       - name: Validate Surfaces skill frontmatter and references
         run: |
           python3 scripts/validate_surfaces_skill.py
