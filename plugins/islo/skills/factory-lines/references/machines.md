@@ -103,7 +103,7 @@ After the included components have been exercised, report every discovered compo
 
 ## Build lifecycle
 
-Machine creation runs **Prepare**, then **Author**, then **Finalize**:
+When `run_author` is true, the build runs **Prepare**, then **Author**, then **Finalize**. Otherwise it runs **Prepare**, then **Finalize**.
 
 1. **Prepare** runs `islo machine prepare --spec <file|->` as the sandbox user. The command validates the schema-1 spec, prepares every registered repository, and generates `/tmp/islo-machine-context.json`. A separate privileged step installs that document at `/etc/islo/machine.json` with mode `0644`, so repository files remain user-owned.
 2. **Author** reads the repository docs, lists services and resources, and asks the batches in "Questions Author may ask" before it writes files. It posts those questions itself. The manager parks the run and later resumes the same Author session with the answers passed through. Author can repeat this question loop. It then writes the contract, exercises it, reports each result, and opens a pull request only for repositories the user selects.
@@ -111,7 +111,7 @@ Machine creation runs **Prepare**, then **Author**, then **Finalize**:
 
 Machine repository entries use stable `MachineRepo.key` values for component and cross-repository references. This key contract applies to Machine repositories. Do not assume that generic Git sources have stable keys.
 
-A scheduled refresh runs **Prepare**, then **Finalize**. It skips **Author**. A refresh cannot reuse commits that were never pushed. The create path delivers definitions only for the repositories the user selected for a pull request.
+A build runs Author only when the line param `run_author` is true. Prepare then uses create mode, so repositories are on their creation branches and Author can commit. The first revision passes true. A later rebuild passes false and skips Author, unless the person chooses "Rebuild and update components". A scheduled refresh passes false. A refresh cannot reuse commits that were never pushed. The create path delivers definitions only for the repositories the user selected for a pull request.
 
 ## Local workspace commands
 
