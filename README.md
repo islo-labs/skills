@@ -72,8 +72,8 @@ The plugin ships three skills:
 plugins/islo/skills/
 ├── factory-lines/            # TASK skill: create and operate factory lines
 │   ├── SKILL.md              # router + iron rules
-│   ├── references/           # create-a-line workflow, manifest anatomy, triggers,
-│   │                         # run control and debugging, harness/model/knowledge
+│   ├── references/           # create-a-line workflow, machines, question shape,
+│   │                         # manifest anatomy, triggers, run control, harness/model
 │   └── scripts/              # validate_commands.sh, validate_examples.sh
 ├── surfaces/                 # TASK skill: publish live line-run interfaces
 │   ├── SKILL.md              # router
