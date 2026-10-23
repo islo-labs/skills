@@ -10,6 +10,7 @@ Run these before asking the user anything, so the questions are informed:
 islo status
 islo schema factory --short
 islo schema job --short
+islo schema agent
 ```
 
 If an integration trigger is likely (the request mentions Slack, GitHub, or Linear events):
@@ -35,8 +36,9 @@ Identity vs pattern: nearby lines, `islo-agents` examples, and the current works
    - Slack: workspace and channel.
 3. Repositories. Which `owner/repo` each stage checks out. Ask unless the user named it in this request. Do not inherit from a nearby line, a snapshot name, or the current workspace.
 4. Runtime profile: ONE confirm-or-override block for harness, model, sandbox, and snapshot only. See below. Repositories are item 3, not a default inside this block.
-5. Limits: `max_iterations`, `timeout`, budget.
-6. Where results land: PR, Slack message, knowledge item, outputs.
+5. Manager: built-in Manager or a prompt Agent? For a prompt Agent, ask which existing Factory Machine to use or propose preparing a new one, and whether this Line needs a replacement `manager.prompt`.
+6. Limits: `max_iterations`, `timeout`, budget.
+7. Where results land: PR, Slack message, knowledge item, outputs.
 
 ### The runtime profile block
 
@@ -74,6 +76,7 @@ Present one summary and wait for explicit approval. Do not create, deploy, or sc
 - Stage table: id, job name, description, and a runtime line per stage in the form `harness / model / sandbox mode / snapshot / repos` (identical rows collapse to one "all stages" line above the table).
 - ASCII transition graph, including loops and failure routes.
 - Trigger sketch: type, selector, filters, trigger outputs.
+- Manager choice and, for a prompt Agent, its Machine, Agent name, and prompt source.
 - Deploy sequence you will run (Phase 6 order).
 - Cost note: validation is static; the first real feedback is a billed run.
 
@@ -81,6 +84,7 @@ Present one summary and wait for explicit approval. Do not create, deploy, or sc
 
 - Copy the nearest example from [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents) (`examples/`) and treat it as a pattern, not a drop-in. Clone or browse that repo if it is not already on disk.
 - `islo job init <name>` per stage. Add `--with-verification` on stages whose outputs gate transitions.
+- If the Line uses a prompt Agent Manager, write its `agent.toml` from `islo schema agent`. Use `type = "prompt"` and put the reusable Manager behavior in `prompt`. Set `[manager] agent = "<name>"` in `line.toml`; use optional `manager.prompt` only for a Line-specific replacement. Do not combine it with legacy `[agent.instructions]`. With no `[manager]`, the built-in Manager remains active and legacy `[agent.instructions]` still works. Agentic transition `instructions` guide that particular routing decision; stage `run_agent.prompt` belongs to its stage job.
 - Write the `job.toml` files first: params and outputs are the line's contract. Then `line.toml`. Confirm every field against `islo schema job --short` and `islo schema factory --short`; see `job-manifest.md` and `line-manifest.md` only for policy the schema does not state. Wire harness/model using `harness-models-knowledge.md` — do not copy a nearby line's pairing.
 - Create a snapshot as the default. Follow the platform skill's sandboxes reference, put harness code in `snapshot-src/`, and set `snapshot_name` on the jobs. Skip the snapshot only if the approved profile explicitly opted out.
 - Agent instructions: write the stage brief in the job `run_agent` prompt so a prompt change is a new job version. If the user's repo already contains skills, check it out with an idempotent fetch-or-clone exec step (the pattern in `job-manifest.md`; the default gateway profile injects GitHub credentials) and point at that skill. Put supporting or fan-out briefs in the snapshot when they would clutter the line/job view. Never copy procedural content into Knowledge; deploy rejects procedural knowledge.
@@ -88,6 +92,7 @@ Present one summary and wait for explicit approval. Do not create, deploy, or sc
 ## Phase 4: static validation
 
 ```bash
+islo agent validate agent.toml                       # only for an Agent Manager; prepare its Machine first
 islo job deploy --path jobs/<name>/job.toml --dry-run   # per job
 islo factory line validate line.toml
 islo factory line deploy line.toml --dry-run
@@ -110,10 +115,14 @@ Confirm the declared outputs actually appear with the right values. If the outpu
 
 ## Phase 6: deploy in canonical order
 
-Knowledge items first, then every stage job, then the line last. The line pins `job_version_id` at deploy time, so redeploying a job alone does not update an already-deployed line; redeploy the line after any job change.
+Prepare the Manager Machine, validate and create its prompt Agent (if used), deploy knowledge items and every stage job, then validate and deploy the line last. A new Manager Machine follows `references/machines.md`. Its build parks until Author's questions are answered. The line pins `job_version_id` at deploy time, so redeploying a job alone does not update an already-deployed line; redeploy the line after any job change.
 
 ```bash
+islo factory machine create <manager-machine>  # if a new Machine is needed; answer Author's questions per machines.md
+islo agent validate agent.toml                 # if using an Agent Manager
+islo agent create agent.toml                   # if using an Agent Manager
 islo job deploy --path jobs/<stage>/job.toml   # each stage
+islo factory line validate line.toml
 islo factory line deploy line.toml             # last
 ```
 

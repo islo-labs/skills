@@ -93,7 +93,7 @@ Omit `model` to use the injected default (`kimi-k2.7-code`). Claimed session out
 Knowledge items are for declarative content: conventions, policies, house rules an agent stage should always know.
 
 - Attach to a stage via `run_agent` prompt bindings (`{ type = "knowledge", slug = "..." }`) or the `run_agent.knowledge` array. Shapes per `islo schema job --short`.
-- Line routing instructions (`[agent.instructions]` in line.toml) can also bind knowledge.
+- Legacy built-in Manager routing instructions (`[agent.instructions]` in line.toml) can bind knowledge only when `[manager]` is absent. A prompt Agent Manager instead uses its Agent `prompt`, optionally replaced for one Line by `manager.prompt`.
 - Deploy knowledge items before the jobs that reference them (Phase 6 order in `create-a-line.md`).
 
 Procedural content (skills, step-by-step prompts, playbooks) is rejected at knowledge deploy, and copying it would fork it from the repo anyway. Keep it in the repo, check it out with the fetch-or-clone step from `job-manifest.md`, and point a short literal prompt at the file.
