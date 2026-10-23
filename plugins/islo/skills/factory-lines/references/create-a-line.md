@@ -115,10 +115,10 @@ Confirm the declared outputs actually appear with the right values. If the outpu
 
 ## Phase 6: deploy in canonical order
 
-Prepare the Manager Machine, validate and create its prompt Agent (if used), deploy knowledge items and every stage job, then validate and deploy the line last. The line pins `job_version_id` at deploy time, so redeploying a job alone does not update an already-deployed line; redeploy the line after any job change.
+Prepare the Manager Machine, validate and create its prompt Agent (if used), deploy knowledge items and every stage job, then validate and deploy the line last. A new Manager Machine follows `references/machines.md`. Its build parks until Author's questions are answered. The line pins `job_version_id` at deploy time, so redeploying a job alone does not update an already-deployed line; redeploy the line after any job change.
 
 ```bash
-islo factory machine create <manager-machine>  # if a new Machine is needed; wait until ready
+islo factory machine create <manager-machine>  # if a new Machine is needed; answer Author's questions per machines.md
 islo agent validate agent.toml                 # if using an Agent Manager
 islo agent create agent.toml                   # if using an Agent Manager
 islo job deploy --path jobs/<stage>/job.toml   # each stage
