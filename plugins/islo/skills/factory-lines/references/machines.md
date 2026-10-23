@@ -28,7 +28,7 @@ islo factory machine build <name> --update-components
 islo factory machine delete <name>
 ```
 
-`create` starts the first build and runs Author, so the component files can be written. `build` alone refreshes the snapshot and skips Author. `build --update-components` runs Author again. `update` saves the spec; a repository, capability, or size change starts a refresh build and still skips Author. Use `get` to inspect the spec and latest build after either operation. If the API returns 404 for Machine commands, `factory-machine-v1` may be disabled for the tenant; there is no skill-side feature flag.
+`create` starts the first build and runs Author, so the component files can be written. `build` alone refreshes the snapshot and skips Author. `build --update-components` runs Author again. `update` saves the spec. A repository or environment change starts a build that runs Author. A capability or size change starts a refresh build and skips Author. Use `get` to inspect the spec and latest build after either operation. If the API returns 404 for Machine commands, `factory-machine-v1` may be disabled for the tenant; there is no skill-side feature flag.
 
 `delete` removes the Machine and frees its name. Saved snapshots stay. A running build returns 409 and deletes nothing. The command asks for confirmation in a terminal; `--force` skips it.
 
@@ -112,7 +112,7 @@ When `update_components` is true, the build runs **Prepare**, then **Author**, t
 
 Machine repository entries use stable `MachineRepo.key` values for component and cross-repository references. This key contract applies to Machine repositories. Do not assume that generic Git sources have stable keys.
 
-A build runs Author only when the line param `update_components` is true. Prepare then uses create mode, so repositories are on their creation branches and Author can commit. The first revision passes true. A later rebuild passes false and skips Author, unless the person chooses "Rebuild and update components" or passes `--update-components`. A machine update and a scheduled refresh pass false. A refresh cannot reuse commits that were never pushed. The create path delivers definitions only for the repositories the user selected for a pull request.
+A build runs Author only when the line param `update_components` is true. Prepare then uses create mode, so repositories are on their creation branches and Author can commit. The first revision passes true. A repository or environment edit passes true. A later rebuild passes false and skips Author, unless the person chooses "Rebuild and update components" or passes `--update-components`. A capability or size edit and a scheduled refresh pass false. A refresh cannot reuse commits that were never pushed. The create path delivers definitions only for the repositories the user selected for a pull request.
 
 ## Local workspace commands
 
