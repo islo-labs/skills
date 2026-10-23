@@ -24,10 +24,11 @@ islo factory machine create <name> --repo <git-url> --capability docker
 islo factory machine get <name>
 islo factory machine update <name> --vcpus 4 --memory-mb 4096
 islo factory machine build <name>
+islo factory machine build <name> --update-components
 islo factory machine delete <name>
 ```
 
-`create` starts the first build. `build` forces a new Machine version from the current spec. Use `get` to inspect the spec and latest build after either operation. If the API returns 404 for Machine commands, `factory-machine-v1` may be disabled for the tenant; there is no skill-side feature flag.
+`create` starts the first build and runs Author, so the component files can be written. `build` alone refreshes the snapshot and skips Author. `build --update-components` runs Author again. `update` saves the spec; a repository, capability, or size change starts a refresh build and still skips Author. Use `get` to inspect the spec and latest build after either operation. If the API returns 404 for Machine commands, `factory-machine-v1` may be disabled for the tenant; there is no skill-side feature flag.
 
 `delete` removes the Machine and frees its name. Saved snapshots stay. A running build returns 409 and deletes nothing. The command asks for confirmation in a terminal; `--force` skips it.
 
@@ -103,7 +104,7 @@ After the included components have been exercised, report every discovered compo
 
 ## Build lifecycle
 
-When `run_author` is true, the build runs **Prepare**, then **Author**, then **Finalize**. Otherwise it runs **Prepare**, then **Finalize**.
+When `update_components` is true, the build runs **Prepare**, then **Author**, then **Finalize**. Otherwise it runs **Prepare**, then **Finalize**.
 
 1. **Prepare** runs `islo machine prepare --spec <file|->` as the sandbox user. The command validates the schema-1 spec, prepares every registered repository, and generates `/tmp/islo-machine-context.json`. A separate privileged step installs that document at `/etc/islo/machine.json` with mode `0644`, so repository files remain user-owned.
 2. **Author** reads the repository docs, lists services and resources, and asks the batches in "Questions Author may ask" before it writes files. It posts those questions itself. The manager parks the run and later resumes the same Author session with the answers passed through. Author can repeat this question loop. It then writes the contract, exercises it, reports each result, and opens a pull request only for repositories the user selects.
@@ -111,7 +112,7 @@ When `run_author` is true, the build runs **Prepare**, then **Author**, then **F
 
 Machine repository entries use stable `MachineRepo.key` values for component and cross-repository references. This key contract applies to Machine repositories. Do not assume that generic Git sources have stable keys.
 
-A build runs Author only when the line param `run_author` is true. Prepare then uses create mode, so repositories are on their creation branches and Author can commit. The first revision passes true. A later rebuild passes false and skips Author, unless the person chooses "Rebuild and update components". A scheduled refresh passes false. A refresh cannot reuse commits that were never pushed. The create path delivers definitions only for the repositories the user selected for a pull request.
+A build runs Author only when the line param `update_components` is true. Prepare then uses create mode, so repositories are on their creation branches and Author can commit. The first revision passes true. A later rebuild passes false and skips Author, unless the person chooses "Rebuild and update components" or passes `--update-components`. A machine update and a scheduled refresh pass false. A refresh cannot reuse commits that were never pushed. The create path delivers definitions only for the repositories the user selected for a pull request.
 
 ## Local workspace commands
 
