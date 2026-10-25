@@ -8,15 +8,18 @@
 # Blocks tagged <!-- validate: manager-line --> exercise the Manager contract.
 # Untagged ```toml blocks get a TOML parse check only (fragments).
 #
-# Line examples reference jobs that do not exist in the tenant; the server
-# checks job references after schema validation, so that one error is accepted
-# as proof the schema passed.
+# Line examples reference jobs and Agents that do not exist in the tenant; the
+# server checks those references after schema validation, so that one error is
+# accepted as proof the schema passed.
 set -uo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 refs="$here/../references"
 files=()
-for candidate in "$refs/line-manifest.md" "$refs/job-manifest.md"; do
+for candidate in \
+  "$refs/line-manifest.md" \
+  "$refs/job-manifest.md" \
+  "$refs/create-a-line.md"; do
   [[ -f "$candidate" ]] && files+=("$candidate")
 done
 if [[ ${#files[@]} -eq 0 ]]; then
@@ -29,8 +32,6 @@ command -v islo >/dev/null || { echo "islo CLI not on PATH" >&2; exit 1; }
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
-# Split every ```toml block into $tmp/<file>-<n>.toml plus a .kind file
-# holding line|job|fragment from the marker comment above the fence.
 extract() {
   local md="$1" base
   base="$(basename "$md" .md)"
@@ -79,11 +80,18 @@ for kindfile in "$tmp"/*.kind; do
       echo "ok   $name (parse only)" ;;
     line|manager-line)
       [[ "$kind" == "manager-line" ]] && manager_count=$((manager_count + 1))
-      out="$(islo factory line validate "$toml" 2>&1)"; rc=$?
+      validation_toml="$toml"
+      if grep -q '{{unique_suffix}}' "$toml"; then
+        validation_toml="${toml%.toml}-validation.toml"
+        sed 's/{{unique_suffix}}/validation/g' "$toml" >"$validation_toml"
+      fi
+      out="$(islo factory line validate "$validation_toml" 2>&1)"; rc=$?
       if [[ $rc -eq 0 ]]; then
         echo "ok   $name (line validate)"
       elif [[ "$kind" == "manager-line" ]] && only_missing_resource "$out" "manager\.agent references unknown Agent"; then
         echo "ok   $name (Manager schema valid; example Agent not deployed in this tenant)"
+      elif [[ "$kind" == "line" ]] && only_missing_resource "$out" "references unknown Agent"; then
+        echo "ok   $name (Agent schema valid; example Agent not deployed in this tenant)"
       elif only_missing_resource "$out" "references unknown job"; then
         echo "ok   $name (schema valid; example jobs not deployed in this tenant)"
       else

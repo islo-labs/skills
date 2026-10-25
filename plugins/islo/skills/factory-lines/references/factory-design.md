@@ -15,7 +15,6 @@ islo agent list
 islo factory line list
 islo environment list
 islo gateway ls
-islo knowledge list
 islo factory triggers list --with-status
 islo schema factory --short
 islo schema agent
@@ -38,13 +37,13 @@ Present one proposed configuration, marking inferred defaults. It must contain:
 | Outcome | Goal, done condition, acceptance checks, and allowed external effects |
 | Factory | Existing key or proposed new name; what is reused and created |
 | Machines | Each Machine's repositories, environment, capabilities, size/lifecycle, gateway profile, build/readiness, and ownership |
-| Agents | Each reusable Agent's Machine, responsibility, harness/model, instructions, Skills, MCP servers, and relevant Knowledge |
+| Agents | Each reusable Agent's Machine, responsibility, harness/model, instructions, Skills, and MCP servers |
 | Line | Trigger and selector, Agent interactions and Manager, transition graph, per-stage semantic inputs and outputs, shared-sandbox groups, limits, and result destinations |
 | Integrations | Provider connection status, gateway host/auth rules, and any tenant-scoped environment/profile changes |
 | Verification | Resource checks, one stage in isolation, one end-to-end run, and expected effects checklist |
 
 For Agents with the same `sandbox_name` in one Line run, explain that they share one Machine-backed filesystem but have separate sessions. Every Agent in a shared-sandbox group must use the **same Machine**. Different `sandbox_name` values create workspace boundaries; pass results through Line outputs or an approved external artifact instead of assuming files cross the boundary. Include failure and retry paths in the graph when relevant.
 
-Describe inputs and outputs by meaning, such as “issue URL in” and “PR URL out.” The installed schema currently gives Agent stages default `input` and `output`; use an internal Job for richer typed contracts and keep that mechanism out of the user-facing choice. Include a proposed Manager: built-in unless a reusable prompt Agent is justified. State how Agent version selection will be verified against the installed schema, rather than assuming a deployed Line follows future Agent edits.
+Describe inputs and outputs by meaning, such as “issue URL in” and “PR URL out.” Agent stages use the runtime's default `input` and `output`; use an internal Job for richer typed contracts and keep that mechanism out of the user-facing choice. Include a proposed Manager: built-in unless a reusable prompt Agent is justified.
 
 Ask for explicit approval of this **complete** blueprint before creating or changing any resource, deploying, sending a provider event, or writing to an external destination. Read-only inventory and local draft files are allowed before approval. If a requested effect was not included, obtain approval for the revised blueprint before doing it.

@@ -13,7 +13,7 @@ For a request to build or substantially change a Factory, follow [factory-design
 
 Keep the discussion in product terms: Factory, Machines, Agents, their interactions, shared workspaces, semantic inputs and outputs, integrations, side effects, and verification. Use an internal Job only when the runtime needs richer typed contracts, deterministic commands, snapshots, fan-out, verification, or lifecycle control. Explain that implementation detail only when a developer asks for it.
 
-Never write a manifest from memory. Check the installed `islo schema factory --short`, `islo schema agent`, and, for internal Jobs, `islo schema job --short`; validate before deploy. If the installed CLI lacks a required command or Agent-stage field, report the exact gap rather than silently substituting an unrelated resource. The current CLI schema exposes Agent stages' default `input` and `output` contract; use an internal Job for richer typed contracts until the CLI exposes custom Agent-stage params and outputs.
+Never write a manifest from memory. Check the installed `islo schema factory --short`, `islo schema agent`, and, for internal Jobs, `islo schema job --short`; validate before deploy. If the installed CLI lacks a required command or Agent-stage field, report the exact gap rather than silently substituting an unrelated resource. Agent stages use the runtime's default `input` and `output` contract; use an internal Job for richer typed contracts until the CLI exposes custom Agent-stage params and outputs.
 
 ## References
 
@@ -22,9 +22,9 @@ Never write a manifest from memory. Check the installed `islo schema factory --s
 | Discover resources, design a Factory, get approval | [factory-design.md](references/factory-design.md) |
 | Create resources and verify a Line | [create-a-line.md](references/create-a-line.md) |
 | Machine lifecycle and readiness | [machines.md](references/machines.md) |
-| Agent, Manager, harness, model, Skills, MCP, Knowledge | [agents-and-managers.md](references/agents-and-managers.md) and [harness-models-knowledge.md](references/harness-models-knowledge.md) |
+| Agent, Manager, harness, model, Skills, or MCP | [agents-and-managers.md](references/agents-and-managers.md) |
 | Line manifest, triggers, or run debugging | [line-manifest.md](references/line-manifest.md), [triggers.md](references/triggers.md), [run-control-and-debugging.md](references/run-control-and-debugging.md) |
-| Internal Job manifest or explicit standalone Job request | [job-manifest.md](references/job-manifest.md), [standalone-jobs.md](references/standalone-jobs.md) |
+| Internal Job harness, model, Knowledge, manifest, or explicit standalone Job request | [harness-models-knowledge.md](references/harness-models-knowledge.md), [job-manifest.md](references/job-manifest.md), and [standalone-jobs.md](references/standalone-jobs.md) |
 
 Use the platform skill for sandbox and snapshot lifecycle, environments, gateway profiles, provider connections, incoming webhooks, and Knowledge CRUD. Treat nearby examples as shape references; never copy their repo, selector, destination, or gateway identity into a new Factory.
 
