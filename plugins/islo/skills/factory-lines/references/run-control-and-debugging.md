@@ -49,4 +49,8 @@ Once the aggregated debug API ships, `GET /factory/line-runs/{run_id}/debug` ret
 
 ## After fixing
 
-Manifest fixes follow the dependency order in `create-a-line.md`: update the affected Machine, Agent, or internal Job, then validate and redeploy the Line. Then `retry` the failed run or start a fresh one and verify with `status` and `events`.
+After an Agent update, start a fresh Line run. Retrying an already visited stage keeps the Agent configuration that run first resolved.
+
+After an internal Job update, deploy the new Job version, update the Line to use it, validate, redeploy, and start a fresh run. After a Machine update, wait for the Machine to return to ready before starting a fresh run.
+
+Verify the fresh run with `status` and `events`.

@@ -50,7 +50,7 @@ to = "done"
 when = { op = "always" }
 ```
 
-Validate and deploy the uniquely named Line, run it with `--param input=...`, and inspect `islo factory line-run status` and `islo factory line-run events` for the Agent's semantic `output`, sandbox identity, and approved effects. After recording the result, remove the temporary Line with `islo factory line rm <temporary-name>` only if this workflow deployed it, even when the run failed. If the stage is compiled through an internal Job, use its isolated Job run and inspect the output. Do not trigger a provider event for this test unless the blueprint approved it.
+Validate and deploy the uniquely named Line, run it with `--param input=...`, and inspect `islo factory line-run status` and `islo factory line-run events` for the Agent's semantic `output`, sandbox identity, and approved effects. After recording the result, stop the run if it is still active and confirm it is stopped. Then remove the temporary Line with `islo factory line rm <temporary-name> --force` only if this workflow deployed it, even when the run failed. Removing a Line does not stop its run or delete the run's sandbox, so do not treat Line removal as run or sandbox cleanup. If the stage is compiled through an internal Job, use its isolated Job run and inspect the output. Do not trigger a provider event for this test unless the blueprint approved it.
 
 ## End-to-end verification
 
