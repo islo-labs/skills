@@ -1,6 +1,6 @@
 # Standalone jobs
 
-For the rare case where the user explicitly wants a single-stage durable or scheduled run without line orchestration. In normal flows, jobs are stage building blocks inside a line; start with `create-a-line.md`.
+For a developer who explicitly requests the low-level Job layer. In ordinary Factory setup, Agents are the user-facing execution units and Jobs are internal runtime resources. Start with `factory-design.md` for an outcome request.
 
 ## Workflow
 

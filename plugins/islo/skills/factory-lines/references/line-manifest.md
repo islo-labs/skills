@@ -56,8 +56,9 @@ when = { op = "always" }
 ## Policy the schema does not state
 
 - Omit `[manager]` for the built-in Manager. Legacy `[agent.instructions]` is valid only without `[manager]`. Agentic transition instructions apply to that transition, while stage prompts live in each job.
-- A line declares identity, what starts a run, the stages, and the routing between them. Harness, model, params, and outputs live on each stage's job.
+- A line declares identity, what starts a run, Agent interactions, and routing. Prefer an Agent stage referencing a reusable Agent. Check the live schema for its field names and default `input`/`output` contract. The CLI does not yet expose custom Agent-stage `params` and `outputs`; use an internal Job stage when richer typed contracts or deterministic execution are required. Harness and model belong to the Agent for Agent stages and to the internal Job for Job stages.
+- Agent stages with the same `sandbox_name` share one Machine-backed filesystem for that Line run, but keep separate sessions. Every Agent in that group must use the same Machine; validate this before deploy.
 - Line run schedules live in `[trigger]`; a line run schedule created any other way is reverted on the next line deploy. Factory Machine refresh schedules are separate and live in the Machine spec (see `machines.md`).
-- Follow the complete dependency and deploy order in [create-a-line.md Phase 6](create-a-line.md#phase-6-deploy-in-canonical-order). The line pins `job_version_id` at deploy time.
+- Follow the complete dependency and deploy order in [create-a-line.md](create-a-line.md). Check Agent and internal Job version bindings after deploy; an internal `job_version_id` is pinned at deploy time.
 - Reserved agentic option names belong to line controls. Do not reuse them as option labels.
 - Trigger field shapes and the condition AST are in the schema; wiring (selectors, filters, one-real-event verify) is in `triggers.md`.

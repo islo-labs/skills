@@ -49,4 +49,4 @@ Once the aggregated debug API ships, `GET /factory/line-runs/{run_id}/debug` ret
 
 ## After fixing
 
-Manifest fixes follow the deploy order in `create-a-line.md` Phase 6: jobs, then the line. Then `retry` the failed run or start a fresh one and verify with `status` and `events`.
+Manifest fixes follow the dependency order in `create-a-line.md`: update the affected Machine, Agent, or internal Job, then validate and redeploy the Line. Then `retry` the failed run or start a fresh one and verify with `status` and `events`.
