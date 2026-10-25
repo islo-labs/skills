@@ -1,150 +1,59 @@
-# Create a factory line
+# Build the approved Factory
 
-The end-to-end workflow for building a new line from a user's request. Work the phases in order. Phase 2 is an approval gate: nothing is created or deployed before the user approves the design.
+Start with [factory-design.md](factory-design.md). This page starts only after the user has approved its complete blueprint. Keep the approved effects checklist nearby while implementing and verifying.
 
-## Phase 0: preflight (read-only)
+## Dependency order
 
-Run these before asking the user anything, so the questions are informed:
+1. Select the approved existing Factory explicitly or create the approved new one. Confirm `islo factory current` or pass `--factory KEY|UUID` to scoped commands. Never let an inherited default silently select the destination.
+2. Connect required providers through the **local** CLI, after approval. Check `islo status`. Configure tenant-scoped environments and gateway profiles, including explicit allow rules for custom MCP hosts, before creating dependent sandboxes. Follow the platform gateway reference. Do not put provider tokens in manifests, prompts, or sandbox env.
+3. Create or update each Machine with the approved repositories, capabilities, environment, lifecycle, and gateway profile. Follow [machines.md](machines.md). Inspect the build and wait for a published, usable version before creating or running dependent Agents. A build parked for Author questions is not ready. A failed build is not ready.
+4. Validate and create or update reusable Agents from the live `islo schema agent`. Confirm their Machine, harness/model pairing, instructions, Skills, and MCP servers using [agents-and-managers.md](agents-and-managers.md). Prepare a prompt Agent Manager only if the blueprint calls for one.
+5. If a stage needs typed contracts, deterministic commands, snapshots, fan-out, verification, or lifecycle controls that Agent stages cannot express, scaffold and deploy an internal Job using `islo job init` and `islo schema job --short`. Its user-facing responsibility remains an Agent interaction. Keep Job-specific files and names out of the user decision flow.
+6. Author the Line using `islo schema factory --short` and [line-manifest.md](line-manifest.md). Agent stages name their reusable Agent and, where shared workspace is intended, their `sandbox_name`. Use the Agent runtime's default `input`/`output` contract. Validate shared-sandbox Machine consistency. Configure Manager, transitions, trigger, limits, and destinations. Validate and deploy the Line **last**.
 
-```bash
-islo status
-islo schema factory --short
-islo schema job --short
-islo schema agent
+Check the installed CLI help before invoking create/update commands. If it lacks a required Agent or Manager surface, report the specific missing command or schema field and stop dependent deployment; do not disguise the gap with a Job-first design.
+
+## Static validation and isolated run
+
+Validate draft Agents and the Line with the installed CLI. Dry-run any internal Job deploy. Validation must cover references, supported fields, gateway host rules, and the shared-sandbox Machine invariant. Inspect each created resource with its `get` or `list` command and record version/build status.
+
+For an Agent stage, the CLI has no standalone Agent run command. Make a temporary manual Line containing just that Agent stage, an entry transition that passes representative `input`, and a completion transition. Generate a unique Line name with a random suffix. Continue only when `islo factory line get <temporary-name>` explicitly reports that the name does not exist; stop on any other error. Track whether this workflow deployed the Line, and remove it only when that deployment succeeded. Give the stage a unique `sandbox_name` so it cannot collide with the production Line. Include the deployment, run, expected external effects, and removal in the approved blueprint. Do not run a side-effecting Agent until those effects are approved.
+
+Use the live schema to confirm the fields. Replace `{{unique_suffix}}` with at least eight random lowercase hexadecimal characters before validation. Keep the resulting name for cleanup:
+
+<!-- validate: line -->
+```toml
+[line]
+name = "isolated-agent-check-{{unique_suffix}}"
+
+[trigger]
+type = "manual"
+
+[[stages]]
+id = "check"
+agent = "existing-agent"
+sandbox_name = "isolated-check-{{line_run_id}}"
+
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "check"
+when = { op = "always" }
+params = { input = { type = "input", name = "input" } }
+
+[[transitions]]
+id = "finish"
+type = "conditional"
+from = "check"
+to = "done"
+when = { op = "always" }
 ```
 
-If an integration trigger is likely (the request mentions Slack, GitHub, or Linear events):
+Validate and deploy the uniquely named Line, run it with `--param input=...`, and inspect `islo factory line-run status` and `islo factory line-run events` for the Agent's semantic `output`, sandbox identity, and approved effects. After recording the result, stop the run if it is still active and confirm it is stopped. Then remove the temporary Line with `islo factory line rm <temporary-name> --force` only if this workflow deployed it, even when the run failed. Removing a Line does not stop its run or delete the run's sandbox, so do not treat Line removal as run or sandbox cleanup. If the stage is compiled through an internal Job, use its isolated Job run and inspect the output. Do not trigger a provider event for this test unless the blueprint approved it.
 
-```bash
-islo factory triggers list --with-status
-```
+## End-to-end verification
 
-Query the catalog that matches the candidate harness — not one shared list. See `harness-models-knowledge.md`.
+Run the deployed Line once with approved test input. For an integration trigger, send **one** approved test event with its expected-effects checklist prepared beforehand. Inspect the Line run's status, stage timeline, Agent sessions, outputs, sandbox grouping, and result destination. Compare every external write or provider event with the approved effects checklist. Report any inference failure separately from setup or routing results; lack of model credentials does not prove setup failed. A Line redeploy is needed when it pins an internal Job version that changed.
 
-## Phase 1: intake questions, all up front
-
-Ask once, as one batch, then **stop**. Do not dribble questions across the conversation. Do not attach a design summary, a filled-in runtime profile copied from a nearby line, or a Phase 2 approval question in the same turn.
-
-When the host provides a structured interactive question tool, **use it for the entire Phase 1 intake** instead of rendering the questions as prose. Put every intake question in one tool call. Offer discovered or recommended choices where useful, and always retain the tool's "Other / I'll specify" path for free-text identities such as repositories, Linear projects, labels, and states. Fall back to prose only when no interactive question tool is available.
-
-Identity vs pattern: nearby lines, `islo-agents` examples, and the current workspace may suggest stage shape (how many jobs, routing). They must not fill identity. If the user did not name a value **in this request**, ask. A guess is not an answer. Never present a single inferred option as the only choice; always include "other / I'll specify".
-
-1. Outcome and stage breakdown. 2 to 6 stages, one responsibility each. Propose a breakdown from the request and let the user correct it.
-2. Trigger. Manual, schedule (cron and timezone), webhook, or integration (provider, event). Then ask the selector the user actually wants — after `islo factory triggers get <provider> <event>`, ask the scoping questions that selector requires. Do not copy a nearby line's selector. See `triggers.md`.
-   - Linear: team, project, and any label/state filter (or "all issues in that team/project").
-   - GitHub: owner/repo (and which event).
-   - Slack: workspace and channel.
-3. Repositories. Which `owner/repo` each stage checks out. Ask unless the user named it in this request. Do not inherit from a nearby line, a snapshot name, or the current workspace.
-4. Runtime profile: ONE confirm-or-override block for harness, model, sandbox, and snapshot only. See below. Repositories are item 3, not a default inside this block.
-5. Manager: built-in Manager or a prompt Agent? For a prompt Agent, ask which existing Factory Machine to use or propose preparing a new one, and whether this Line needs a replacement `manager.prompt`.
-6. Limits: `max_iterations`, `timeout`, budget.
-7. Where results land: PR, Slack message, knowledge item, outputs.
-
-### The runtime profile block
-
-Harness, model, sandbox, and snapshot are the remaining load-bearing runtime concepts. Present them as one compact block for the whole line, splitting per stage only where stages genuinely differ. Each concept gets a one-line explanation and a prescriptive default with its rationale, filled in from Phase 0 (live models, `islo status` for the GitHub connection). End the block with a single question: confirm, or override any line.
-
-Do not put `owner/repo`, Linear team/project, Slack channel, or a nearby line's snapshot/gateway into this block as if the user already chose them.
-
-```text
-Runtime profile (confirm or override):
-- Harness    the agent CLI each stage runs. Default: codex.
-             Pair harness to catalog and host (see
-             harness-models-knowledge.md). Codex catalog ids
-             need model_provider = "islo_inference". Claude
-             needs ANTHROPIC_BASE_URL. Cursor uses Cursor
-             model ids and a tenant cursor-org key for jobs.
-             OpenCode uses Islo catalog ids on the OpenAI-compatible
-             gateway (no model_provider).
-- Model      what the harness thinks with. Default: <from the
-             catalog for that harness, not one shared list>.
-- Sandbox    the VM each stage runs in. Default: fresh per stage
-             (provision + teardown); isolated, no stale state.
-- Snapshot   prebuilt sandbox image with repos, tools, and harness
-             code. Default: yes. Most lines need one. Propose a
-             new name for this line. Reuse an existing snapshot
-             only if the user names it. Skip only if the user
-             explicitly wants a bare image.
-```
-
-Do not re-ask harness/model/sandbox/snapshot separately afterward; an override lands in the design summary and that is where the user re-checks it. If any identity field (repo, Linear team/project, Slack channel) is still a guess, stay in Phase 1.
-
-## Phase 2: design summary and APPROVAL GATE
-
-Present one summary and wait for explicit approval. Do not create, deploy, or scaffold anything before it. Do not reach this phase until Phase 1 identity (repos, trigger selector) has answers from the user, not from a nearby line. The summary contains:
-
-- Stage table: id, job name, description, and a runtime line per stage in the form `harness / model / sandbox mode / snapshot / repos` (identical rows collapse to one "all stages" line above the table).
-- ASCII transition graph, including loops and failure routes.
-- Trigger sketch: type, selector, filters, trigger outputs.
-- Manager choice and, for a prompt Agent, its Machine, Agent name, and prompt source.
-- Deploy sequence you will run (Phase 6 order).
-- Cost note: validation is static; the first real feedback is a billed run.
-
-## Phase 3: author
-
-- Copy the nearest example from [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents) (`examples/`) and treat it as a pattern, not a drop-in. Clone or browse that repo if it is not already on disk.
-- `islo job init <name>` per stage. Add `--with-verification` on stages whose outputs gate transitions.
-- If the Line uses a prompt Agent Manager, write its `agent.toml` from `islo schema agent`. Use `type = "prompt"` and put the reusable Manager behavior in `prompt`. Set `[manager] agent = "<name>"` in `line.toml`; use optional `manager.prompt` only for a Line-specific replacement. Do not combine it with legacy `[agent.instructions]`. With no `[manager]`, the built-in Manager remains active and legacy `[agent.instructions]` still works. Agentic transition `instructions` guide that particular routing decision; stage `run_agent.prompt` belongs to its stage job.
-- Write the `job.toml` files first: params and outputs are the line's contract. Then `line.toml`. Confirm every field against `islo schema job --short` and `islo schema factory --short`; see `job-manifest.md` and `line-manifest.md` only for policy the schema does not state. Wire harness/model using `harness-models-knowledge.md` — do not copy a nearby line's pairing.
-- Create a snapshot as the default. Follow the platform skill's sandboxes reference, put harness code in `snapshot-src/`, and set `snapshot_name` on the jobs. Skip the snapshot only if the approved profile explicitly opted out.
-- Agent instructions: write the stage brief in the job `run_agent` prompt so a prompt change is a new job version. If the user's repo already contains skills, check it out with an idempotent fetch-or-clone exec step (the pattern in `job-manifest.md`; the default gateway profile injects GitHub credentials) and point at that skill. Put supporting or fan-out briefs in the snapshot when they would clutter the line/job view. Never copy procedural content into Knowledge; deploy rejects procedural knowledge.
-
-## Phase 4: static validation
-
-```bash
-islo agent validate agent.toml                       # only for an Agent Manager; prepare its Machine first
-islo job deploy --path jobs/<name>/job.toml --dry-run   # per job
-islo factory line validate line.toml
-islo factory line deploy line.toml --dry-run
-```
-
-A 422 or "Extra inputs are not permitted" means an unknown key; manifests reject unknown fields. Diff against `islo schema factory --short` or `islo schema job --short` instead of guessing.
-
-## Phase 5: single-stage smoke test
-
-Deploy the first agent stage's job for real and run it alone before deploying the rest:
-
-```bash
-islo job deploy --path jobs/<first-stage>/job.toml
-islo job run <first-stage> --param KEY=VALUE --watch
-islo job status <first-stage> <run-id>
-islo job event <command-id>     # per-step detail from the step timeline
-```
-
-Confirm the declared outputs actually appear with the right values. If the outputs are wrong, the line's routing will be wrong; fix here, not after the line is live.
-
-## Phase 6: deploy in canonical order
-
-Prepare the Manager Machine, validate and create its prompt Agent (if used), deploy knowledge items and every stage job, then validate and deploy the line last. A new Manager Machine follows `references/machines.md`. Its build parks until Author's questions are answered. The line pins `job_version_id` at deploy time, so redeploying a job alone does not update an already-deployed line; redeploy the line after any job change.
-
-```bash
-islo factory machine create <manager-machine>  # if a new Machine is needed; answer Author's questions per machines.md
-islo agent validate agent.toml                 # if using an Agent Manager
-islo agent create agent.toml                   # if using an Agent Manager
-islo job deploy --path jobs/<stage>/job.toml   # each stage
-islo factory line validate line.toml
-islo factory line deploy line.toml             # last
-```
-
-Schedule only via the manifest `[trigger]`; a schedule created any other way is reverted by the next deploy.
-
-## Phase 7: end-to-end verify
-
-Manual and scheduled lines:
-
-```bash
-islo factory line run <name> --param KEY=VALUE
-islo factory line-run status <run-id>
-islo factory line-run events <run-id>
-```
-
-Integration lines: fire ONE real trigger event (post one message in the selected channel, open one test PR) with an expected-effects checklist written before the event, for example: reaction appears, every stage reports the same sandbox, PR contains the recording, final reaction appears.
-
-If no run appears:
-
-```bash
-islo factory line-run list --line <name>
-islo factory triggers list --with-status
-```
-
-For failures and run control, see `run-control-and-debugging.md`.
+For run inspection and recovery, use [run-control-and-debugging.md](run-control-and-debugging.md). Schedules belong in the Line `[trigger]`; Machine refresh schedules belong in the Machine spec.

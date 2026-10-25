@@ -1,6 +1,7 @@
 {
   "mcpServers": {
     "islo-docs": {
+      "type": "http",
       "url": "https://docs.islo.dev/_mcp/server"
     }
   }

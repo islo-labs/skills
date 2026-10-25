@@ -68,4 +68,4 @@ islo factory line-run list --line <name>
 islo factory triggers list --with-status
 ```
 
-The one-real-event procedure with an expected-effects checklist is Phase 7 of `create-a-line.md`.
+The one-real-event procedure with an approved expected-effects checklist is in `create-a-line.md` under End-to-end verification.

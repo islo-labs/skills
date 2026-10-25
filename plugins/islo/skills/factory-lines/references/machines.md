@@ -28,7 +28,7 @@ islo factory machine build <name> --update-components
 islo factory machine delete <name>
 ```
 
-`create` starts the first build and runs Author, so the component files can be written. `build` alone refreshes the snapshot and skips Author. `build --update-components` runs Author again. `update` saves the spec. A repository or environment change starts a build that runs Author. A capability or size change starts a refresh build and skips Author. Use `get` to inspect the spec and latest build after either operation. If the API returns 404 for Machine commands, `factory-machine-v1` may be disabled for the tenant; there is no skill-side feature flag.
+`create` starts the first build and runs Author, so component files can be written. `build` alone refreshes the snapshot and skips Author. `build --update-components` runs Author again. `update` saves the spec; only changes listed in the Updates and builds table start a build. A repository or environment edit starts a build that runs Author. A capability, vCPU, memory, or disk-size edit starts a refresh build without Author. A lifecycle or gateway-profile edit on a ready Machine publishes a new template version without a build. Use `get` to inspect the spec and latest build after an operation. Wait for a published usable version before dependent Agents run after any change that starts a build. If the API returns 404 for Machine commands, `factory-machine-v1` may be disabled for the tenant; there is no skill-side feature flag.
 
 `delete` removes the Machine and frees its name. Saved snapshots stay. A running build returns 409 and deletes nothing. The command asks for confirmation in a terminal; `--force` skips it.
 
@@ -112,7 +112,7 @@ When `update_components` is true, the build runs **Prepare**, then **Author**, t
 
 Machine repository entries use stable `MachineRepo.key` values for component and cross-repository references. This key contract applies to Machine repositories. Do not assume that generic Git sources have stable keys.
 
-A build runs Author only when the line param `update_components` is true. Prepare then uses create mode, so repositories are on their creation branches and Author can commit. The first revision passes true. A repository or environment edit passes true. A later rebuild passes false and skips Author, unless the person chooses "Rebuild and update components" or passes `--update-components`. A capability or size edit and a scheduled refresh pass false. A refresh cannot reuse commits that were never pushed. The create path delivers definitions only for the repositories the user selected for a pull request.
+A build runs Author only when the line param `update_components` is true. Prepare then uses create mode, so repositories are on their creation branches and Author can commit. The first revision and a repository or environment edit pass true. A later rebuild passes false and skips Author unless the person chooses "Rebuild and update components" or passes `--update-components`. A capability, vCPU, memory, or disk-size edit and a scheduled refresh pass false. A refresh cannot reuse commits that were never pushed. The create path delivers definitions only for the repositories the user selected for a pull request.
 
 ## Local workspace commands
 
@@ -138,10 +138,11 @@ Any new runner image visible to Jobs must put a compatible `islo` CLI on `PATH` 
 | Change in `update` | Starts a new build? |
 |---|---|
 | Repositories (`--repo`, `--clear-repos`) | Yes |
+| Environment (`--environment`, `--clear-environment`) | Yes |
 | Capabilities (`--capability`, `--clear-capabilities`) | Yes |
 | Disk size (`--disk-gb`) | Yes |
-| vCPUs (`--vcpus`) or memory (`--memory-mb`) | No |
-| Lifecycle, environment, or gateway profile | No |
+| vCPUs (`--vcpus`) or memory (`--memory-mb`) | Yes |
+| Lifecycle or gateway profile | No; a ready Machine publishes a new template version |
 | Refresh schedule or timezone | No |
 
 Repeat `--repo` or `--capability` for multiple values. On update, supplying either replaces the entire corresponding list; include all values to keep, or use `--clear-repos` / `--clear-capabilities` to empty it. Lifecycle, environment, gateway, and schedule edits can be made with their `update` flags; check `islo factory machine update --help` for the current names and clear options. Use `build` when a new version is wanted without a spec change. Jobs keep using the last published version until that build succeeds.

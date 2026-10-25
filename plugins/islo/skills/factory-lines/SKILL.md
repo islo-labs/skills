@@ -1,40 +1,31 @@
 ---
 name: factory-lines
-description: Create and manage Islo Factory Machines, lines, and jobs. Use when the user asks for a Factory Machine or wants to automate a workflow on Islo, mentions factory lines, line.toml, job.toml, line runs, schedules, triggers, or asks to build or fix an Islo automation.
+description: Design, create, and manage Islo Factories, Machines, reusable Agents, and Lines from an automation goal. Use for Factory setup, Machine setup, line runs, triggers, or low-level manifests when explicitly requested.
 ---
 
-# Islo Factory lines
+# Islo Factories
 
-Factory lines are Islo's automation product: multi-stage work with typed routing, loops, schedules, and event triggers. A line (`line.toml`) orchestrates stages; each stage runs a job (`job.toml`); jobs execute in sandboxes with agents doing the judgment work.
+A Factory contains Machines, reusable Agents, and Lines. Agents are the user-facing execution units. A Line connects Agent interactions and routes their results. The runtime may compile an Agent stage into an internal Job; do not make the user choose or configure a Job. Managers route a Line between stages.
 
-## Iron rules
+## Setup contract
 
-1. Never write or edit a manifest from memory. Scaffold with `islo job init`, read `islo schema factory --short`, `islo schema job --short`, and `islo schema agent`, then validate with `--dry-run`. Treat every example as a pattern, not a drop-in. Nearby lines supply stage shape only — never copy repo, Linear team/project, Slack channel, snapshot, or gateway without the user naming them in this request.
-2. Creating a line follows `references/create-a-line.md` phase by phase. Phase 1 is an intake gate: ask identity (repos, Linear team/project, Slack channel) and stop. Phase 2 is an approval gate: present the design summary and wait for explicit approval before creating or deploying anything. A Factory Machine is not this workflow. Follow `references/machines.md`.
-3. Deploy order matters and is defined once, in create-a-line.md Phase 6: prepare the Manager Machine, validate and create its prompt Agent, deploy stage resources, then validate and deploy the Line last.
-4. Line run schedules live in the line manifest `[trigger]`; configuring one elsewhere is reverted on the next line deploy. Factory Machine refresh schedules live in the Machine spec and are managed with `islo factory machine`.
-5. Harness code ships in sandbox snapshots. Put the stage brief in the job `run_agent` prompt so a prompt change is a new job version. Leave supporting or fan-out briefs in the snapshot when they would clutter the line/job view. Repo skills may be a fetch-or-clone checkout plus a short pointer. Never copy procedural content into Knowledge.
-6. Agents do the judgment work via `run_agent`. Do not replace them with hand-written shell business logic or shell-wrapped agent CLIs, and do not put provider tokens in manifests or sandbox env.
+For a request to build or substantially change a Factory, follow [factory-design.md](references/factory-design.md) before [create-a-line.md](references/create-a-line.md). Inventory with read-only commands first. Distinguish observed resources, inferred defaults, and decisions still needed from the user. Ask one batch containing only unresolved decisions, then recommend one complete blueprint. Wait for explicit approval of that blueprint before any create, update, deploy, provider event, or external write.
 
-## Where to go
+Keep the discussion in product terms: Factory, Machines, Agents, their interactions, shared workspaces, semantic inputs and outputs, integrations, side effects, and verification. Use an internal Job only when the runtime needs richer typed contracts, deterministic commands, snapshots, fan-out, verification, or lifecycle control. Explain that implementation detail only when a developer asks for it.
 
-| Task | Read |
-|------|------|
-| Create, inspect, update, build, or delete a Factory Machine | `references/machines.md`; use `islo factory machine --help` and subcommand help for current flags |
-| Shape a line-run question batch | `references/questions.md` only when the document you are following says you may ask. Reading it is not permission |
-| Build a new line from a request | `references/create-a-line.md` |
-| Create or inspect a Manager prompt Agent | `islo schema agent`, then `references/create-a-line.md` for dependency order |
-| Write or fix `line.toml` | `islo schema factory --short`, then `references/line-manifest.md` for policy |
-| Write or fix `job.toml` | `islo schema job --short`, then `references/job-manifest.md` for policy |
-| Choose or wire a line trigger; line run schedule rules; webhook vs incoming webhook | `references/triggers.md` |
-| Inspect, steer, or debug a run; a stage failed; no run appeared | `references/run-control-and-debugging.md` |
-| Pair harness, model catalog, and host; attach knowledge | `references/harness-models-knowledge.md` |
-| Single-stage job without orchestration (rare, explicit ask only) | `references/standalone-jobs.md` |
+Never write a manifest from memory. Check the installed `islo schema factory --short`, `islo schema agent`, and, for internal Jobs, `islo schema job --short`; validate before deploy. If the installed CLI lacks a required command or Agent-stage field, report the exact gap rather than silently substituting an unrelated resource. Agent stages use the runtime's default `input` and `output` contract; use an internal Job for richer typed contracts until the CLI exposes custom Agent-stage params and outputs.
 
-Starting points: copy the nearest example from [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents). There is no in-skill copy; clone or browse that repo if it is not already on disk.
+## References
 
-For sandbox lifecycle, snapshots, gateway profiles, incoming webhooks, environments, knowledge CRUD, and the SDK, use the islo platform skill.
+| Need | Read |
+|---|---|
+| Discover resources, design a Factory, get approval | [factory-design.md](references/factory-design.md) |
+| Create resources and verify a Line | [create-a-line.md](references/create-a-line.md) |
+| Machine lifecycle and readiness | [machines.md](references/machines.md) |
+| Agent, Manager, harness, model, Skills, or MCP | [agents-and-managers.md](references/agents-and-managers.md) |
+| Line manifest, triggers, or run debugging | [line-manifest.md](references/line-manifest.md), [triggers.md](references/triggers.md), [run-control-and-debugging.md](references/run-control-and-debugging.md) |
+| Internal Job harness, model, Knowledge, manifest, or explicit standalone Job request | [harness-models-knowledge.md](references/harness-models-knowledge.md), [job-manifest.md](references/job-manifest.md), and [standalone-jobs.md](references/standalone-jobs.md) |
 
-## Maintenance
+Use the platform skill for sandbox and snapshot lifecycle, environments, gateway profiles, provider connections, incoming webhooks, and Knowledge CRUD. Treat nearby examples as shape references; never copy their repo, selector, destination, or gateway identity into a new Factory.
 
-`scripts/validate_commands.sh` and `scripts/validate_examples.sh` check every documented command and manifest example against the installed CLI; CI runs them.
+`scripts/validate_commands.sh` and `scripts/validate_examples.sh` validate documented commands and manifest examples against the installed CLI.

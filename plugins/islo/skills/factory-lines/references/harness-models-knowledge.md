@@ -1,6 +1,6 @@
-# Harness, model, and knowledge for line stages
+# Harness, model, and Knowledge for internal Jobs
 
-Harness and model are declared per stage on the job's `run_agent` step (`job-manifest.md`), never in `line.toml`. Pair them: the harness picks the protocol, the model catalog, and the host. A model id from the wrong catalog is a failed run, not a helpful 422.
+Internal Job stages declare harness and model on the Job's `run_agent` step (`job-manifest.md`). Pair them: the harness picks the protocol, model catalog, and host. A model id from the wrong catalog is a failed run, not a helpful 422. Configure reusable Agents with `islo schema agent` and [agents-and-managers.md](agents-and-managers.md), not with the Job-only fields below.
 
 Do not write field shapes from memory — confirm `model_provider` and env keys against `islo schema job --short`. Treat the fragments below as pairing patterns, not drop-in jobs.
 
@@ -9,7 +9,7 @@ Do not write field shapes from memory — confirm `model_provider` and env keys 
 | Harness | How the model is reached | How to pick `model` | Required extras |
 |---------|--------------------------|---------------------|-----------------|
 | `codex` | `model_provider` on the step | `GET /inference/models` when using `islo_inference`; native OpenAI ids when using the default | `model_provider = "islo_inference"` for Islo catalog ids |
-| `claude` | `[run.sandbox.env] ANTHROPIC_BASE_URL` | Anthropic / `ship-like/…` ids, or catalog ids that advertise `anthropic_messages` | Matching `ANTHROPIC_*` env; omit `model_provider` |
+| `claude` | `model_provider` on the step | Anthropic ids, or catalog ids that advertise `anthropic_messages` | `model_provider = "islo_inference"` for Islo catalog ids |
 | `cursor` | Cursor cloud via the gateway | `agent --list-models` (Composer, Grok, `auto`, …) — not the Islo catalog | Omit `model_provider`; tenant Cursor key for jobs |
 | `opencode` | Injected `opencode.json` → OpenAI-compatible Islo inference | `GET /inference/models` (bare catalog ids / aliases such as `kimi-k2.7-code`) | Omit `model_provider` |
 | `custom` | Exec-mode only | n/a | User-defined command |
@@ -20,7 +20,7 @@ Do not write field shapes from memory — confirm `model_provider` and env keys 
 
 ## Codex
 
-`model_provider` is session-mode Codex only. Values: `islo` or `islo_inference`. Putting it on `claude` or `cursor`, or in exec mode, 422s. Templates for `model_provider` also 422.
+`model_provider` is for session-mode Codex or Claude steps. Values: `islo` or `islo_inference`. Putting it on `cursor` or `opencode`, or in exec mode, 422s. Templates for `model_provider` also 422.
 
 - Omit the field or set `islo` (the default) to send Codex to OpenAI (`https://api.openai.com/v1`). Use native OpenAI model ids.
 - Set `islo_inference` to send Codex to Islo inference (`https://gateway.islo.dev/inference/openai/v1`). Use ids from `GET /inference/models`. Without this field, those ids fail with `model_not_found` on OpenAI.
@@ -38,25 +38,19 @@ Claimed session outputs are filled from a native json_schema file. A model that 
 
 ## Claude
 
-Omit `model_provider`. Point Claude at Islo inference with sandbox env, and set every Claude model env to the **same** id as `run_agent.model`. Without `ANTHROPIC_BASE_URL`, Claude misses the gateway.
+Set `model_provider = "islo_inference"` to route Claude through Islo inference, and use a catalog id that advertises `anthropic_messages`. Omit `model_provider` when the session should use direct Anthropic routing.
 
 ```toml
-[run.sandbox.env]
-ANTHROPIC_BASE_URL = "https://gateway.islo.dev/inference/anthropic"
-ANTHROPIC_MODEL = "<same id as run_agent.model>"
-ANTHROPIC_DEFAULT_HAIKU_MODEL = "<same id>"
-ANTHROPIC_SMALL_FAST_MODEL = "<same id>"
-CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS = "1"
-
 [run.tasks.steps.run_agent]
 mode = "session"
 harness = "claude"
-model = "<ship-like or catalog id with anthropic_messages>"
+model = "<catalog id with anthropic_messages>"
+model_provider = "islo_inference"
 ```
 
-A connected Anthropic account is optional when using Islo inference this way. Claimed session outputs are filled from inline json-schema.
+A connected Anthropic account is optional when using Islo inference. Claimed session outputs are filled from inline json-schema.
 
-The same catalog id can work on both Codex and Claude only when you pair the protocol: Codex + `islo_inference` (Responses) vs Claude + `ANTHROPIC_BASE_URL` (Messages). Marketing name is not enough.
+The same catalog id can work on both Codex and Claude only when you pair the protocol: Codex uses Responses while Claude uses Messages. Marketing name is not enough.
 
 ## Cursor
 
@@ -88,13 +82,13 @@ model = "kimi-k2.7-code"
 
 Omit `model` to use the injected default (`kimi-k2.7-code`). Claimed session outputs are prompt-only (two-phase finalization, same as Cursor).
 
-## Knowledge in lines
+## Knowledge in internal Jobs and built-in Manager instructions
 
 Knowledge items are for declarative content: conventions, policies, house rules an agent stage should always know.
 
-- Attach to a stage via `run_agent` prompt bindings (`{ type = "knowledge", slug = "..." }`) or the `run_agent.knowledge` array. Shapes per `islo schema job --short`.
+- Attach Knowledge to an internal Job with `run_agent` prompt bindings (`{ type = "knowledge", slug = "..." }`) or `run_agent.knowledge` per `islo schema job --short`.
 - Legacy built-in Manager routing instructions (`[agent.instructions]` in line.toml) can bind knowledge only when `[manager]` is absent. A prompt Agent Manager instead uses its Agent `prompt`, optionally replaced for one Line by `manager.prompt`.
-- Deploy knowledge items before the jobs that reference them (Phase 6 order in `create-a-line.md`).
+- Deploy Knowledge before internal Jobs that reference it.
 
 Procedural content (skills, step-by-step prompts, playbooks) is rejected at knowledge deploy, and copying it would fork it from the repo anyway. Keep it in the repo, check it out with the fetch-or-clone step from `job-manifest.md`, and point a short literal prompt at the file.
 
