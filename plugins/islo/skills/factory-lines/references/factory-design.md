@@ -11,6 +11,7 @@ islo status
 islo factory current
 islo factory list
 islo factory machine list
+islo agent list
 islo factory line list
 islo environment list
 islo gateway ls
@@ -20,7 +21,7 @@ islo schema factory --short
 islo schema agent
 ```
 
-Use Factory, Machine, Line, Agent, trigger, and model-catalog detail commands only for relevant candidates; check subcommand help on the installed CLI first. `islo factory current` can be inherited from a project or environment and is not proof that the user chose that Factory. Label every item as **observed**, **inferred default**, or **unresolved**. Show Factory scope separately from tenant-scoped environments and gateway profiles; deleting a Factory does not own or delete those tenant resources. Never treat a nearby example or local checkout as authorization to use its repository or selector.
+List Agents in the selected Factory and inspect plausible matches with `islo agent get <name>` before proposing a new Agent. Use Factory, Machine, Line, trigger, and model-catalog detail commands only for relevant candidates; check subcommand help on the installed CLI first. `islo factory current` can be inherited from a project or environment and is not proof that the user chose that Factory. Label every item as **observed**, **inferred default**, or **unresolved**. Show Factory scope separately from tenant-scoped environments and gateway profiles; deleting a Factory does not own or delete those tenant resources. Never treat a nearby example or local checkout as authorization to use its repository or selector.
 
 An integration connection check runs through the local CLI (`islo status` and relevant integration commands). Sandbox reads do not yet provide complete connection visibility; do not use a sandbox check to claim a provider is connected. A connection is a capability, not authorization to send an event.
 

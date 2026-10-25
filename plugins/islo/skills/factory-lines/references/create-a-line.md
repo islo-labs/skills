@@ -18,7 +18,37 @@ Check the installed CLI help before invoking create/update commands. If it lacks
 
 Validate draft Agents and the Line with the installed CLI. Dry-run any internal Job deploy. Validation must cover references, supported fields, gateway host rules, and the shared-sandbox Machine invariant. Inspect each created resource with its `get` or `list` command and record version/build status.
 
-Run one approved Agent stage in isolation with representative input, using the supported Agent or Line test surface on the installed CLI. Check the semantic output and that only approved effects occurred. If the stage is compiled through an internal Job, use its isolated run command and inspect the resulting output. Do not trigger a provider event for this test unless the blueprint approved it.
+For an Agent stage, the CLI has no standalone Agent run command. Make a temporary manual Line containing just that Agent stage, an entry transition that passes representative `input`, and a completion transition. Give it a distinct name and `sandbox_name` so it cannot collide with the production Line. Include its deployment, run, any expected external effect, and removal in the approved blueprint; do not run a side-effecting Agent until those effects are approved. Use the live schema to confirm the fields. A minimal stage shape is:
+
+```toml
+[line]
+name = "isolated-agent-check"
+
+[trigger]
+type = "manual"
+
+[[stages]]
+id = "check"
+agent = "existing-agent"
+sandbox_name = "isolated-check-{{line_run_id}}"
+
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "check"
+when = { op = "always" }
+params = { input = { type = "input", name = "input" } }
+
+[[transitions]]
+id = "finish"
+type = "conditional"
+from = "check"
+to = "done"
+when = { op = "always" }
+```
+
+Validate and deploy that Line, run it with `--param input=...`, and inspect `islo factory line-run status` and `islo factory line-run events` for the Agent's semantic `output`, sandbox identity, and approved effects. Remove the temporary Line with `islo factory line rm` after recording the result, even if the run failed. If the stage is compiled through an internal Job, use its isolated Job run and inspect the output. Do not trigger a provider event for this test unless the blueprint approved it.
 
 ## End-to-end verification
 
