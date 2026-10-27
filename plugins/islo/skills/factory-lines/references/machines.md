@@ -108,7 +108,7 @@ When `update_components` is true, the build runs **Prepare**, then **Author**, t
 
 1. **Prepare** runs `islo machine prepare --spec <file|->` as the sandbox user. The command validates the schema-1 spec, prepares every registered repository, and generates `/tmp/islo-machine-context.json`. A separate privileged step installs that document at `/etc/islo/machine.json` with mode `0644`, so repository files remain user-owned.
 2. **Author** reads the repository docs, lists services and resources, and asks the batches in "Questions Author may ask" before it writes files. It posts those questions itself. The manager parks the run and later resumes the same Author session with the answers passed through. Author can repeat this question loop. It then writes the contract, exercises it, reports each result, and opens a pull request only for repositories the user selects.
-3. **Finalize** runs `islo machine verify`, saves the snapshot, and deletes the build sandbox. Verification reads only the installed context and repository files. It validates `machine.md`, component definitions, image and capacity requirements, required environment names, the repeated component lifecycle, prepared refresh commits, clean Git state before and after lifecycle execution, and declared targets on each repeated verification run. If validation fails, Finalize publishes the bounded structured report, does not save a snapshot, and keeps the sandbox for diagnosis.
+3. **Finalize** runs `islo machine verify`, saves the snapshot, and deletes the build sandbox. Verification reads only the installed context and repository files and follows the Machine level below. At `verify`, it validates `machine.md`, component definitions, image and capacity requirements, required environment names, the repeated component lifecycle, prepared refresh commits, clean Git state before and after lifecycle execution, and declared targets on each repeated verification run. If validation fails, Finalize publishes the bounded structured report, does not save a snapshot, and keeps the sandbox for diagnosis.
 
 Machine repository entries use stable `MachineRepo.key` values for component and cross-repository references. This key contract applies to Machine repositories. Do not assume that generic Git sources have stable keys.
 
@@ -123,11 +123,23 @@ islo machine verify
 islo machine verify --output json
 ```
 
-Keep `islo components ...` for lower-level graph and lifecycle troubleshooting. `islo machine verify` is the complete acceptance check and exits non-zero when its schema-1 report has `passed: false`.
+Keep `islo components ...` for lower-level graph and lifecycle troubleshooting. `islo machine verify` checks the installed Machine level and exits non-zero when its schema-1 report has `passed: false`. The JSON report includes `level` and only the component steps run at that level.
 
-The prepare spec contains `schema`, `mode`, `machine_id`, `machine_name`, `repositories`, and `capacity`. Repository entries contain `key`, `repo_url`, `checkout_path`, and optional `creation_branch`. Capacity contains `capabilities`, `vcpus`, `memory_mb`, `disk_gb`, and `image`. Repository URLs may use HTTPS, `ssh://`, or SCP-style SSH such as `git@github.com:owner/repository.git`, but cannot embed passwords or HTTPS credentials. Checkout paths must be non-overlapping physical children of `/workspace` without symlinked ancestors, and keys must be unique.
+The prepare spec contains `schema`, `mode`, `machine_id`, `machine_name`, `repositories`, and `capacity`, plus optional `level` and `component_overrides`. Repository entries contain `key`, `repo_url`, `checkout_path`, and optional `creation_branch`. Capacity contains `capabilities`, `vcpus`, `memory_mb`, `disk_gb`, and `image`. Repository URLs may use HTTPS, `ssh://`, or SCP-style SSH such as `git@github.com:owner/repository.git`, but cannot embed passwords or HTTPS credentials. Checkout paths must be non-overlapping physical children of `/workspace` without symlinked ancestors, and keys must be unique.
 
 The installed schema-1 context excludes repository URLs and credentials. It records mode, Machine identity, repository key/path registrations with optional creation branches and each prepared commit, and typed capacity. Refresh verification requires each checkout to remain at that prepared commit. Do not hand-edit the context or depend on temporary spec files.
+
+## Verification levels
+
+The prepare spec and installed context may contain `level`: `source`, `build`, or `verify`. An omitted level means `verify`. Prepare copies the level into `/etc/islo/machine.json`; verify reads it there without a level flag. `islo components status` also grades component completeness against the installed level.
+
+| Level | Required files | `islo machine verify` |
+|---|---|---|
+| `source` | Registered Git checkouts only; no `.islo` directory or components required | Checks that registered checkouts are present, at their prepared branch or commit, and clean. Runs no component lifecycle steps. |
+| `build` | One `machine.md` with non-empty `active_components`; each active component has `component.toml`. `verification_targets` may be empty. | Runs `install`, then `build`, in dependency order. Those entrypoints are optional. A driver does not need `start`, `start-verification`, `health`, `stop`, or `status` to be complete at this level. |
+| `verify` | The full Machine contract, including non-empty `verification_targets` and driver runtime entrypoints | Runs the full lifecycle, including `test` and repeated start and verification checks. |
+
+The optional `component_overrides` spec map uses `repo:name` keys with `included` and `level` fields. A component level cannot exceed the Machine level. The current CLI parses and validates this map; per-component application is separate work.
 
 ## Runner image requirement
 
