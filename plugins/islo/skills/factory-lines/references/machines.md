@@ -116,7 +116,16 @@ As soon as an applicable build, test, or verification finishes, say so. Name the
 
 If a component fails to build, test, or start, use the failure question granted above.
 
-After the included components have been exercised, report every discovered component: included or left out, build, test, start, verification, and surface. Then list the Machine files changed in each local repository. Run `islo machine prepare --from-context`, then `islo machine verify`. Prepare fails if any checkout has uncommitted changes. It leaves checkouts detached at their recorded default commits and restores the highest-revision manifest to `.islo-pending/` without removing install or build output. Return ready only after that report, the applicable pushes and pull requests, and both commands succeed.
+After the included components have been exercised, report every discovered component: included or left out, build, test, start, verification, and surface. Then list the Machine files changed in each local repository. `/etc/islo/machine.toml` is root-owned, so reprepare a writable copy and install it before verify:
+
+```bash
+cp /etc/islo/machine.toml /tmp/islo-machine-context.toml
+ISLO_MACHINE_CONTEXT=/tmp/islo-machine-context.toml islo machine prepare --from-context
+sudo install -D -m 0644 /tmp/islo-machine-context.toml /etc/islo/machine.toml
+islo machine verify
+```
+
+Prepare fails if any checkout has uncommitted changes. It leaves checkouts detached at their recorded default commits and restores the highest-revision manifest to `.islo-pending/` without removing install or build output. Return ready only after that report, the applicable pushes and pull requests, and both commands succeed.
 
 ## Build lifecycle
 
@@ -124,7 +133,7 @@ When `update_components` is true, the build runs **Prepare**, then **Author**, t
 
 1. **Prepare** runs `islo machine prepare --spec <file|->` as the sandbox user. The command validates the schema-1 spec, prepares every registered repository, and generates `/tmp/islo-machine-context.toml`. A separate privileged step installs that document at `/etc/islo/machine.toml` with mode `0644`, so repository files remain user-owned.
 2. **Author** reads the repository docs, lists services and resources, and asks the batches in "Questions Author may ask" before it writes files. The manager parks the run and later resumes the same Author session with the answers passed through. Author can repeat this question loop. It runs `islo machine edit`, writes the contract, exercises it, reports each result, and opens or updates pull requests for changed repositories.
-3. **Finalize** runs `islo machine prepare --from-context` and then `islo machine verify`. It saves the snapshot and deletes the build sandbox after verification passes. Prepare returns each checkout to its recorded default commit, detached, and places newer manifest in `.islo-pending/`. At `verify`, verification checks `manifest.toml`, component definitions, image and capacity requirements, required environment names, the repeated component lifecycle, clean Git state before and after lifecycle execution, and declared targets on each repeated verification run. If validation fails, Finalize publishes the bounded structured report, does not save a snapshot, and keeps the sandbox for diagnosis.
+3. **Finalize** copies `/etc/islo/machine.toml` to `/tmp/islo-machine-context.toml`, runs `islo machine prepare --from-context` against that copy, and installs the result with `sudo install -D -m 0644` back to `/etc/islo/machine.toml` before `islo machine verify`. The installed file is root-owned, so the sandbox user cannot rewrite it directly. Finalize saves the snapshot and deletes the build sandbox after verification passes. Prepare returns each checkout to its recorded default commit, detached, and places newer manifest in `.islo-pending/`. At `verify`, verification checks `manifest.toml`, component definitions, image and capacity requirements, required environment names, the repeated component lifecycle, clean Git state before and after lifecycle execution, and declared targets on each repeated verification run. If validation fails, Finalize publishes the bounded structured report, does not save a snapshot, and keeps the sandbox for diagnosis.
 
 Machine repository entries use stable `MachineRepo.key` values for component and cross-repository references. This key contract applies to Machine repositories. Do not assume that generic Git sources have stable keys.
 
@@ -141,7 +150,9 @@ The Author is the only writer of `islo/<machine>`. Factory job agents must not e
 Use the same deterministic verification as Finalize when authoring or diagnosing a Machine:
 
 ```bash
-islo machine prepare --from-context
+cp /etc/islo/machine.toml /tmp/islo-machine-context.toml
+ISLO_MACHINE_CONTEXT=/tmp/islo-machine-context.toml islo machine prepare --from-context
+sudo install -D -m 0644 /tmp/islo-machine-context.toml /etc/islo/machine.toml
 islo machine verify
 islo machine verify --output json
 islo components status --output json
@@ -151,7 +162,7 @@ Keep `islo components ...` for lower-level graph and lifecycle troubleshooting. 
 
 The prepare spec contains `schema`, `mode`, `machine_id`, `machine_name`, `repositories`, `capacity`, `manifest_branch`, and the highest reserved `manifest_revision`, plus optional `level` and `component_overrides`. Repository entries contain `key`, `repo_url`, and `checkout_path`. Capacity contains `capabilities`, `vcpus`, `memory_mb`, `disk_gb`, and `image`. Repository URLs may use HTTPS, `ssh://`, or SCP-style SSH such as `git@github.com:owner/repository.git`, but cannot embed passwords or HTTPS credentials. Checkout paths must be non-overlapping physical children of `/workspace` without symlinked ancestors, and keys must be unique.
 
-The installed schema-1 context excludes repository URLs and credentials. It records the reserved manifest revision and, for each repository, the default commit, manifest source and commit, and selected revision. Prepare with `--from-context` compares the default, remote branch, and local branch revisions without using a spec file. It keeps the recorded default commit and the highest-revision manifest. It stops on uncommitted changes and preserves install and build output. Do not hand-edit the context or depend on temporary spec files.
+The installed schema-1 context excludes repository URLs and credentials. It records the reserved manifest revision and, for each repository, the default commit, manifest source and commit, and selected revision. Prepare with `--from-context` compares the default, remote branch, and local branch revisions without using a spec file. It keeps the recorded default commit and the highest-revision manifest. It stops on uncommitted changes and preserves install and build output. In a sandbox, give it `ISLO_MACHINE_CONTEXT=/tmp/islo-machine-context.toml` and install that file over `/etc/islo/machine.toml` with sudo. The installed file is root-owned, so the sandbox user cannot replace it directly. Do not hand-edit the context or depend on temporary spec files.
 
 ## Verification levels
 
