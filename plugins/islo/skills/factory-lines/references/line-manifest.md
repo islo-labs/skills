@@ -14,7 +14,7 @@ Prepare the Machine and create this Agent before validating the Line. The Agent 
 
 <!-- validate: agent -->
 ```toml
-name = "reviewer"
+name = "skill-example-manager"
 machine = "reviewer-machine"
 type = "prompt"
 harness = "codex"
@@ -29,14 +29,14 @@ prompt = "Review stage results and choose the next action."
 name = "review-line"
 
 [manager]
-agent = "reviewer"
+agent = "skill-example-manager"
 
 [trigger]
 type = "manual"
 
 [[stages]]
 id = "review"
-job = "review-job"
+agent = "skill-example-review-stage"
 
 [[transitions]]
 id = "start"
@@ -53,10 +53,76 @@ to = "done"
 when = { op = "always" }
 ```
 
+## Script, Decision, and Prompt Agent stages
+
+Create and validate the reusable Agents before validating the Line. This example uses the built-in Manager and passes semantic outputs between Agent stages.
+
+<!-- validate: line -->
+```toml
+[line]
+name = "ticket-readiness"
+
+[trigger]
+type = "manual"
+
+[[stages]]
+id = "normalize"
+agent = "normalize-ticket"
+sandbox_name = "ticket-readiness-{{line_run_id}}"
+
+[[stages]]
+id = "decide"
+agent = "ticket-readiness"
+sandbox_name = "ticket-readiness-{{line_run_id}}"
+
+[[stages]]
+id = "investigate"
+agent = "investigate-ticket"
+sandbox_name = "ticket-readiness-{{line_run_id}}"
+
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "normalize"
+when = { op = "always" }
+
+[[transitions]]
+id = "normalize-to-decision"
+type = "conditional"
+from = "normalize"
+to = "decide"
+when = { op = "always" }
+params = { state = { type = "output", stage = "normalize", name = "output" } }
+
+[[transitions]]
+id = "ready-to-investigate"
+type = "conditional"
+from = "decide"
+to = "investigate"
+when = { op = "eq", left = { type = "stage", path = "$.outputs.readiness" }, right = { type = "literal", value = "ready" } }
+params = { input = { type = "output", stage = "normalize", name = "output" } }
+
+[[transitions]]
+id = "not-ready"
+type = "conditional"
+from = "decide"
+to = "done"
+when = { op = "ne", left = { type = "stage", path = "$.outputs.readiness" }, right = { type = "literal", value = "ready" } }
+
+[[transitions]]
+id = "finish"
+type = "conditional"
+from = "investigate"
+to = "done"
+when = { op = "always" }
+```
+
 ## Policy the schema does not state
 
 - Omit `[manager]` for the built-in Manager. Legacy `[agent.instructions]` is valid only without `[manager]`. Agentic transition instructions apply to that transition. Reusable Agent prompts live in the Agent configuration, optional Agent-stage overrides live in the Line, and internal Job prompts live in the Job.
-- A line declares identity, what starts a run, Agent interactions, and routing. Prefer an Agent stage referencing a reusable Agent. Check the live schema for its field names. Agent stages use the runtime's default `input`/`output` contract. The CLI does not yet expose custom Agent-stage `params` and `outputs`; use an internal Job stage when richer typed contracts or deterministic execution are required. Harness and model belong to the Agent for Agent stages and to the internal Job for Job stages.
+- A line declares identity, what starts a run, Agent interactions, and routing. Prefer a reusable Script Agent for deterministic commands, a Decision Agent for typed choice or score questions, and a Prompt Agent for open-ended judgment or tool use. Harness and model belong only to Agent types that expose them in `islo schema agent`.
+- Agent-stage contracts vary by Agent type and installed CLI version. Use only the `params`, `outputs`, and transition bindings exposed by `islo schema factory --short`. If a required capability is absent, verify the gap against `islo schema job --short` before using an internal Job. A standalone or user-facing Job requires an explicit user request.
 - Agent stages with the same `sandbox_name` share one Machine-backed filesystem for that Line run, but keep separate sessions. Every Agent in that group must use the same Machine; validate this before deploy.
 - Line run schedules live in `[trigger]`; a line run schedule created any other way is reverted on the next line deploy. Factory Machine refresh schedules are separate and live in the Machine spec (see `machines.md`).
 - Follow the complete dependency and deploy order in [create-a-line.md](create-a-line.md). Check internal Job version bindings after deploy; an internal `job_version_id` is pinned at deploy time.

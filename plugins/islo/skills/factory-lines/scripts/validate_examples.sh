@@ -17,6 +17,7 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 refs="$here/../references"
 files=()
 for candidate in \
+  "$refs/agents-and-managers.md" \
   "$refs/line-manifest.md" \
   "$refs/job-manifest.md" \
   "$refs/create-a-line.md"; do
@@ -63,6 +64,9 @@ only_missing_resource() {
 
 fail=0
 agent_count=0
+prompt_agent_count=0
+script_agent_count=0
+decision_agent_count=0
 manager_count=0
 shopt -s nullglob
 for kindfile in "$tmp"/*.kind; do
@@ -88,7 +92,7 @@ for kindfile in "$tmp"/*.kind; do
       out="$(islo factory line validate "$validation_toml" 2>&1)"; rc=$?
       if [[ $rc -eq 0 ]]; then
         echo "ok   $name (line validate)"
-      elif [[ "$kind" == "manager-line" ]] && only_missing_resource "$out" "manager\.agent references unknown Agent"; then
+      elif [[ "$kind" == "manager-line" ]] && only_missing_resource "$out" "references unknown Agent"; then
         echo "ok   $name (Manager schema valid; example Agent not deployed in this tenant)"
       elif [[ "$kind" == "line" ]] && only_missing_resource "$out" "references unknown Agent"; then
         echo "ok   $name (Agent schema valid; example Agent not deployed in this tenant)"
@@ -99,6 +103,12 @@ for kindfile in "$tmp"/*.kind; do
       fi ;;
     agent)
       agent_count=$((agent_count + 1))
+      agent_type="$(python3 -c "import tomllib,sys; print(tomllib.load(open(sys.argv[1],'rb'))['type'])" "$toml")"
+      case "$agent_type" in
+        prompt) prompt_agent_count=$((prompt_agent_count + 1)) ;;
+        script) script_agent_count=$((script_agent_count + 1)) ;;
+        decision) decision_agent_count=$((decision_agent_count + 1)) ;;
+      esac
       out="$(islo agent validate "$toml" 2>&1)"; rc=$?
       if [[ $rc -eq 0 ]]; then
         echo "ok   $name (Agent validate)"
@@ -115,6 +125,10 @@ for kindfile in "$tmp"/*.kind; do
   esac
 done
 
+if [[ $prompt_agent_count -eq 0 || $script_agent_count -eq 0 || $decision_agent_count -eq 0 ]]; then
+  echo "FAIL: expected prompt, script, and decision Agent fixtures (found prompt=$prompt_agent_count script=$script_agent_count decision=$decision_agent_count)" >&2
+  fail=1
+fi
 if [[ $agent_count -eq 0 || $manager_count -eq 0 ]]; then
   echo "FAIL: expected nonzero Agent and Manager Line fixtures (found $agent_count Agent, $manager_count Manager)" >&2
   fail=1
