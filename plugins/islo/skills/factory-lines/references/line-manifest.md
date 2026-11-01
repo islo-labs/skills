@@ -128,3 +128,20 @@ when = { op = "always" }
 - Follow the complete dependency and deploy order in [create-a-line.md](create-a-line.md). Check internal Job version bindings after deploy; an internal `job_version_id` is pinned at deploy time.
 - Reserved agentic option names belong to line controls. Do not reuse them as option labels.
 - Trigger field shapes and the condition AST are in the schema; wiring (selectors, filters, one-real-event verify) is in `triggers.md`.
+
+## Failed stages and opting out of recovery
+
+A failed stage first takes any conditional transition that matches. If none matches, the run parks for the Line Manager, which follows the `line-manager-recovery` skill. This happens whether or not the stage has an agentic transition. A stage's `max_attempts` (default 3) is how many plain retries the Manager makes before it diagnoses and recovers.
+
+To make a stage fail fast instead, for example a deploy that must not be retried, route its failure to `done`. A failed stage routed to `done` ends the run as failed (`stage_failed`) without a Manager turn:
+
+```toml
+[[transitions]]
+id = "deploy-crashed"
+type = "conditional"
+from = "deploy"
+to = "done"
+when = { op = "eq", left = { type = "stage", path = "$.status" }, right = { type = "literal", value = "failed" } }
+```
+
+`$.status == "failed"` matches only when the stage itself failed (agent error, timeout, lost sandbox). A stage that succeeds with an unwanted output, such as `review_result = "needs_changes"`, has `status = "succeeded"` and is routed by its output conditions.
