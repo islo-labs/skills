@@ -66,7 +66,7 @@ Agents that support the common plugin layout can load `plugins/islo`. Agents tha
 
 ## Contents
 
-The plugin ships three skills:
+The plugin ships four skills:
 
 ```text
 plugins/islo/skills/
@@ -75,6 +75,8 @@ plugins/islo/skills/
 │   ├── references/           # create-a-line workflow, machines, question shape,
 │   │                         # manifest anatomy, triggers, run control, harness/model
 │   └── scripts/              # validate_commands.sh, validate_examples.sh
+├── line-manager-recovery/    # TASK skill: Line Manager policy for failed stages
+│   └── SKILL.md              # loaded by every Line Manager turn
 ├── surfaces/                 # TASK skill: publish live line-run interfaces
 │   ├── SKILL.md              # router
 │   └── references/           # target-specific readiness and safety
