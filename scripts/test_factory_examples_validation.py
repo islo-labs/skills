@@ -11,7 +11,9 @@ SCRIPT = ROOT / "plugins/islo/skills/factory-lines/scripts/validate_examples.sh"
 REFERENCES = ROOT / "plugins/islo/skills/factory-lines/references"
 
 
-def run_validator(mixed_errors: bool) -> subprocess.CompletedProcess[str]:
+def run_validator(
+    mixed_errors: bool, missing_agent_type=None
+) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary)
         scripts = root / "scripts"
@@ -21,6 +23,16 @@ def run_validator(mixed_errors: bool) -> subprocess.CompletedProcess[str]:
         shutil.copy2(SCRIPT, scripts / SCRIPT.name)
         shutil.copy2(REFERENCES / "line-manifest.md", refs / "line-manifest.md")
         shutil.copy2(REFERENCES / "create-a-line.md", refs / "create-a-line.md")
+        agents = refs / "agents-and-managers.md"
+        shutil.copy2(REFERENCES / agents.name, agents)
+        if missing_agent_type is not None:
+            replacement_type = "script" if missing_agent_type == "prompt" else "prompt"
+            for reference in refs.glob("*.md"):
+                contents = reference.read_text()
+                contents = contents.replace(
+                    f'type = "{missing_agent_type}"', f'type = "{replacement_type}"'
+                )
+                reference.write_text(contents)
         stub = root / "islo"
         extra = 'echo "Error: malformed transition"' if mixed_errors else ":"
         stub.write_text(
@@ -58,4 +70,13 @@ assert "create-a-line-1.toml (Agent schema valid" in clean.stdout
 mixed = run_validator(True)
 assert mixed.returncode != 0, mixed.stdout
 assert "malformed transition" in mixed.stdout
+missing_prompt = run_validator(False, "prompt")
+assert missing_prompt.returncode != 0, missing_prompt.stdout
+assert "expected prompt, script, and decision Agent fixtures" in missing_prompt.stderr
+missing_script = run_validator(False, "script")
+assert missing_script.returncode != 0, missing_script.stdout
+assert "expected prompt, script, and decision Agent fixtures" in missing_script.stderr
+missing_decision = run_validator(False, "decision")
+assert missing_decision.returncode != 0, missing_decision.stdout
+assert "expected prompt, script, and decision Agent fixtures" in missing_decision.stderr
 print("Manager fixture diagnostics: OK")
