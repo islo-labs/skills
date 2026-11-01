@@ -25,9 +25,10 @@ that drive this policy are:
   repeating an identical attempt is allowed.
 - **1 or 2: diagnose and recover.** Find the cause before acting, then change
   something you can name. Never repeat an identical retry here.
-- **3 or more: stop.** Run `islo factory line-run stop RUN_ID --reason "..."`
-  with the diagnosis and the action a human needs to take, or ask a question if
-  a person must decide.
+- **3 or more: stop.** Always end the turn with
+  `islo factory line-run stop RUN_ID --reason "..."`, giving the diagnosis and
+  the action a human needs to take. If a person must decide, put the question
+  in the reason; never end this turn without the stop.
 
 If the error can never succeed on a retry (missing credentials, a rejected
 parameter, a policy refusal), skip the remaining plain retries and go straight
