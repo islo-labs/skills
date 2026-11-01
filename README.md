@@ -76,7 +76,7 @@ plugins/islo/skills/
 │   │                         # manifest anatomy, triggers, run control, harness/model
 │   └── scripts/              # validate_commands.sh, validate_examples.sh
 ├── line-manager-recovery/    # TASK skill: Line Manager policy for failed stages
-│   └── SKILL.md              # loaded by every Line Manager turn
+│   └── SKILL.md              # read by the Line Manager on stage failures
 ├── surfaces/                 # TASK skill: publish live line-run interfaces
 │   ├── SKILL.md              # router
 │   └── references/           # target-specific readiness and safety
