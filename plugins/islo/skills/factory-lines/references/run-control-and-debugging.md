@@ -8,14 +8,14 @@ How to inspect, steer, and debug line runs. Verbs here match the current CLI con
 islo factory line-run status <run-id>
 islo factory line-run events <run-id>
 islo factory line-run stop <run-id> --reason "<why>"
-islo factory line-run retry <run-id>
+islo factory line-run retry <run-id> --reset-iterations --reset-usage
 islo factory line-run steer <run-id> <stage> --param KEY=VALUE
 islo factory line-run ask <run-id> --message "<question>"
 islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<message>"
 ```
 
-- `stop` kills in-flight stage work for real (compute events resolved, children cancelled) but parks the run resumable: status becomes `stopped` with an open control window for `steer`.
-- `retry` reruns the latest failed stage and continues the line. No flags; the failed stage is implied.
+- `stop` kills in-flight stage work for real (compute events resolved, children cancelled) but parks the run resumable: status becomes `stopped` with an open control window for `steer`. Add `--skip-current-stage` to record the active stage as `skipped` instead of `stopped`; the API rejects this flag unless the caller is the Line Manager.
+- `retry` reruns the latest failed stage and continues the line; the failed stage is implied. `--reset-iterations` resets the global `max_iterations` counter and `--reset-usage` opens a fresh active-time/budget window, same as on `steer`.
 - `steer` sends a stopped or finished run back to a named stage. Steering an active run returns 409; stop first, then steer. `--param` overrides merge over the stage's last attempt params and are type-coerced against the job manifest; unset params are inherited.
 - A failed stage goes to the Line Manager, which follows the `line-manager-recovery` skill: plain retries until the stage's `max_attempts` (default 3) is reached, then up to two diagnosed recovery attempts, then stop. To opt a stage out, see "Failed stages and opting out of recovery" in [line-manifest.md](line-manifest.md).
 - `ask` messages the line manager about the run: reassess, explain, or route.
