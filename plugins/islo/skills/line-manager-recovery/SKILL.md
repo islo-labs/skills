@@ -43,10 +43,14 @@ islo job event COMMAND_ID                  # exit code, error detail, output tai
 islo factory line get LINE_NAME            # the stage's params, types, and defaults
 ```
 
-When the tails are not enough, confirm the stage sandbox still exists with
-`islo ls`, then inspect it with `islo logs` or `islo use <sandbox> -- <command>`.
-`islo use` creates a sandbox that does not exist, so never run it on a name
-`islo ls` did not list.
+When the tails are not enough, run `islo ls -a` and match the stage sandbox by
+`<agent>-<line_run_id>`, or by the stage's `sandbox_name` when set. Stage
+sandboxes belong to job identities, so plain `islo ls` (which shows only the
+caller's sandboxes) can return `No sandboxes found.` even when one exists.
+Never conclude that no stage sandbox exists from an empty plain `islo ls`;
+check `islo ls -a` first. Inspect a listed sandbox with `islo logs` or
+`islo use <sandbox> -- <command>`. `islo use` creates a missing sandbox, so
+never run it on a name that `islo ls -a` did not list.
 
 ## Recover
 
@@ -57,7 +61,7 @@ Pick the smallest change that addresses the cause:
 | Wrong or missing input | `steer` the stage with corrected `--param` / `--param-json` values |
 | Agent went down a wrong path | `steer` with a focused `resume_prompt` (or the stage's prompt-like param) written as if the agent has no other context |
 | Agent conversation is broken or cannot resume | `steer RUN_ID STAGE --fresh-session --reason "..."` |
-| Sandbox is broken (disk full, corrupt checkout, dead services) | Replace the sandbox, below |
+| Sandbox is broken (disk full, corrupt checkout, dead services), or a listed paused sandbox repeatedly fails `ensure_sandbox` | Replace the sandbox, below |
 
 `--fresh-session` starts the stage agent in a new conversation. It receives a
 Previous attempts handoff built from the stage's earlier attempts, which
@@ -67,10 +71,13 @@ reach the agent.
 
 ### Replace a broken sandbox
 
-1. If `islo ls` lists the old sandbox, run `git status` in it with
+1. Run `islo ls -a` and match the old sandbox by `<agent>-<line_run_id>` or
+   the stage's `sandbox_name`. If it is reachable, run `git status` in it with
    `islo use <sandbox> -- ...` and push any unpushed work to its PR branch.
-2. Delete it with `islo rm <stage sandbox>`. Stage sandboxes are named
-   `<agent>-<line_run_id>` unless the stage sets `sandbox_name`.
+   If it cannot be reached, record that in the steer reason.
+2. Delete the listed sandbox with `islo rm <stage sandbox>` before steering.
+   A paused sandbox with repeated `ensure_sandbox` failures is a replacement
+   candidate even if its status does not say `failed`.
 3. `steer RUN_ID STAGE --fresh-session --reason "..."`. The stage recreates the
    sandbox from its Machine, which clones the repository default branch; tell
    the agent in the reason which PR branch to check out.

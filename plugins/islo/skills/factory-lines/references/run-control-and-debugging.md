@@ -40,11 +40,13 @@ islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<messa
 islo factory line-run status <run-id>
 islo factory line-run events <run-id>
 islo job event <command-id>
+islo ls -a
 islo ssh <sandbox-name>
 islo logs <sandbox-name>
 ```
 
 `events` names each stage attempt and its steps; each step carries a compute command id. `islo job event` shows that step's exit code, error detail, and output tails. When the tail is not enough, the sandbox itself (if still alive per its lifecycle policy) has the full story via `ssh` and `logs`.
+Stage sandboxes belong to job identities, so use `islo ls -a` to find them by `<agent>-<line_run_id>` or the stage's `sandbox_name`. An empty plain `islo ls` does not establish that a stage sandbox is absent.
 
 Once the aggregated debug API ships, `GET /factory/line-runs/{run_id}/debug` returns the joined per-stage view with a failure summary, and `GET /factory/line-runs/{run_id}/logs?stage=&step=` resolves full step output. Prefer them over hand-joining events when available.
 
