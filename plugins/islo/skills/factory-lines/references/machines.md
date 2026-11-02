@@ -20,7 +20,7 @@ Check the resolved Factory with `islo factory current`. If it is not the intende
 
 ```bash
 islo factory machine list
-islo factory machine create <name> --repo <git-url> --capability docker
+islo factory machine create <name> --repo <git-url> --capability docker --level verify
 islo factory machine get <name>
 islo factory machine update <name> --vcpus 4 --memory-mb 4096
 islo factory machine build <name>
@@ -29,6 +29,8 @@ islo factory machine delete <name>
 ```
 
 `create` starts the first build and runs Author, so component files can be written. `build` alone refreshes the snapshot and skips Author. `build --update-components` runs Author again. `update` saves the spec; only changes listed in the Updates and builds table start a build. A repository or environment edit starts a build that runs Author. A capability, vCPU, memory, or disk-size edit starts a refresh build without Author. A lifecycle or gateway-profile edit on a ready Machine publishes a new template version without a build. Use `get` to inspect the spec and latest build after an operation. Wait for a published usable version before dependent Agents run after any change that starts a build. If the API returns 404 for Machine commands, `factory-machine-v1` may be disabled for the tenant; there is no skill-side feature flag.
+
+`create`, `update`, and `build` accept `--level source|build|verify`. `update` and `build` fall back to the Machine's current level when the flag is omitted, but `create` defaults to `source` when it is omitted, not `verify`. A Machine created without `--level verify` stops at checkouts only, skipping component discovery, questions, and verification described below. Pass `--level verify` on `create` for the full contract this skill assumes, or `--level build` to stop after install/build. Raising the level on `update` or `build` (e.g. `source` to `verify`) starts a build and runs Author even without `--update-components`; lowering it or repeating the same level starts a build but does not run Author.
 
 `delete` removes the Machine and frees its name. Saved snapshots stay. A running build returns 409 and deletes nothing. The command asks for confirmation in a terminal; `--force` skips it.
 
@@ -189,6 +191,7 @@ Any new runner image visible to Jobs must put a compatible `islo` CLI on `PATH` 
 | Capabilities (`--capability`, `--clear-capabilities`) | Yes |
 | Disk size (`--disk-gb`) | Yes |
 | vCPUs (`--vcpus`) or memory (`--memory-mb`) | Yes |
+| Level (`--level`) | Yes; runs Author too when it raises the level |
 | Lifecycle or gateway profile | No; a ready Machine publishes a new template version |
 | Refresh schedule or timezone | No |
 
