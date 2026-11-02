@@ -1,6 +1,6 @@
 ---
 name: line-manager-recovery
-description: Recover a failed Line stage as the Islo Line Manager. Use when a routing turn's context has reason `stage_failed`, to choose between a plain retry, a diagnosed steer, a fresh session, a sandbox replacement, or stopping.
+description: Recover a failed Line stage as the Islo Line Manager. Use when a routing turn's context has reason `stage_failed`, to choose between a plain retry, a diagnosed steer, a fresh session, a sandbox replacement, or ending the failed run.
 ---
 
 # Recovering a failed Line stage
@@ -25,14 +25,40 @@ that drive this policy are:
   repeating an identical attempt is allowed.
 - **1 or 2: diagnose and recover.** Find the cause before acting, then change
   something you can name. Never repeat an identical retry here.
-- **3 or more: stop.** Always end the turn with
-  `islo factory line-run stop RUN_ID --reason "..."`, giving the diagnosis and
-  the action a human needs to take. If a person must decide, put the question
-  in the reason; never end this turn without the stop.
+- **3 or more: end the failed run.** End the turn with
+  `islo factory line-run steer RUN_ID done --reason "..."`. The run ends
+  `failed`, keeps the original error classification, and stays steerable.
+  Use the reason format below. If a person must decide, post a question
+  instead, then end the turn.
 
 If the error can never succeed on a retry (missing credentials, a rejected
 parameter, a policy refusal), skip the remaining plain retries and go straight
-to recovery or stop.
+to recovery or `islo factory line-run steer RUN_ID done --reason "..."`.
+
+## Ending states
+
+- Use `steer done` to give up on a failed stage. It takes no params. Require
+  this reason format:
+  `<error_code> x <attempt_count> on <stage>; what was tried; PR heads and unpushed-work state; what a person must do`.
+  Record unknown PR heads or unpushed-work state explicitly if inspection is
+  unavailable. The reason is recorded on the timeline.
+- When a person must decide, post the question with
+  `POST /factory/line-runs/RUN_ID/questions`, including `attempted` and
+  `findings`, then end the turn:
+
+  ```bash
+  islo api -X POST /factory/line-runs/RUN_ID/questions --input - <<'EOF'
+  {"questions":["QUESTION"],"attempted":["What recovery was tried"],"findings":["What failed and what decision is needed"]}
+  EOF
+  ```
+
+- Use `stop` only for an explicit pause or after posting a question. Never
+  use it to give up on a failed stage, and never put questions in a `stop`
+  reason.
+
+This policy applies to failed stages. Do not use `steer done` to give up after
+a stage that succeeded with a `blocked` output: it would mark the run
+`succeeded`.
 
 ## Diagnose
 
