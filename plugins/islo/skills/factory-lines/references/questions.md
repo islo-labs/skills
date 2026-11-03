@@ -24,8 +24,8 @@ islo api --method POST --input - /factory/line-runs/LINE_RUN_ID/questions <<'EOF
       "kind": "single_choice",
       "prompt": "Prompt from the granting document",
       "options": [
-        {"id": "option-a", "label": "First option"},
-        {"id": "option-b", "label": "Second option"}
+        {"id": "option-a", "label": "First option", "selected": true},
+        {"id": "option-b", "label": "Second option", "recommended": true}
       ]
     }
   ]
@@ -35,7 +35,11 @@ EOF
 
 `LINE_RUN_ID` and `stage_name` come from the document that granted permission. Omit `stage_name` only when that document says to omit it.
 
-A batch holds 1 to 10 questions. Each question has a stable `id`, a `kind`, and a `prompt`. Kinds are `single_choice`, `multi_choice`, and `text`. A choice has 2 to 8 options. Each option has a stable `id` and a `label`. Option ids are unique inside the question. An option may include `selected: true` to pre-select it in the web form; omitted or false leaves it unselected. A single_choice question may pre-select at most one option. Defaults remain editable and are not submitted until the person sends the answers. Question ids are unique inside the batch. `required` defaults to true. A text question has no options.
+A batch holds 1 to 10 questions. Each question has a stable `id`, a `kind`, and a `prompt`. Kinds are `single_choice`, `multi_choice`, and `text`. A choice has 2 to 8 options. Each option has a stable `id` and a `label`. Option ids are unique inside the question. Question ids are unique inside the batch. `required` defaults to true. A text question has no options.
+
+On either choice kind, an option may set `selected` and `recommended`; both default to false. `selected: true` checks that option when the form opens. It does not submit an answer: the person still confirms or changes the selection. A `single_choice` may have at most one selected option; a `multi_choice` may have any number. `recommended: true` shows a Recommended tag and does not check the option. The flags are independent: an option may have either, both, or neither. Omit both for an unchecked option with no tag.
+
+When the granting document allows the person to select nothing, post the `multi_choice` with `required: false`. An empty selection is a complete answer; do not add a `none` option for that case. Keep a single-choice `none` option when that question must have one answer.
 
 Prefer `single_choice` and `multi_choice`. Use `text` only when the answer cannot be a choice. Do not put secrets, credentials, or private values in a prompt, an option, or a summary.
 
