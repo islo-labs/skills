@@ -35,7 +35,7 @@ EOF
 
 `LINE_RUN_ID` and `stage_name` come from the document that granted permission. Omit `stage_name` only when that document says to omit it.
 
-A batch holds 1 to 10 questions. Each question has a stable `id`, a `kind`, and a `prompt`. Kinds are `single_choice`, `multi_choice`, and `text`. A choice has 2 to 8 options. Each option has a stable `id` and a `label`. Option ids are unique inside the question. Question ids are unique inside the batch. `required` defaults to true. A text question has no options.
+A batch holds 1 to 10 questions. Each question has a stable `id`, a `kind`, and a `prompt`. Kinds are `single_choice`, `multi_choice`, and `text`. A choice has 2 to 8 options. Each option has a stable `id` and a `label`. Option ids are unique inside the question. An option may include `selected: true` to pre-select it in the web form; omitted or false leaves it unselected. A single_choice question may pre-select at most one option. Defaults remain editable and are not submitted until the person sends the answers. Question ids are unique inside the batch. `required` defaults to true. A text question has no options.
 
 Prefer `single_choice` and `multi_choice`. Use `text` only when the answer cannot be a choice. Do not put secrets, credentials, or private values in a prompt, an option, or a summary.
 
