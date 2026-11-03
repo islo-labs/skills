@@ -1,6 +1,6 @@
 ---
 name: line-manager-recovery
-description: Recover a failed Line stage as the Islo Line Manager. Use when a routing turn's context has reason `stage_failed`, to choose between a plain retry, a diagnosed steer, a fresh session, a sandbox replacement, or stopping.
+description: Recover a failed Line stage as the Islo Line Manager. Use when a routing turn's context has reason `stage_failed`, to choose between a plain retry, a diagnosed steer, a fresh session, a sandbox replacement, or ending the run as failed.
 ---
 
 # Recovering a failed Line stage
@@ -25,14 +25,40 @@ that drive this policy are:
   repeating an identical attempt is allowed.
 - **1 or 2: diagnose and recover.** Find the cause before acting, then change
   something you can name. Never repeat an identical retry here.
-- **3 or more: stop.** Always end the turn with
-  `islo factory line-run stop RUN_ID --reason "..."`, giving the diagnosis and
-  the action a human needs to take. If a person must decide, put the question
-  in the reason; never end this turn without the stop.
+- **3 or more: end the run as failed.** End the turn with
+  `islo factory line-run steer RUN_ID fail --reason "..."`. This ends the run
+  `failed`, preserves the failed stage's error classification, and leaves the
+  run steerable or retryable. If a person must decide first, post a question
+  as described below, then end the turn.
 
 If the error can never succeed on a retry (missing credentials, a rejected
 parameter, a policy refusal), skip the remaining plain retries and go straight
-to recovery or stop.
+to recovery or ending the run as failed.
+
+## Ending states
+
+Use `islo factory line-run steer RUN_ID fail --reason "..."` when giving up on
+this run. It takes no stage params. Write the reason in this form:
+
+`<error_code> x <attempt_count> on <stage>; what was tried; PR heads and unpushed-work state; what a person must do`
+
+Include the actual PR head SHAs and whether work is pushed, unpushed, or
+unreachable. The reason is recorded on the timeline. `steer fail` explicitly
+ends the run `failed` regardless of the last stage's status; `steer done` is
+for normal completion, not giving up.
+
+When a person must decide, post the question with what you attempted and found,
+then end the turn:
+
+```bash
+islo api -X POST /factory/line-runs/RUN_ID/questions --input - <<'EOF'
+{"questions":["QUESTION"],"attempted":["WHAT WAS TRIED"],"findings":["WHAT WAS FOUND"]}
+EOF
+```
+
+Use `stop` only for an explicit pause or after a posted question. Do not hide
+questions in a stop reason; that does not notify anyone. Never use `stop` to
+give up on a failed stage.
 
 ## Diagnose
 
