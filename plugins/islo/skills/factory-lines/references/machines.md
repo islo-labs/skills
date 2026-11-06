@@ -98,7 +98,9 @@ For a new Machine, pre-select every CI module with `selected: true`.
 Leave a module that comes only from the docs and code unselected, unless a selected module requires it.
 If nothing is new, continue without the inclusion question.
 If exactly one module is discovered, skip the question and build that module.
-Apply the same skip when only one new module remains, keeping existing definitions selected.
+When existing component definitions are present and only one new module remains, skip the question and include it only if CI builds or tests it or a selected module requires it.
+Otherwise leave the optional docs-only module unselected and continue with the existing set.
+For example, with an already-defined API and one unrelated docs-only worker, keep the API selected and leave the worker unselected.
 When more than one new module is discovered, ask that choice, then stop.
 When the question is skipped, continue into the build suites on this turn.
 The person may select nothing new; an empty selection is complete and keeps existing definitions selected, so do not add a `none` option to the multi-choice.

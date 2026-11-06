@@ -27,6 +27,18 @@ class MachineAuthorGuidanceTests(unittest.TestCase):
         self.assertFalse("Include none" in text)
         self.assertFalse("uses single_choice" in text)
 
+    def test_optional_worker_does_not_expand_an_existing_api_machine(self):
+        text = REFERENCE.read_text()
+        for rule in (
+            "When existing component definitions are present and only one new module remains",
+            "include it only if CI builds or tests it or a selected module requires it",
+            "Otherwise leave the optional docs-only module unselected and continue with the existing set",
+            "with an already-defined API and one unrelated docs-only worker, keep the API selected and leave the worker unselected",
+        ):
+            with self.subTest(rule=rule):
+                self.assertTrue(rule in text, f"Missing guidance: {rule}")
+        self.assertFalse("Apply the same skip when only one new module remains" in text)
+
     def test_goals_precede_boot_but_do_not_add_a_verify_gate(self):
         text = REFERENCE.read_text()
         for rule in (
