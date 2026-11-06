@@ -51,7 +51,7 @@ A test fixture is runtime infrastructure a CI job starts for a suite. It is not 
 
 ## Component goals, usage, and live addresses
 
-Keep `component.toml` at schema 1. Write a concise `goal` string of at most 200 characters explaining what each component is for. Write a sibling `instructions.md` containing the usage procedure for each driver. Passive components may omit that file. At verify level, a selected component with a missing or blank goal, or a driver without `instructions.md`, is `incomplete_component` in status and Machine verification. Source and build do not require either.
+Keep `component.toml` at schema 1. Write a concise `goal` string of at most 200 characters explaining what each component is for. Write a sibling `instructions.md` containing the usage procedure for each driver. Passive components may omit that file. These are authoring guidelines, not verification requirements. A missing or empty goal or missing `instructions.md` leaves component presence unchanged at every level and does not fail `islo machine verify`. A goal longer than 200 characters is `invalid_component`.
 
 `islo components status` includes the goal and `instructions <path>` in text, and `goal` and `instructions` fields in JSON when present. The instructions value is the path to the selected component tree's file, including `.islo-pending/` when selected; the CLI does not paste its body. Older schema-1 files without a goal still parse and omit the goal from status.
 
@@ -144,7 +144,7 @@ The prepare spec and installed context may contain `level`: `source`, `build`, o
 |---|---|---|
 | `source` | Registered Git checkouts only; no `.islo` directory or components required | Checks that registered checkouts are present at their recorded default commits and clean. Runs no component lifecycle steps. |
 | `build` | A `manifest.toml` in each contributing repository, with a non-empty combined active set; each active component has `component.toml`. `verification_targets` may be empty. | Runs `install`, then `build`, in dependency order. Those entrypoints are optional. Author separately writes and runs `test` after install and build when CI or repository docs and code provide tests; build-level `islo machine verify` does not run tests. A driver does not need `start`, `start-verification`, `health`, `stop`, or `status` to be complete at this level. |
-| `verify` | The full Machine contract, including a non-empty goal for every selected component, `instructions.md` for every driver, at least one verification target across repositories, and driver runtime entrypoints | Runs the full lifecycle, including `test` and repeated start and verification checks. |
+| `verify` | The full Machine contract, including at least one verification target across repositories and driver runtime entrypoints | Runs the full lifecycle, including `test` and repeated start and verification checks. |
 
 The optional `component_overrides` spec map uses `repo:name` keys with `included` and `level` fields. A component level cannot exceed the Machine level. The current CLI parses and validates this map; per-component application is separate work.
 
