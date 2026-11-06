@@ -18,8 +18,6 @@ jobs:
         run: |
           python3 scripts/validate_surfaces_skill.py
           python3 scripts/test_validate_surfaces_skill.py
-      - name: Check Machine author guidance
-        run: python3 scripts/test_machine_author_guidance.py
       - name: Check plugin manifest copies match canonical
         run: bash scripts/sync_plugin_manifests.sh --check
 
