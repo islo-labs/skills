@@ -15,6 +15,12 @@ Keep the discussion in product terms: Factory, Machines, Agents, their interacti
 
 Never write a manifest from memory. Check the installed `islo schema factory --short` and `islo schema agent`; validate before deploy. If the installed CLI lacks a required command or Agent-stage field, report the exact gap rather than silently substituting an unrelated resource. Use an internal Job only when a required capability is demonstrably unavailable to Agent stages and `islo schema job --short` unambiguously supports the exact requirement. If either side is unclear, report only the unresolved semantic capability and stop; do not name internal fields, propose implementation workarounds, ask the user to resolve the implementation gap, or infer support from a similarly named field. Keep an internal Job out of the user's choices and its configuration out of the blueprint unless a developer asks.
 
+## Customer-facing terminology
+
+Keep “Job” and “jobs” out of customer-facing UI copy, blueprints, questions, summaries, and reports. Name reusable execution units Agents, ordered parts of a Line stages, and executions runs. Call legacy standalone definitions automations when describing them to customers; do not imply they are saved Agents. Machine guidance describes the workspace Agents use.
+
+Keep technical identifiers accurate: CLI commands, API fields, manifest keys, file paths, and raw configuration still use their schema names. Use Job terminology when a developer explicitly asks about that internal layer, and keep it confined to the technical explanation. Apply the same product terms to labels, empty states, errors, accessible names, and exported visuals.
+
 ## References
 
 | Need | Read |
