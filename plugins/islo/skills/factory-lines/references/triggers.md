@@ -54,8 +54,8 @@ Two different products:
 | | Line webhook trigger | Incoming webhook |
 |--|---------------------|------------------|
 | Setup | `[trigger] type = "webhook"` in line.toml | `islo webhook incoming create` |
-| Target | Starts a line run | Sandbox lifecycle or a single job |
-| Use when | Multi-stage orchestration | Simple event to sandbox or job |
+| Target | Starts a line run | Sandbox lifecycle |
+| Use when | Multi-stage orchestration | Simple event to sandbox |
 
 Incoming webhooks are covered in the platform skill. For anything multi-stage, use a line trigger.
 

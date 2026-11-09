@@ -30,4 +30,4 @@ Items have a type (memory, skill, rule, prompt, image, video, or audio) and can 
 
 ## Using knowledge from agents
 
-Attach items to agent steps via prompt bindings or the `run_agent.knowledge` array instead of embedding long policy text in manifests; binding shapes per `islo schema job`. Line routing instructions can also bind knowledge. The Factory UI renders knowledge-backed prompts in the line description view.
+Line routing instructions can bind Knowledge using the shapes exposed by `islo schema factory`. Configure reusable Agent prompts and Skills using `islo schema agent`. Keep procedural content in versioned Skills.

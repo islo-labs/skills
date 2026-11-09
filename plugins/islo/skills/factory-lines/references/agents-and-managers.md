@@ -8,7 +8,6 @@ An Agent is reusable across Lines. It belongs to one Factory and uses one Machin
 | Decision | Typed classification or scoring | `questions` with `choice`, `score`, or other kinds exposed by the schema; optional System One model |
 | Prompt | Open-ended judgment, repository work, or tool use | `harness`, `model`, `prompt`, optional effort, Skills, and MCP servers |
 
-Do not create a Job merely because a stage runs shell commands or makes a typed decision. Create a user-facing or standalone Job only when the user explicitly asks for one. For a required capability absent from Agent stages, use an internal Job only when the live Job schema unambiguously supports the exact requirement. If either schema is unclear, report the unresolved capability instead of inferring support.
 
 ## Agent examples
 
@@ -53,7 +52,7 @@ model_provider = "islo_inference"
 prompt = "Investigate the ticket in the available repositories and return a recommended implementation approach."
 ```
 
-The Machine supplies the filesystem, repositories, environment, gateway profile, and lifecycle for every Agent type. Job-only `run_agent` fields and sandbox environment variables do not belong in an Agent configuration.
+The Machine supplies the filesystem, repositories, environment, gateway profile, and lifecycle for every Agent type. Configure the reusable Agent with the fields exposed by `islo schema agent`.
 
 For a Prompt Agent, recommend a model from the appropriate live catalog, taking capability, cost, and provider connection into account. Do not assume one catalog works for every harness. Its prompt should say what it owns and what it must return, while Line inputs provide task-specific context. Attach repository procedures as Skills or keep them in the repository.
 

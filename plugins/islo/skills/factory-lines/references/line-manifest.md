@@ -120,12 +120,12 @@ when = { op = "always" }
 
 ## Policy the schema does not state
 
-- Omit `[manager]` for the built-in Manager. Legacy `[agent.instructions]` is valid only without `[manager]`. Agentic transition instructions apply to that transition. Reusable Agent prompts live in the Agent configuration, optional Agent-stage overrides live in the Line, and internal Job prompts live in the Job.
+- Omit `[manager]` for the built-in Manager. Legacy `[agent.instructions]` is valid only without `[manager]`. Agentic transition instructions apply to that transition. Reusable Agent prompts live in the Agent configuration, optional Agent-stage overrides live in the Line.
 - A line declares identity, what starts a run, Agent interactions, and routing. Prefer a reusable Script Agent for deterministic commands, a Decision Agent for typed choice or score questions, and a Prompt Agent for open-ended judgment or tool use. Harness and model belong only to Agent types that expose them in `islo schema agent`.
-- Agent-stage contracts vary by Agent type and installed CLI version. Use only the `params`, `outputs`, and transition bindings exposed by `islo schema factory --short`. If a required capability is absent, verify the gap against `islo schema job --short` before using an internal Job. A standalone or user-facing Job requires an explicit user request.
+- Agent-stage contracts vary by Agent type and installed CLI version. Use only the `params`, `outputs`, and transition bindings exposed by `islo schema factory --short`. If a required capability is absent, report the gap and stop dependent deployment.
 - Agent stages with the same `sandbox_name` share one Machine-backed filesystem for that Line run, but keep separate sessions. Every Agent in that group must use the same Machine; validate this before deploy.
 - Line run schedules live in `[trigger]`; a line run schedule created any other way is reverted on the next line deploy. Factory Machine refresh schedules are separate and live in the Machine spec (see `machines.md`).
-- Follow the complete dependency and deploy order in [create-a-line.md](create-a-line.md). Check internal Job version bindings after deploy; an internal `job_version_id` is pinned at deploy time.
+- Follow the complete dependency and deploy order in [create-a-line.md](create-a-line.md). Inspect the deployed Line to confirm every stage references the intended Agent.
 - Reserved agentic option names belong to line controls. Do not reuse them as option labels.
 - Trigger field shapes and the condition AST are in the schema; wiring (selectors, filters, one-real-event verify) is in `triggers.md`.
 

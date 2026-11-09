@@ -1,6 +1,6 @@
 # Design a Factory from a goal
 
-Use this workflow for a new Factory or a substantial change to an existing one. The user's outcome and approved effects drive the design; do not ask them to select a Job or understand a Job manifest.
+Use this workflow for a new Factory or a substantial change to an existing one. The user's outcome and approved effects drive the design.
 
 ## Read-only inventory
 
@@ -26,7 +26,7 @@ An integration connection check runs through the local CLI (`islo status` and re
 
 ## Resolve only real choices
 
-Ask once in a single batch for decisions that inventory and the request cannot resolve. Group related identities: which Factory or new name; repositories; trigger scope (for example GitHub owner/repo, Linear team/project, or Slack channel); where results go; allowed writes and provider events; and any cost or time limit. Ask about a Machine, Agent, model, or Manager only if a material product choice cannot be recommended from observed resources. Offer a concrete default and an override where useful. Never ask whether to use an Agent or Job. Do not ask for credentials in chat; ask the user to connect the provider locally when needed. If answers change the design, incorporate them before approval.
+Ask once in a single batch for decisions that inventory and the request cannot resolve. Group related identities: which Factory or new name; repositories; trigger scope (for example GitHub owner/repo, Linear team/project, or Slack channel); where results go; allowed writes and provider events; and any cost or time limit. Ask about a Machine, Agent, model, or Manager only if a material product choice cannot be recommended from observed resources. Offer a concrete default and an override where useful. Do not ask for credentials in chat; ask the user to connect the provider locally when needed. If answers change the design, incorporate them before approval.
 
 ## Recommend one complete blueprint
 
@@ -44,6 +44,6 @@ Present one proposed configuration, marking inferred defaults. It must contain:
 
 For Agents with the same `sandbox_name` in one Line run, explain that they share one Machine-backed filesystem but have separate sessions. Every Agent in a shared-sandbox group must use the **same Machine**. Different `sandbox_name` values create workspace boundaries; pass results through Line outputs or an approved external artifact instead of assuming files cross the boundary. Include failure and retry paths in the graph when relevant.
 
-Describe inputs and outputs by meaning, such as “issue URL in” and “PR URL out.” Use the Agent-stage contracts exposed by the live Factory schema. If a required capability is absent, verify that gap against both Agent and Job schemas before proposing an internal Job. Snapshot pinning, fan-out with output reduction, verification, and lifecycle actions are Job candidates only when the Agent schema cannot express them and the Job schema unambiguously supports the exact required behavior. A similarly named field is not proof. If either side is unclear, report only the unresolved semantic capability and stop the dependent design; do not name internal fields, offer implementation workarounds, or ask the user how to solve it. Otherwise keep the internal implementation in technical notes and describe only the supported capability in the customer blueprint; never present it as a user choice or expose its fields unless a developer asks. Keep every other stage Agent-backed. A standalone or user-facing Job requires an explicit user request. Include a proposed Manager: built-in unless a reusable Prompt Agent is justified.
+Describe inputs and outputs by meaning, such as “issue URL in” and “PR URL out.” Reference reusable Agents in every stage and use the Agent-stage contracts exposed by the live Factory schema. If a required capability is absent or unclear, report the unresolved capability and stop dependent deployment. Include a proposed Manager: built-in unless a reusable Prompt Agent is justified.
 
 Ask for explicit approval of this **complete** blueprint before creating or changing any resource, deploying, sending a provider event, or writing to an external destination. Read-only inventory and local draft files are allowed before approval. If a requested effect was not included, obtain approval for the revised blueprint before doing it.

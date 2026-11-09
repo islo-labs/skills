@@ -2,7 +2,7 @@
 
 ## Incoming webhooks
 
-An incoming webhook reacts to an external HTTP event with a sandbox action or a single job trigger, without line orchestration. For multi-stage work triggered by events, use a factory line trigger instead (the factory-lines skill).
+An incoming webhook reacts to an external HTTP event with a sandbox action, without line orchestration. For workflows triggered by events, use a factory line trigger instead (the factory-lines skill).
 
 Do not write webhook config from memory:
 
@@ -27,14 +27,6 @@ islo webhook incoming create \
   --hmac-secret-value "$GITHUB_WEBHOOK_SECRET"
 ```
 
-```bash
-islo webhook incoming create \
-  --name trigger-review \
-  --action trigger-job \
-  --job-name pr-review \
-  --path /webhooks/review
-```
-
 Management:
 
 ```bash
@@ -49,7 +41,7 @@ Auth separation: incoming webhook secrets verify the sender; outbound provider c
 
 ## SDK
 
-For services, dashboards, bots, and custom launchers built on Islo. Use the CLI when a human or coding agent works interactively in a repo; use the SDK when code needs to manage sandboxes, start jobs or line runs, manage webhooks, configure gateway profiles, or inspect runs.
+For services, dashboards, bots, and custom launchers built on Islo. Use the CLI when a human or coding agent works interactively in a repo; use the SDK when code needs to manage sandboxes, start Line runs, manage webhooks, configure gateway profiles, or inspect runs.
 
 Packages: TypeScript `@islo-labs/sdk`, Python `islo`; generated SDKs also exist for Go. They are generated from the OpenAPI/Fern pipeline, so method names change; check docs MCP or the package reference before writing non-trivial code.
 
@@ -75,4 +67,4 @@ client = Islo()
 
 Both read `ISLO_API_KEY` from the environment. Common env vars: `ISLO_API_KEY`, `ISLO_BASE_URL`, `ISLO_COMPUTE_URL`; confirm current names in docs before deployment instructions. Do not embed the key in source.
 
-Design advice: explicit names for sandboxes, jobs, webhooks, and profiles; keep job behavior in `job.toml` and use the SDK to deploy, trigger, and inspect; keep credentials in integrations and gateway profiles; persist run IDs for long-running automation and correlate with events.
+Design advice: explicit names for sandboxes, Agents, Lines, webhooks, and profiles; define reusable Agents and reference them in Line stages; keep credentials in integrations and gateway profiles; persist run IDs for long-running automation and correlate with events.

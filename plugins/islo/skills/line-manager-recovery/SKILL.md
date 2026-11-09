@@ -15,7 +15,7 @@ that drive this policy are:
 | `max_attempts` | Plain attempts the stage gets before recovery starts. The stage's `max_attempts`, or 3 when the Line does not set it |
 | `stage_exhausted` | `attempt_count >= max_attempts`: plain retries are used up |
 | `recovery_attempt` | 0 while plain retries remain, then 1, 2, ... for each failure after that |
-| `error_code`, `error_message` | The failed JobRun's error |
+| `error_code`, `error_message` | The failed stage execution's error |
 
 ## Decide by `recovery_attempt`
 
@@ -65,13 +65,12 @@ give up on a failed stage.
 ```bash
 islo factory line-run stages RUN_ID        # per-stage attempts and outcomes
 islo factory line-run events RUN_ID        # step timeline and compute command ids
-islo job event COMMAND_ID                  # exit code, error detail, output tails
 islo factory line get LINE_NAME            # the stage's params, types, and defaults
 ```
 
 When the tails are not enough, run `islo ls -a` and match the stage sandbox by
 `<agent>-<line_run_id>`, or by the stage's `sandbox_name` when set. Stage
-sandboxes belong to job identities, so plain `islo ls` (which shows only the
+sandboxes have separate ownership, so plain `islo ls` (which shows only the
 caller's sandboxes) can return `No sandboxes found.` even when one exists.
 Never conclude that no stage sandbox exists from an empty plain `islo ls`;
 check `islo ls -a` first. Inspect a listed sandbox with `islo logs` or

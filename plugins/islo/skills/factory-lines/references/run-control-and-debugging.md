@@ -16,7 +16,7 @@ islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<messa
 
 - `stop` kills in-flight stage work for real (compute events resolved, children cancelled) but parks the run resumable: status becomes `stopped` with an open control window for `steer`.
 - `retry` reruns the latest failed stage and continues the line. No flags; the failed stage is implied.
-- `steer` sends a stopped or finished run back to a named stage. Steering an active run returns 409; stop first, then steer. `--param` overrides merge over the stage's last attempt params and are type-coerced against the job manifest; unset params are inherited.
+- `steer` sends a stopped or finished run back to a named stage. Steering an active run returns 409; stop first, then steer. `--param` overrides merge over the stage's last attempt params and are type-coerced against the stage input contract; unset params are inherited.
 - A failed stage goes to the Line Manager, which follows the `line-manager-recovery` skill: plain retries until the stage's `max_attempts` (default 3) is reached, then up to two diagnosed recovery attempts, then stop. To opt a stage out, see "Failed stages and opting out of recovery" in [line-manifest.md](line-manifest.md).
 - `ask` messages the line manager about the run: reassess, explain, or route.
 - `agent-turn` sends another turn to one stage's successful agent session. Use it for the stage's agent; use `ask` for the manager.
@@ -26,11 +26,10 @@ islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<messa
 | Symptom | Do this |
 |---------|---------|
 | Trigger fired but no run appeared | `islo factory line-run list --line <name>`, `islo factory triggers list --with-status` |
-| Stage failed | `islo factory line-run events <run-id>`, then `islo job event <command-id>` for the failing step's detail |
+| Stage failed | `islo factory line-run events <run-id>` and sandbox logs for failure details |
 | Agent did the wrong thing mid-stage | `islo factory line-run agent-turn` with a corrective message; inspect with `islo ssh <sandbox>` and `islo logs <sandbox>` |
 | Manager routed wrong or you want a reassessment | `islo factory line-run ask` |
-| Deploy returned 422 or "Extra inputs are not permitted" | Unknown key; diff the manifest against `islo schema factory --short` / `islo schema job --short` |
-| Line runs a stale job version after a job redeploy | Redeploy the line; it pins `job_version_id` at line deploy time |
+| Deploy returned 422 or "Extra inputs are not permitted" | Unknown key; diff the manifest against `islo schema factory --short` and `islo schema agent` |
 | Schedule reverted after a deploy | The schedule was created outside the manifest; move it into the line `[trigger]` |
 | Run stuck at a decision | `islo factory line-run status`, then stop, retry, or steer as fits |
 
@@ -39,14 +38,13 @@ islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<messa
 ```bash
 islo factory line-run status <run-id>
 islo factory line-run events <run-id>
-islo job event <command-id>
 islo ls -a
 islo ssh <sandbox-name>
 islo logs <sandbox-name>
 ```
 
-`events` names each stage attempt and its steps; each step carries a compute command id. `islo job event` shows that step's exit code, error detail, and output tails. When the tail is not enough, the sandbox itself (if still alive per its lifecycle policy) has the full story via `ssh` and `logs`.
-Stage sandboxes belong to job identities, so use `islo ls -a` to find them by `<agent>-<line_run_id>` or the stage's `sandbox_name`. An empty plain `islo ls` does not establish that a stage sandbox is absent.
+`events` names each stage attempt and its steps. Inspect the stage timeline for status and errors. When the tail is not enough, the sandbox itself (if still alive per its lifecycle policy) has the full story via `ssh` and `logs`.
+Stage sandboxes have separate ownership, so use `islo ls -a` to find them by `<agent>-<line_run_id>` or the stage's `sandbox_name`. An empty plain `islo ls` does not establish that a stage sandbox is absent.
 
 Once the aggregated debug API ships, `GET /factory/line-runs/{run_id}/debug` returns the joined per-stage view with a failure summary, and `GET /factory/line-runs/{run_id}/logs?stage=&step=` resolves full step output. Prefer them over hand-joining events when available.
 
@@ -54,6 +52,6 @@ Once the aggregated debug API ships, `GET /factory/line-runs/{run_id}/debug` ret
 
 After an Agent update, start a fresh Line run. Retrying an already visited stage keeps the Agent configuration that run first resolved.
 
-After an internal Job update, deploy the new Job version, update the Line to use it, validate, redeploy, and start a fresh run. After a Machine update, wait for the Machine to return to ready before starting a fresh run.
+After an Agent update, validate the Line and start a fresh run. After a Machine update, wait for the Machine to return to ready before starting a fresh run.
 
 Verify the fresh run with `status` and `events`.

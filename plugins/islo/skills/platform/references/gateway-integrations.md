@@ -39,7 +39,7 @@ Connect before sandbox work that touches private repos or the GitHub API; `islo 
 
 ## Slack
 
-Connect Slack outside the sandbox; the `default` profile already allows Slack hosts. Do not store a bot token in `islo.yaml`, job params, setup scripts, or sandbox env unless the user explicitly bypasses gateway-managed credentials.
+Connect Slack outside the sandbox; the `default` profile already allows Slack hosts. Do not store a bot token in `islo.yaml`, Line inputs, setup scripts, or sandbox env unless the user explicitly bypasses gateway-managed credentials.
 
 ## Incoming webhook secrets are different
 
@@ -52,7 +52,7 @@ Islo-managed models are separate from provider integrations: platform-owned upst
 - Model list: `GET /inference/models` or the docs MCP server.
 - OpenAI-compatible base: `https://gateway.islo.dev/inference/openai/v1`
 - Anthropic-compatible base: `https://gateway.islo.dev/inference/anthropic`
-- Codex defaults to OpenAI (`model_provider = "islo"`). Set `model_provider = "islo_inference"` on a Codex or Claude session-mode internal Job step to use the matching Islo inference protocol. OpenCode in sandboxes targets the OpenAI-compatible base by default (phantom `opencode.json`). Pairing is in the factory-lines harness/models reference.
+- Codex defaults to OpenAI (`model_provider = "islo"`). Set `model_provider = "islo_inference"` in a Codex or Claude Prompt Agent configuration to use the matching Islo inference protocol. OpenCode in sandboxes targets the OpenAI-compatible base by default (phantom `opencode.json`). Pairing is in the factory-lines [Agents reference](../../factory-lines/references/agents-and-managers.md).
 
 Provider-managed egress (Claude and Cursor CLIs calling provider APIs) goes through `/gateway/proxy/{*path}` with the customer's connected credentials. Do not mix the paths: inference URLs are for direct model calls, gateway proxy is for provider SDK and CLI egress.
 

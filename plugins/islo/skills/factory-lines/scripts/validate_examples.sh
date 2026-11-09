@@ -3,12 +3,11 @@
 # islo CLI, so the skill's examples cannot rot.
 #
 # Blocks tagged <!-- validate: line --> run through `islo factory line validate`.
-# Blocks tagged <!-- validate: job --> run through `islo job deploy --dry-run`.
 # Blocks tagged <!-- validate: agent --> run through `islo agent validate`.
 # Blocks tagged <!-- validate: manager-line --> exercise the Manager contract.
 # Untagged ```toml blocks get a TOML parse check only (fragments).
 #
-# Line examples reference jobs and Agents that do not exist in the tenant; the
+# Line examples reference Agents that do not exist in the tenant; the
 # server checks those references after schema validation, so that one error is
 # accepted as proof the schema passed.
 set -uo pipefail
@@ -19,7 +18,6 @@ files=()
 for candidate in \
   "$refs/agents-and-managers.md" \
   "$refs/line-manifest.md" \
-  "$refs/job-manifest.md" \
   "$refs/create-a-line.md"; do
   [[ -f "$candidate" ]] && files+=("$candidate")
 done
@@ -38,7 +36,6 @@ extract() {
   base="$(basename "$md" .md)"
   awk -v out="$tmp/$base" '
     /<!-- validate: line -->/  { pending = "line"; next }
-    /<!-- validate: job -->/   { pending = "job"; next }
     /<!-- validate: agent -->/ { pending = "agent"; next }
     /<!-- validate: manager-line -->/ { pending = "manager-line"; next }
     /^```toml/ { inblock = 1; n += 1
@@ -96,8 +93,6 @@ for kindfile in "$tmp"/*.kind; do
         echo "ok   $name (Manager schema valid; example Agent not deployed in this tenant)"
       elif [[ "$kind" == "line" ]] && only_missing_resource "$out" "references unknown Agent"; then
         echo "ok   $name (Agent schema valid; example Agent not deployed in this tenant)"
-      elif only_missing_resource "$out" "references unknown job"; then
-        echo "ok   $name (schema valid; example jobs not deployed in this tenant)"
       else
         echo "FAIL $name (line validate)"; sed 's/^/  /' <<<"$out"; fail=1
       fi ;;
@@ -114,13 +109,6 @@ for kindfile in "$tmp"/*.kind; do
         echo "ok   $name (Agent validate)"
       else
         echo "FAIL $name (Agent validate)"; sed 's/^/  /' <<<"$out"; fail=1
-      fi ;;
-    job)
-      out="$(islo job deploy --path "$toml" --dry-run 2>&1)"; rc=$?
-      if [[ $rc -eq 0 ]]; then
-        echo "ok   $name (job dry-run)"
-      else
-        echo "FAIL $name (job dry-run)"; sed 's/^/  /' <<<"$out"; fail=1
       fi ;;
   esac
 done
