@@ -15,7 +15,7 @@ When a document has granted permission, ask only the decisions it names, in the 
 Put every question for the turn in one request. End the turn after a successful post. Do not ask the next batch in the same turn.
 
 ```bash
-islo api --method POST --input - /factory/line-runs/LINE_RUN_ID/questions <<'EOF'
+islo api --method POST --input - "/factories/$ISLO_FACTORY/line-runs/$ISLO_LINE_RUN_ID/questions" <<'EOF'
 {
   "stage_name": "STAGE",
   "questions": [
@@ -33,7 +33,7 @@ islo api --method POST --input - /factory/line-runs/LINE_RUN_ID/questions <<'EOF
 EOF
 ```
 
-`LINE_RUN_ID` and `stage_name` come from the document that granted permission. Omit `stage_name` only when that document says to omit it.
+`ISLO_FACTORY` and `ISLO_LINE_RUN_ID` identify the current Factory and Line run. Job steps export both variables. `stage_name` comes from the document that granted permission. Omit `stage_name` only when that document says to omit it.
 
 A batch holds 1 to 10 questions. Each question has a stable `id`, a `kind`, and a `prompt`. Kinds are `single_choice`, `multi_choice`, and `text`. A choice has 2 to 8 options. Each option has a stable `id` and a `label`. Option ids are unique inside the question. Question ids are unique inside the batch. `required` defaults to true. A text question has no options.
 
