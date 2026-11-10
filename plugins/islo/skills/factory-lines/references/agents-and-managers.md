@@ -1,70 +1,23 @@
 # Agents and Managers
 
-An Agent is reusable across Lines. It belongs to one Factory and uses one Machine. Check `islo schema agent` before choosing its type or fields:
+An Agent is reusable across Lines and uses one Machine. [agent-manifest.md](agent-manifest.md) describes the type-specific configuration. Inspect existing Agents before creating another one.
 
-| Agent type | Use for | Configuration |
-|---|---|---|
-| Script | Deterministic shell commands, normalization, or handoff logic | `commands`; writes declared results to `$ISLO_OUTPUT` |
-| Decision | Typed classification or scoring | `questions` with `choice`, `score`, or other kinds exposed by the schema; optional System One model |
-| Prompt | Open-ended judgment, repository work, or tool use | `harness`, `model`, `prompt`, optional effort, Skills, and MCP servers |
+## Ownership
 
-Do not create a Job merely because a stage runs shell commands or makes a typed decision. Create a user-facing or standalone Job only when the user explicitly asks for one. For a required capability absent from Agent stages, use an internal Job only when the live Job schema unambiguously supports the exact requirement. If either schema is unclear, report the unresolved capability instead of inferring support.
+The Machine owns the filesystem, repositories, environment, capabilities, gateway profile, and lifecycle. The Agent owns its prompt or deterministic execution, harness, model, provider, effort, Skills, and MCP configuration where its type supports them. The Line owns stage params and outputs, routing, triggers, limits, and optional stage overrides.
 
-## Agent examples
+A Prompt Agent's prompt states what it owns and what it returns. Line inputs supply task-specific context. Attach repository procedures as Skills or keep them in the repository. Choose harness and model together using [harness-models-knowledge.md](harness-models-knowledge.md).
 
-Treat these as shapes and validate them against the installed CLI.
+List remote MCP servers in the blueprint. Configure an allow rule and authentication for each required host in the Machine's gateway profile. Connect credentials locally, and verify connectivity with an approved read-only request. Local CLI status checks provider connections; sandbox-side reads may not show every connection.
 
-<!-- validate: agent -->
-```toml
-name = "normalize-ticket"
-machine = "ticket-machine"
-type = "script"
-commands = [
-  "jq -c . ticket.json > normalized.json",
-  "printf 'output=%s\n' \"$(cat normalized.json)\" >> \"$ISLO_OUTPUT\"",
-]
-```
+## Managers
 
-<!-- validate: agent -->
-```toml
-name = "ticket-readiness"
-machine = "ticket-machine"
-type = "decision"
+The built-in Manager is the default for Line routing. Only a Prompt Agent can be a custom Manager. Use one when reusable routing behavior or a chosen harness and model is needed. Its Agent has its own Machine; prepare that Machine first.
 
-[questions.readiness]
-type = "choice"
-instructions = "Classify the ticket readiness."
-criteria = { ready = "Implementation can start", clarify = "More detail is needed", blocked = "An external dependency blocks work" }
+The Agent prompt carries reusable policy. A Line-specific `manager.prompt` replaces that prompt for the Line. Do not combine `[manager]` with `[agent.instructions]`, which configures the built-in Manager. Agentic transition instructions describe individual routing decisions. Check `islo schema factory --short` for supported forms.
 
-[questions.confidence]
-type = "score"
-instructions = "Score confidence in the readiness classification."
-criteria = ["The goal is explicit", "Acceptance criteria are testable"]
-```
+`islo factory line-run ask` addresses the Manager. `islo factory line-run agent-turn` addresses a stage's successful Agent session. These controls have different recipients.
 
-<!-- validate: agent -->
-```toml
-name = "investigate-ticket"
-machine = "ticket-machine"
-type = "prompt"
-harness = "codex"
-model = "openai/gpt-6-sol"
-model_provider = "islo_inference"
-prompt = "Investigate the ticket in the available repositories and return a recommended implementation approach."
-```
+## Shared workspaces
 
-The Machine supplies the filesystem, repositories, environment, gateway profile, and lifecycle for every Agent type. Job-only `run_agent` fields and sandbox environment variables do not belong in an Agent configuration.
-
-For a Prompt Agent, recommend a model from the appropriate live catalog, taking capability, cost, and provider connection into account. Do not assume one catalog works for every harness. Its prompt should say what it owns and what it must return, while Line inputs provide task-specific context. Attach repository procedures as Skills or keep them in the repository.
-
-For a Decision Agent, use only question kinds and model aliases exposed by the live schema and model catalog. Its Line contract may use a fixed state input and one typed output per question; inspect `islo schema factory --short` before binding them.
-
-For a Script Agent, keep commands deterministic and idempotent where retries are possible. Use only the input/output contract exposed by the live Factory schema.
-
-Validate every complete Agent configuration with `islo agent validate` before saving it.
-
-List every remote MCP server used by a Prompt Agent in the blueprint. An Agent's MCP declaration does not by itself authorize network access: configure the Machine's gateway profile with an allow rule for each required host and an appropriate authentication rule. Connect credentials locally; never paste them into an Agent manifest or prompt. Verify a server's connectivity with an approved, read-only request before the Agent depends on it. A provider connection can still be invisible to sandbox-side reads, so use local CLI status for that check.
-
-The built-in Manager is the default for Line routing. Only a Prompt Agent can be a custom Manager. Use one when reusable routing behavior or a chosen harness/model is needed. Its Agent has its own Machine; prepare that Machine first. The Agent prompt carries reusable policy. A Line-specific `manager.prompt`, where supported by the installed schema, replaces the reusable prompt for that Line. Do not combine a Manager Agent with legacy `[agent.instructions]`; transition instructions describe individual routing decisions. Check `islo schema factory --short` for the currently supported Manager form.
-
-Two Agent stages in one Line run with the same `sandbox_name` share the Machine-backed filesystem, while retaining separate Agent sessions. Every Agent in the group must reference the same Machine. Choose distinct names for isolation. Do not imply that separate Machines can share one stage workspace or that one session's conversation becomes another's context. Pass semantic outputs explicitly between interactions.
+Agent stages in one Line run with the same `sandbox_name` share a Machine-backed filesystem and keep separate sessions. Every Agent in the group must resolve to the same Machine, including any stage Machine override. Distinct names create workspace boundaries. Separate sessions do not inherit one another's conversation; pass semantic outputs explicitly between stages.

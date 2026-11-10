@@ -1,6 +1,6 @@
 # Standalone jobs
 
-For a developer who explicitly requests the low-level Job layer. In ordinary Factory setup, Agents are the user-facing execution units and Jobs are internal runtime resources. Start with `factory-design.md` for an outcome request.
+Compatibility guidance for an explicit request to maintain a Job or an existing `job.toml`. Start with `factory-design.md` for a new Factory or Line.
 
 ## Workflow
 

@@ -4,7 +4,7 @@ This page teaches the shape of a line-run question batch. It does not give you p
 
 ## Permission
 
-Post a question only when the document that sent you here says you may ask, names the line run, and names the decisions that are yours to ask. Reading this page is not that permission. A general request to talk to the user is not that permission. A Factory Machine, a line, or a job does not grant it unless its own document says you may ask.
+Post a question only when the document that sent you here says you may ask, names the line run, and names the decisions that are yours to ask. Reading this page is not that permission. A general request to talk to the user is not that permission. A Factory Machine, a Line, or an Agent does not grant it unless its own document says you may ask.
 
 When no document has granted permission, do not call the questions endpoint, do not invent a question, and do not park a run waiting for an answer. Say what you were going to ask and stop.
 

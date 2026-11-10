@@ -13,7 +13,6 @@ jobs:
       - name: Validate manifest JSON shapes
         run: |
           python3 scripts/validate_manifest_shapes.py
-          python3 scripts/test_factory_examples_validation.py
       - name: Validate Surfaces skill frontmatter and references
         run: |
           python3 scripts/validate_surfaces_skill.py
@@ -27,7 +26,7 @@ jobs:
       ISLO_API_KEY: ${{ secrets.ISLO_API_KEY }}
     steps:
       - uses: actions/checkout@v4
-      - name: Validate skill commands and manifest examples against the islo CLI
+      - name: Validate skill commands against the islo CLI
         run: |
           if [ -z "$ISLO_API_KEY" ]; then
             echo "ISLO_API_KEY secret not set; skipping CLI-backed validation (run locally instead)"
@@ -36,4 +35,3 @@ jobs:
           curl -fsSL https://islo.dev/install.sh | bash
           export PATH="$HOME/.islo/bin:$PATH"
           bash plugins/islo/skills/factory-lines/scripts/validate_commands.sh
-          bash plugins/islo/skills/factory-lines/scripts/validate_examples.sh

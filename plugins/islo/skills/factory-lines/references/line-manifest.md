@@ -1,137 +1,60 @@
 # Line manifests
 
-Do not reconstruct `line.toml` from this skill. Confirm every key against the live schema:
+A Line defines its trigger, Agent-backed stages, contracts, routing, limits, and optional Manager. Confirm every key with the installed schema:
 
 ```bash
 islo schema factory --short
+islo factory line validate line.toml
+islo factory line deploy line.toml
 ```
 
-Unknown keys 422. Treat every TOML example in this repo as a pattern, not a drop-in.
+Create or update the referenced Agents first. Full runnable Agent and Line manifests live in [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents), which owns manifest validation.
 
-## Manager Agent example
+## Agent stages and contracts
 
-Prepare the Machine and create this Agent before validating the Line. The Agent prompt is reusable; `manager.prompt` in the Line, when present, replaces it for that Line.
+A stage references a reusable Agent by name. This fragment describes one stage only:
 
-<!-- validate: agent -->
 ```toml
-name = "skill-example-manager"
-machine = "reviewer-machine"
-type = "prompt"
-harness = "codex"
-model = "openai/gpt-6-sol"
-model_provider = "islo_inference"
+[[stages]]
+id = "review"
+agent = "reviewer"
+sandbox_name = "review-{{line_run_id}}"
+```
+
+Declare stage `params` and `outputs` in the Line using the type-specific contract in the Factory schema. Transitions bind input values, literals, previous outputs, or failure reasons to target params. For example, this field belongs to a transition and passes a prior stage output:
+
+```toml
+params = { input = { type = "output", stage = "prepare", name = "output" } }
+```
+
+Prompt Agents own their reusable prompt, harness, model, provider, effort, Skills, MCP, and Machine selection. A Prompt Agent stage can override these settings where the live Factory schema permits it. Some overrides accept one `{{name}}` referring to a declared param. Lists replace the saved list. Saved Agent settings remain unchanged. Invalid resolved settings fail before a sandbox starts. Script and Decision stages use their own contracts; do not assume Prompt overrides apply to them.
+
+`sandbox_name` must contain `{{line_run_id}}`; omitting it uses `<agent-name>-{{line_run_id}}`. Stages with the same name reuse one filesystem, while sessions stay separate.
+
+## Manager configuration
+
+Omit `[manager]` for the built-in Manager. A custom Manager must reference an existing Prompt Agent in this Factory. This fragment configures only the Manager:
+
+```toml
+[manager]
+agent = "routing-manager"
 prompt = "Review stage results and choose the next action."
 ```
 
-<!-- validate: manager-line -->
-```toml
-[line]
-name = "review-line"
+`manager.prompt` is optional and replaces the Agent's reusable prompt for this Line. `[agent.instructions]` applies only to the built-in Manager and cannot be combined with `[manager]`. Agentic transition instructions guide that transition. Use `line-run ask` for the Manager and `line-run agent-turn` for a stage's successful Agent session.
 
-[manager]
-agent = "skill-example-manager"
+## Routing and runtime constraints
 
-[trigger]
-type = "manual"
-
-[[stages]]
-id = "review"
-agent = "skill-example-review-stage"
-
-[[transitions]]
-id = "start"
-type = "conditional"
-from = "trigger"
-to = "review"
-when = { op = "always" }
-
-[[transitions]]
-id = "finish"
-type = "conditional"
-from = "review"
-to = "done"
-when = { op = "always" }
-```
-
-## Script, Decision, and Prompt Agent stages
-
-Create and validate the reusable Agents before validating the Line. This example uses the built-in Manager and passes semantic outputs between Agent stages.
-
-<!-- validate: line -->
-```toml
-[line]
-name = "ticket-readiness"
-
-[trigger]
-type = "manual"
-
-[[stages]]
-id = "normalize"
-agent = "normalize-ticket"
-sandbox_name = "ticket-readiness-{{line_run_id}}"
-
-[[stages]]
-id = "decide"
-agent = "ticket-readiness"
-sandbox_name = "ticket-readiness-{{line_run_id}}"
-
-[[stages]]
-id = "investigate"
-agent = "investigate-ticket"
-sandbox_name = "ticket-readiness-{{line_run_id}}"
-
-[[transitions]]
-id = "start"
-type = "conditional"
-from = "trigger"
-to = "normalize"
-when = { op = "always" }
-
-[[transitions]]
-id = "normalize-to-decision"
-type = "conditional"
-from = "normalize"
-to = "decide"
-when = { op = "always" }
-params = { state = { type = "output", stage = "normalize", name = "output" } }
-
-[[transitions]]
-id = "ready-to-investigate"
-type = "conditional"
-from = "decide"
-to = "investigate"
-when = { op = "eq", left = { type = "stage", path = "$.outputs.readiness" }, right = { type = "literal", value = "ready" } }
-params = { input = { type = "output", stage = "normalize", name = "output" } }
-
-[[transitions]]
-id = "not-ready"
-type = "conditional"
-from = "decide"
-to = "done"
-when = { op = "ne", left = { type = "stage", path = "$.outputs.readiness" }, right = { type = "literal", value = "ready" } }
-
-[[transitions]]
-id = "finish"
-type = "conditional"
-from = "investigate"
-to = "done"
-when = { op = "always" }
-```
-
-## Policy the schema does not state
-
-- Omit `[manager]` for the built-in Manager. Legacy `[agent.instructions]` is valid only without `[manager]`. Agentic transition instructions apply to that transition. Reusable Agent prompts live in the Agent configuration, optional Agent-stage overrides live in the Line, and internal Job prompts live in the Job.
-- A line declares identity, what starts a run, Agent interactions, and routing. Prefer a reusable Script Agent for deterministic commands, a Decision Agent for typed choice or score questions, and a Prompt Agent for open-ended judgment or tool use. Harness and model belong only to Agent types that expose them in `islo schema agent`.
-- Agent-stage contracts vary by Agent type and installed CLI version. Use only the `params`, `outputs`, and transition bindings exposed by `islo schema factory --short`. If a required capability is absent, verify the gap against `islo schema job --short` before using an internal Job. A standalone or user-facing Job requires an explicit user request.
-- Agent stages with the same `sandbox_name` share one Machine-backed filesystem for that Line run, but keep separate sessions. Every Agent in that group must use the same Machine; validate this before deploy.
-- Line run schedules live in `[trigger]`; a line run schedule created any other way is reverted on the next line deploy. Factory Machine refresh schedules are separate and live in the Machine spec (see `machines.md`).
-- Follow the complete dependency and deploy order in [create-a-line.md](create-a-line.md). Check internal Job version bindings after deploy; an internal `job_version_id` is pinned at deploy time.
-- Reserved agentic option names belong to line controls. Do not reuse them as option labels.
-- Trigger field shapes and the condition AST are in the schema; wiring (selectors, filters, one-real-event verify) is in `triggers.md`.
+- Declare exactly one conditional entry transition from `trigger` with `when = { op = "always" }`. Completion explicitly targets `done`.
+- Use `conditional` transitions for typed conditions and `agentic` transitions for named options chosen by the Manager. Reserved control option names are listed in the live schema.
+- When a transition targets `wait`, declare one agentic transition from `wait` to resume. Its options cannot target `wait` again.
+- Every stage sharing a `sandbox_name` must resolve to the same Machine, including stage overrides. Validate this before deploy.
+- Line schedules live in `[trigger]`; edits outside the manifest are reverted on the next deploy. Machine refresh schedules are separate.
+- Follow [create-a-line.md](create-a-line.md) to save Agents before deploying the Line. Trigger selectors, filters, and event verification are in [triggers.md](triggers.md).
 
 ## Failed stages and opting out of recovery
 
-A failed stage first takes any conditional transition that matches. If none matches, the run parks for the Line Manager, which follows the `line-manager-recovery` skill. This happens whether or not the stage has an agentic transition. A stage's `max_attempts` (default 3) is how many plain retries the Manager makes before it diagnoses and recovers.
+A failed stage first takes any conditional transition that matches. If none matches, the run parks for the Line Manager, which follows the `line-manager-recovery` skill. This happens whether or not the stage has an agentic transition. A stage's `max_attempts` defaults to 3 and bounds plain attempts before the Manager diagnoses and recovers.
 
 To make a stage fail fast instead, for example a deploy that must not be retried, route its failure to `done`. A failed stage routed to `done` ends the run as failed (`stage_failed`) without a Manager turn:
 

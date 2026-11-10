@@ -1,7 +1,7 @@
 {
   "name": "islo",
   "version": "0.2.0",
-  "description": "Use Islo sandboxes, Factory lines, harness and model selection, knowledge, jobs, webhooks, gateway integrations, and SDKs from coding agents.",
+  "description": "Use Islo Machines, reusable Agents, Factory Lines, sandboxes, harness and model selection, Knowledge, webhooks, gateway integrations, and SDKs from coding agents.",
   "author": {
     "name": "Islo Labs"
   },

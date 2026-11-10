@@ -74,15 +74,9 @@ Checkout happens during bootstrap, before your command or shell. Do not embed to
 
 `ghcr.io/islo-labs/islo-runner:latest`, pre-pulled on Islo infrastructure, with common dev tools and the preinstalled agents. Omitting `image` in `islo use` and `islo.yaml` uses it. Use it or a fully qualified reference, never an unqualified image name.
 
-## Sandbox modes (jobs and webhook templates)
+## Machine-backed Line workspaces
 
-| Mode | Use when |
-|------|----------|
-| `provision` + `teardown_on_complete = true` | Default. Fresh environment per run; hand off via a pushed branch or typed outputs |
-| `ensure` + param-derived name | Only when multiple stages must share one workspace |
-| `reuse` | Attach to an existing sandbox; rare |
-
-Prefer provision per stage; `ensure` reconnects invite stale environments and delete/create races.
+Factory Agents use Machine-backed sandboxes. A Line stage selects a reusable Agent; `sandbox_name` groups stages that share a filesystem within one run. Every Agent in that group must resolve to the same Machine. See the factory-lines skill for Agent and Line configuration.
 
 ## Sessions and tasks
 
@@ -104,19 +98,7 @@ islo snapshot rm <name>
 islo use new-sandbox --snapshot <name> # restore
 ```
 
-Snapshots are also referenced from job manifests (`snapshot_name`) and incoming webhook sandbox templates.
-
-### The snapshot-src pattern
-
-Harness code a job runs (servers, CLIs, test trees, scenario assets) lives in the line repo under `snapshot-src/`, gets rsynced onto a build sandbox at a fixed path like `/workspace/<line>/`, and is saved as a named snapshot the jobs reference. Never embed harness code in manifests as base64 or heredoc bootstrap. After harness edits: rebuild the snapshot, then redeploy jobs and line.
-
-```text
-<line>/
-  snapshot-src/setup-snapshot.sh   # rsync harness onto a build sandbox
-  snapshot-src/harness/            # source of truth
-  jobs/<stage>/job.toml            # snapshot_name + short exec steps
-  line.toml
-```
+Incoming webhook sandbox templates can also reference snapshots. Factory Agents select Machines for their environment; use Machine repositories and build configuration for reusable Line execution environments.
 
 ## Port forwarding, sharing, SSH, logs
 

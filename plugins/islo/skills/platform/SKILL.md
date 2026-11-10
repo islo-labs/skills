@@ -5,7 +5,7 @@ description: "Islo infrastructure reference: sandboxes, snapshots, gateway profi
 
 # Islo platform
 
-Reference for Islo's infrastructure primitives. For automating workflows (factory lines, jobs, line runs, schedules, triggers), use the islo factory-lines skill instead.
+Reference for Islo's infrastructure primitives. For automating workflows (Factories, Machines, Agents, Lines, line runs, schedules, and triggers), use the islo factory-lines skill instead.
 
 Ground rules that apply everywhere:
 
@@ -17,7 +17,7 @@ Ground rules that apply everywhere:
 
 | Topic | Read |
 |-------|------|
-| Create, connect, exec, pause, resume, delete sandboxes; `islo use`; `islo.yaml`; environments; sessions; snapshots and the snapshot-src pattern | `references/sandboxes-and-snapshots.md` |
+| Create, connect, exec, pause, resume, delete sandboxes; `islo use`; `islo.yaml`; environments; sessions; snapshots; Machine-backed Line workspaces | `references/sandboxes-and-snapshots.md` |
 | Gateway profiles, provider integrations, phantom tokens, GitHub, Slack, Islo inference routing, credential troubleshooting | `references/gateway-integrations.md` |
-| Incoming webhooks (HTTP event to sandbox or single job) and the TypeScript/Python SDKs | `references/webhooks-and-sdk.md` |
+| Incoming webhooks for sandbox actions and the TypeScript/Python SDKs | `references/webhooks-and-sdk.md` |
 | Knowledge items: CRUD, levels, repo and tag links, rendering | `references/knowledge.md` |

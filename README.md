@@ -4,18 +4,23 @@ Agent skills and plugin metadata for working with [Islo](https://islo.dev), the 
 
 This repo teaches coding agents how to use Islo for:
 
-- **Factory lines**: multi-stage orchestration with typed transitions, integration triggers, and `islo factory line-run` controls
+- **Factories**: Machines provide the environment, Agents define execution and prompts, and Lines orchestrate Agent-backed stages with typed transitions and integration triggers
 - **Run surfaces**: publish live web and terminal interfaces from line-run stage sandboxes
 - **Harness and model selection**: pair Codex / Claude / Cursor to the matching catalog and host (not one shared model list)
-- **Jobs**: lower-level durable stage execution units
 - **Webhooks**: lower-level HTTP event ingress and egress
-- **Knowledge**: tenant memories, skills, and rules for agent steps
+- **Knowledge**: tenant memories and declarative policies for Agents and Managers
 - Sandbox lifecycle: create, connect, exec, pause, resume, stop, delete, snapshots, sharing
 - Built-in agents: Claude Code, Cursor agent, and Codex inside Islo sandboxes
 - Gateway integrations: GitHub, Slack, Islo inference, and provider credentials without copying tokens into the sandbox
 - SDK usage: programmatic integrations with the generated Islo SDKs
 
-For runnable automation templates, use [`islo-labs/islo-agents`](https://github.com/islo-labs/islo-agents). That repo contains concrete GitHub Actions wrappers, `job.toml` manifests, prompts, and the shared agent harness for PR review, CI babysitting, E2E verification, and task execution.
+For runnable automation templates, use [`islo-labs/islo-agents`](https://github.com/islo-labs/islo-agents). That repo owns complete runnable Agent and Line manifests, prompts, and manifest validation. This skill repository keeps only focused syntax fragments.
+
+## Factories
+
+Start with Machine and Agent inventory, then design the Line. Use `islo schema agent --short` to author reusable Agents. Validate with `islo agent validate`, then save with `islo agent create` or `islo agent update`. Use `islo schema factory --short` to author and validate `line.toml` stages that reference those Agents with `agent = "..."`.
+
+Machines own repositories, environment, gateway profile, and lifecycle. Agents own prompts and supported harness, model, provider, Skills, and MCP settings. Lines own stage params and outputs, routing, triggers, limits, and optional overrides. Verify an Agent through a minimal manual Line run, then inspect its line-run status, stages, and events before testing the approved trigger.
 
 ## Install
 
@@ -74,7 +79,7 @@ plugins/islo/skills/
 │   ├── SKILL.md              # router + iron rules
 │   ├── references/           # create-a-line workflow, machines, question shape,
 │   │                         # manifest anatomy, triggers, run control, harness/model
-│   └── scripts/              # validate_commands.sh, validate_examples.sh
+│   └── scripts/              # validate_commands.sh
 ├── line-manager-recovery/    # TASK skill: Line Manager policy for failed stages
 │   └── SKILL.md              # read by the Line Manager on stage failures
 ├── surfaces/                 # TASK skill: publish live line-run interfaces
@@ -115,7 +120,6 @@ python3 scripts/validate_surfaces_skill.py
 python3 scripts/test_validate_surfaces_skill.py
 bash scripts/sync_plugin_manifests.sh --check
 bash plugins/islo/skills/factory-lines/scripts/validate_commands.sh
-bash plugins/islo/skills/factory-lines/scripts/validate_examples.sh
 ```
 
 The canonical plugin manifest is `plugins/islo/.claude-plugin/plugin.json`; edit it and run `scripts/sync_plugin_manifests.sh` to refresh the per-platform copies.

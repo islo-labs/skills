@@ -1,59 +1,65 @@
 # Build the approved Factory
 
-Start with [factory-design.md](factory-design.md). This page starts only after the user has approved its complete blueprint. Keep the approved effects checklist nearby while implementing and verifying.
+Start with [factory-design.md](factory-design.md). Intake identifies the Machines and reusable Agents for each stage, their semantic inputs and outputs, and approved effects. This workflow implements the approved blueprint. Keep its effects checklist nearby while verifying.
 
-## Dependency order
+## Prepare Machines and Agents
 
-1. Select the approved existing Factory explicitly or create the approved new one. Confirm `islo factory current` or pass `--factory KEY|UUID` to scoped commands. Never let an inherited default silently select the destination.
-2. Connect required providers through the **local** CLI, after approval. Check `islo status`. Configure tenant-scoped environments and gateway profiles, including explicit allow rules for custom MCP hosts, before creating dependent sandboxes. Follow the platform gateway reference. Do not put provider tokens in manifests, prompts, or sandbox env.
-3. Create or update each Machine with the approved repositories, capabilities, environment, lifecycle, and gateway profile. Follow [machines.md](machines.md). Inspect the build and wait for a published, usable version before creating or running dependent Agents. A build parked for Author questions is not ready. A failed build is not ready.
-4. Validate and create or update reusable Agents from the live `islo schema agent`. Use a Script Agent for deterministic commands, a Decision Agent for typed choice or score questions, and a Prompt Agent for open-ended judgment or tool use. Confirm each type's supported Machine, commands or questions, harness/model pairing, instructions, Skills, and MCP servers using [agents-and-managers.md](agents-and-managers.md). Prepare a Prompt Agent Manager only if the blueprint calls for one.
-5. Prefer an Agent stage. If a required snapshot, fan-out/reduction, verification, lifecycle, or contract capability is absent from the live Agent and Factory schemas, check `islo schema job --short` to confirm that a Job unambiguously supplies the exact behavior. Do not infer semantics from field names; stop and report an unresolved capability when either schema is unclear. Only after both sides are proven may you scaffold and deploy an internal Job with `islo job init`. Keep Job-specific files, names, and fields out of the user decision flow unless a developer asks. Create a user-facing or standalone Job only when the user explicitly requested that low-level layer.
-6. Author the Line using `islo schema factory --short` and [line-manifest.md](line-manifest.md). Agent stages name their reusable Agent and, where shared workspace is intended, their `sandbox_name`. Use only the Agent-stage contract fields exposed by the installed schema. Validate shared-sandbox Machine consistency. Configure Manager, transitions, trigger, limits, and destinations. Validate and deploy the Line **last**.
+1. Select the approved Factory explicitly or create the approved new one. Confirm `islo factory current` or pass `--factory KEY|UUID` to scoped commands.
+2. Check provider connections through the local CLI with `islo status`. Configure approved tenant environments and gateway profiles, including allow and authentication rules for MCP hosts. Follow the platform gateway reference. Keep provider tokens out of manifests and prompts.
+3. Create or update the approved Machines. Follow [machines.md](machines.md) for repositories, capabilities, environment, lifecycle, and gateway profile. Wait for a published, usable version. A failed build or one parked for Author questions is not ready.
+4. Inspect existing Agents with `islo agent list` and `islo agent get <name>`. Reuse suitable Agents. Author create or update TOML using `islo schema agent --short` and [agent-manifest.md](agent-manifest.md). Make the Machine, prompt or commands or questions, and supported harness, model, provider, effort, Skills, and MCP settings explicit.
+5. Validate complete Agent configurations, then create or update the approved Agents. Update files omit the immutable name. Inspect saved Agents before wiring the Line. Prepare a Prompt Agent Manager only if the blueprint calls for one.
 
-Check the installed CLI help before invoking create/update commands. If it lacks a required Agent or Manager surface, report the specific missing command or schema field and stop dependent deployment; do not disguise the gap with a Job-first design.
-
-## Static validation and isolated run
-
-Validate draft Agents and the Line with the installed CLI. Dry-run any internal Job deploy. Validation must cover references, supported fields, gateway host rules, and the shared-sandbox Machine invariant. Inspect each created resource with its `get` or `list` command and record version/build status.
-
-For an Agent stage, the CLI has no standalone Agent run command. Make a temporary manual Line containing just that Agent stage, an entry transition that passes representative `input`, and a completion transition. Generate a unique Line name with a random suffix. Continue only when `islo factory line get <temporary-name>` explicitly reports that the name does not exist; stop on any other error. Track whether this workflow deployed the Line, and remove it only when that deployment succeeded. Give the stage a unique `sandbox_name` so it cannot collide with the production Line. Include the deployment, run, expected external effects, and removal in the approved blueprint. Do not run a side-effecting Agent until those effects are approved.
-
-Use the live schema to confirm the fields. Replace `{{unique_suffix}}` with at least eight random lowercase hexadecimal characters before validation. Keep the resulting name for cleanup:
-
-<!-- validate: line -->
-```toml
-[line]
-name = "isolated-agent-check-{{unique_suffix}}"
-
-[trigger]
-type = "manual"
-
-[[stages]]
-id = "check"
-agent = "existing-agent"
-sandbox_name = "isolated-check-{{line_run_id}}"
-
-[[transitions]]
-id = "start"
-type = "conditional"
-from = "trigger"
-to = "check"
-when = { op = "always" }
-params = { input = { type = "input", name = "input" } }
-
-[[transitions]]
-id = "finish"
-type = "conditional"
-from = "check"
-to = "done"
-when = { op = "always" }
+```bash
+islo schema agent --short
+islo agent validate agent.toml
+islo agent create agent.toml
+islo agent update <name> agent-update.toml
+islo agent get <name>
 ```
 
-Validate and deploy the uniquely named Line, run it with `--param input=...`, and inspect `islo factory line-run status` and `islo factory line-run events` for the Agent's semantic `output`, sandbox identity, and approved effects. After recording the result, stop the run if it is still active and confirm it is stopped. Then remove the temporary Line with `islo factory line rm <temporary-name> --force` only if this workflow deployed it, even when the run failed. Removing a Line does not stop its run or delete the run's sandbox, so do not treat Line removal as run or sandbox cleanup. If the stage is compiled through an internal Job, use its isolated Job run and inspect the output. Do not trigger a provider event for this test unless the blueprint approved it.
+Check installed help and update-schema semantics before applying partial updates. If a required capability is absent, report the specific gap and stop dependent work.
 
-## End-to-end verification
+## Author and deploy the Line
 
-Run the deployed Line once with approved test input. For an integration trigger, send **one** approved test event with its expected-effects checklist prepared beforehand. Inspect the Line run's status, stage timeline, Agent sessions, outputs, sandbox grouping, and result destination. Compare every external write or provider event with the approved effects checklist. Report any inference failure separately from setup or routing results; lack of model credentials does not prove setup failed. A Line redeploy is needed when it pins an internal Job version that changed.
+Use `islo schema factory --short` and [line-manifest.md](line-manifest.md). Each stage names its reusable Agent with `agent = "..."`. Declare stage params and outputs, transition bindings, trigger, limits, and result destinations in `line.toml`. Keep reusable execution configuration in the Agent; use stage overrides only for deliberate differences in this Line.
 
-For run inspection and recovery, use [run-control-and-debugging.md](run-control-and-debugging.md). Schedules belong in the Line `[trigger]`; Machine refresh schedules belong in the Machine spec.
+Agent stages may share a `sandbox_name` containing `{{line_run_id}}`. Validate that every stage in a shared group resolves to the same Machine. They share files, while their Agent sessions remain separate.
+
+```bash
+islo schema factory --short
+islo factory line validate line.toml
+islo factory line deploy line.toml
+islo factory line get <name>
+```
+
+Inspect created resources and record saved configuration, Line version, and Machine readiness. Complete runnable manifests are maintained and validated in [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents).
+
+## Verify with a minimal manual Line
+
+The CLI has no standalone Agent run command. Build a temporary manual Line with one Agent stage, representative input bindings, an entry transition from `trigger`, and a completion transition to `done`. Use the live schema to author it. Include deployment, run, expected external effects, and removal in the approved blueprint.
+
+Generate a unique temporary Line name with at least eight random lowercase hexadecimal characters. Continue only when `islo factory line get <temporary-name>` explicitly reports that the name does not exist; stop on any other error. Use a separate `sandbox_name` containing `{{line_run_id}}`. Track whether this workflow successfully deployed the temporary Line.
+
+Validate, deploy, and run the temporary Line:
+
+```bash
+islo factory line validate temporary-line.toml
+islo factory line deploy temporary-line.toml
+islo factory line run <temporary-name> --param input="<representative-input>"
+islo factory line-run status <run-id>
+islo factory line-run stages <run-id>
+islo factory line-run events <run-id>
+```
+
+Choose params from the actual stage contract; use `--param-json` or `--params-file` for typed values. Inspect outputs, sandbox identity, and approved effects. Separate inference failures from setup and routing results. A provider failure after inference begins does not establish that setup failed.
+
+After recording results, stop any active run and confirm its stopped status. Remove the temporary Line with `islo factory line rm <temporary-name> --force` only if this workflow deployed it, even if its run failed. Removing a Line does not stop its run or delete its sandbox. Clean up only resources this test created, within the approved blueprint. Do not send a provider event for this isolated test unless approved.
+
+## Verify the deployed trigger
+
+Run the deployed Line once with approved input. For an integration trigger, send one approved test event using [triggers.md](triggers.md). Prepare the expected-effects checklist before sending it.
+
+Inspect status, stages, events, Agent sessions, outputs, shared workspaces, and result destinations. Compare external writes against the approved effects. Report inference failures separately; verification without model credentials can establish setup and routing up to the inference boundary, but cannot establish model-dependent results.
+
+Use [run-control-and-debugging.md](run-control-and-debugging.md) for recovery. Line schedules belong in `[trigger]`; Machine refresh schedules belong in the Machine spec.

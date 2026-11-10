@@ -5,15 +5,15 @@ description: Design, create, and manage Islo Factories, Machines, reusable Agent
 
 # Islo Factories
 
-A Factory contains Machines, reusable Agents, and Lines. Agents are the user-facing execution units. A Line connects Agent interactions and routes their results. The runtime may compile an Agent stage into an internal Job; do not make the user choose or configure a Job. Managers route a Line between stages.
+Machines provide the environment. Agents define execution and prompts. Lines orchestrate Agent-backed stages, pass inputs and outputs, and route results. A Factory contains these resources; its Line Managers choose the next action when routing needs judgment.
 
 ## Setup contract
 
 For a request to build or substantially change a Factory, follow [factory-design.md](references/factory-design.md) before [create-a-line.md](references/create-a-line.md). Inventory with read-only commands first. Distinguish observed resources, inferred defaults, and decisions still needed from the user. Ask one batch containing only unresolved decisions, then recommend one complete blueprint. Wait for explicit approval of that blueprint before any create, update, deploy, provider event, or external write.
 
-Keep the discussion in product terms: Factory, Machines, Agents, their interactions, shared workspaces, semantic inputs and outputs, integrations, side effects, and verification. Choose a Script Agent for deterministic commands, a Decision Agent for typed choice or score questions, and a Prompt Agent for open-ended judgment or tool use. Create a user-facing or standalone Job only when the user explicitly requests the low-level Job layer.
+Make Machine ownership and reusable Agents explicit for each stage. Use a Prompt Agent for open-ended judgment or tool use, a Script Agent for deterministic commands, and a Decision Agent for typed questions. Keep reusable execution settings in Agents and stage contracts, routing, and optional overrides in the Line.
 
-Never write a manifest from memory. Check the installed `islo schema factory --short` and `islo schema agent`; validate before deploy. If the installed CLI lacks a required command or Agent-stage field, report the exact gap rather than silently substituting an unrelated resource. Use an internal Job only when a required capability is demonstrably unavailable to Agent stages and `islo schema job --short` unambiguously supports the exact requirement. If either side is unclear, report only the unresolved semantic capability and stop; do not name internal fields, propose implementation workarounds, ask the user to resolve the implementation gap, or infer support from a similarly named field. Keep an internal Job out of the user's choices and its configuration out of the blueprint unless a developer asks.
+Check `islo schema agent --short` and `islo schema factory --short` before authoring manifests. Validate Agent TOML with `islo agent validate`, then create or update the Agents with `islo agent create` or `islo agent update`. Validate and deploy `line.toml` after its Agents exist. If the installed CLI lacks a required command or capability, report the exact gap and stop dependent work rather than guessing field semantics.
 
 ## References
 
@@ -22,10 +22,12 @@ Never write a manifest from memory. Check the installed `islo schema factory --s
 | Discover resources, design a Factory, get approval | [factory-design.md](references/factory-design.md) |
 | Create resources and verify a Line | [create-a-line.md](references/create-a-line.md) |
 | Machine lifecycle and readiness | [machines.md](references/machines.md) |
-| Agent, Manager, harness, model, Skills, or MCP | [agents-and-managers.md](references/agents-and-managers.md) |
+| Author Agent TOML, including Prompt, Script, and Decision types | [agent-manifest.md](references/agent-manifest.md) |
+| Agent reuse, Managers, and shared workspaces | [agents-and-managers.md](references/agents-and-managers.md) |
+| Harness, model, provider, Skills, MCP, or Knowledge | [harness-models-knowledge.md](references/harness-models-knowledge.md) |
 | Line manifest, triggers, or run debugging | [line-manifest.md](references/line-manifest.md), [triggers.md](references/triggers.md), [run-control-and-debugging.md](references/run-control-and-debugging.md) |
-| Internal Job harness, model, Knowledge, manifest, or explicit standalone Job request | [harness-models-knowledge.md](references/harness-models-knowledge.md), [job-manifest.md](references/job-manifest.md), and [standalone-jobs.md](references/standalone-jobs.md) |
+| Explicit request to maintain a Job or an existing `job.toml` | [job-manifest.md](references/job-manifest.md) and [standalone-jobs.md](references/standalone-jobs.md) |
 
-Use the platform skill for sandbox and snapshot lifecycle, environments, gateway profiles, provider connections, incoming webhooks, and Knowledge CRUD. Treat nearby examples as shape references; never copy their repo, selector, destination, or gateway identity into a new Factory.
+Use the platform skill for sandbox and snapshot lifecycle, environments, gateway profiles, provider connections, incoming webhooks, and Knowledge CRUD. Never copy a nearby example's repository, selector, destination, or gateway identity into a new Factory.
 
-`scripts/validate_commands.sh` and `scripts/validate_examples.sh` validate documented commands and manifest examples against the installed CLI.
+Complete runnable Agent and Line examples and their manifest validation belong to [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents). References here contain only focused syntax fragments. `scripts/validate_commands.sh` checks documented commands against the installed CLI.
