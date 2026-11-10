@@ -25,7 +25,7 @@ Replace `FACTORY_ID`, `RUN_ID`, `LINE_NAME`, and `SLUG` with values returned by 
 
 The Factory reference can be its key or public UUID. The `/factory` prefix also works and inherits the surrounding Factory. Explicit Factory links keep that Factory for reads, answers, and navigation. Prefer an explicit prefix when the Factory is known. App-relative links and `https://app.islo.dev` URLs are supported.
 
-Inline links inside sentences, multiple links in one paragraph, list-item links, links without `view`, `view=chip`, unsupported views, and external URLs remain ordinary references. Shared Markdown outside Agent chat also keeps ordinary rendering.
+Inline links inside sentences, multiple links in one paragraph, links without `view`, `view=chip`, unsupported views, and external URLs remain ordinary references. List-item links remain ordinary references in tight, loose, and nested lists; blank lines between list items do not request embeds. Shared Markdown outside Agent chat also keeps ordinary rendering.
 
 An accepted answer clears the stored question from the embed. A cancelled run's question is read-only, with a cancellation notice and no send action. A run with no open question displays that state.
 
