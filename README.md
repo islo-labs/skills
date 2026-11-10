@@ -14,7 +14,7 @@ This repo teaches coding agents how to use Islo for:
 - Gateway integrations: GitHub, Slack, Islo inference, and provider credentials without copying tokens into the sandbox
 - SDK usage: programmatic integrations with the generated Islo SDKs
 
-For a complete runnable Agent-backed Line, use [PR review in `islo-labs/islo-agents`](https://github.com/islo-labs/islo-agents/tree/59ec4503b68212e047af0b0d42645c4c55e0505b/examples/pr-review). The link pins the validated Agent-backed example revision. The examples repository owns its Agent and Line manifests, prompt, and validation. This skill repository keeps only focused syntax fragments.
+For a complete runnable Agent-backed Line, use [PR review in `islo-labs/islo-agents`](https://github.com/islo-labs/islo-agents/tree/70d2597b031483a39bf7bcdf35b427359f1901fd/examples/pr-review). The link pins the validated Agent-backed example revision. The examples repository owns its Agent and Line manifests, prompt, and validation. This skill repository keeps only focused syntax fragments.
 
 ## Factories
 

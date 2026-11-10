@@ -22,7 +22,7 @@ islo factory triggers get github pull_request.opened
 islo factory triggers get linear issue.updated
 ```
 
-`triggers get` returns the event's payload shape, selector shape, and example filters for that provider. The selector scopes which resources fire the line (channels, repositories, issues); filters drop unwanted payloads with the condition AST; trigger outputs bind payload paths to line inputs. Bind semantic Line inputs to Agent stage params through transitions. Complete runnable trigger manifests live in [the validated PR-review example in islo-labs/islo-agents](https://github.com/islo-labs/islo-agents/tree/59ec4503b68212e047af0b0d42645c4c55e0505b/examples/pr-review).
+`triggers get` returns the event's payload shape, selector shape, and example filters for that provider. The selector scopes which resources fire the line (channels, repositories, issues); filters drop unwanted payloads with the condition AST; trigger outputs bind payload paths to line inputs. Bind semantic Line inputs to Agent stage params through transitions. Complete runnable trigger manifests live in [the validated PR-review example in islo-labs/islo-agents](https://github.com/islo-labs/islo-agents/tree/70d2597b031483a39bf7bcdf35b427359f1901fd/examples/pr-review).
 
 After `triggers get`, ask the user which resource to scope to. Do not copy team, project, channel, repository, or `scope = "all"` from a nearby line.
 

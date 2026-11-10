@@ -19,7 +19,7 @@ Create manifests require `name`, `machine`, and `type`, plus the type-specific f
 
 Prompt Agents are the default for repository work, open-ended judgment, and tool use. They require `harness`, `model`, and `prompt`. Optional fields include `model_provider`, `effort`, `skills`, and `mcp`.
 
-The prompt defines the Agent's responsibility, allowed effects, and expected result. Task-specific context arrives through Line stage params. A reusable prompt belongs in the Agent; a Line may replace it for one stage with a supported override.
+The prompt defines the Agent's responsibility, allowed effects, and expected result. The default Prompt Agent contract appends its `input` param to the prompt. If a Line stage declares custom named params instead, reference them explicitly as `{{name}}` in the Agent prompt or stage prompt override. Declaring a param alone does not include its value in the Agent context. A reusable prompt belongs in the Agent; a Line may replace it for one stage with a supported override.
 
 Skills are unique installation sources passed to `npx skills add`, with at most 20 entries. MCP entries have unique keys and HTTP(S) URLs. This fragment illustrates only an MCP field:
 
@@ -56,4 +56,4 @@ criteria = { ready = "Implementation can start", clarify = "More detail is neede
 
 The optional `model` must support `typesafe_system_one` in the live model catalog. Omitting it uses the catalog default. Decision Agents do not take prompt harness, provider, Skills, or MCP fields. Inspect the Factory schema for the stage's state input and typed outputs before binding questions to transitions.
 
-For complete runnable manifests, use [the validated PR-review example in islo-labs/islo-agents](https://github.com/islo-labs/islo-agents/tree/59ec4503b68212e047af0b0d42645c4c55e0505b/examples/pr-review), which owns their validation.
+For complete runnable manifests, use [the validated PR-review example in islo-labs/islo-agents](https://github.com/islo-labs/islo-agents/tree/70d2597b031483a39bf7bcdf35b427359f1901fd/examples/pr-review), which owns their validation.

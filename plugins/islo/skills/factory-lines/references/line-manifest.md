@@ -8,7 +8,7 @@ islo factory line validate line.toml
 islo factory line deploy line.toml
 ```
 
-Create or update the referenced Agents first. Full runnable Agent and Line manifests live in [the validated PR-review example in islo-labs/islo-agents](https://github.com/islo-labs/islo-agents/tree/59ec4503b68212e047af0b0d42645c4c55e0505b/examples/pr-review), which owns manifest validation.
+Create or update the referenced Agents first. Full runnable Agent and Line manifests live in [the validated PR-review example in islo-labs/islo-agents](https://github.com/islo-labs/islo-agents/tree/70d2597b031483a39bf7bcdf35b427359f1901fd/examples/pr-review), which owns manifest validation.
 
 ## Agent stages and contracts
 

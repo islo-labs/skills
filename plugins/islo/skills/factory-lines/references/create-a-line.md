@@ -33,7 +33,7 @@ islo factory line deploy line.toml
 islo factory line get <name>
 ```
 
-Inspect created resources and record saved configuration, Line version, and Machine readiness. Complete runnable manifests are maintained and validated in [the validated PR-review example in islo-labs/islo-agents](https://github.com/islo-labs/islo-agents/tree/59ec4503b68212e047af0b0d42645c4c55e0505b/examples/pr-review).
+Inspect created resources and record saved configuration, Line version, and Machine readiness. Complete runnable manifests are maintained and validated in [the validated PR-review example in islo-labs/islo-agents](https://github.com/islo-labs/islo-agents/tree/70d2597b031483a39bf7bcdf35b427359f1901fd/examples/pr-review).
 
 ## Verify with a minimal manual Line
 
