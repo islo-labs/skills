@@ -30,4 +30,4 @@ Check `islo schema agent --short` and `islo schema factory --short` before autho
 
 Use the platform skill for sandbox and snapshot lifecycle, environments, gateway profiles, provider connections, incoming webhooks, and Knowledge CRUD. Never copy a nearby example's repository, selector, destination, or gateway identity into a new Factory.
 
-Complete runnable Agent and Line examples and their manifest validation belong to [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents). References here contain only focused syntax fragments. `scripts/validate_commands.sh` checks documented commands against the installed CLI.
+Complete runnable Agent and Line examples and their manifest validation belong to [the validated PR-review example in islo-labs/islo-agents](https://github.com/islo-labs/islo-agents/tree/59ec4503b68212e047af0b0d42645c4c55e0505b/examples/pr-review). References here contain only focused syntax fragments. `scripts/validate_commands.sh` checks documented commands against the installed CLI.

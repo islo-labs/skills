@@ -56,4 +56,4 @@ criteria = { ready = "Implementation can start", clarify = "More detail is neede
 
 The optional `model` must support `typesafe_system_one` in the live model catalog. Omitting it uses the catalog default. Decision Agents do not take prompt harness, provider, Skills, or MCP fields. Inspect the Factory schema for the stage's state input and typed outputs before binding questions to transitions.
 
-For complete runnable manifests, use [islo-labs/islo-agents](https://github.com/islo-labs/islo-agents), which owns their validation.
+For complete runnable manifests, use [the validated PR-review example in islo-labs/islo-agents](https://github.com/islo-labs/islo-agents/tree/59ec4503b68212e047af0b0d42645c4c55e0505b/examples/pr-review), which owns their validation.
