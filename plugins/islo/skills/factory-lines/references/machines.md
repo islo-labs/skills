@@ -259,3 +259,7 @@ Any new runner image visible to Jobs must put a compatible `islo` CLI on `PATH` 
 | Refresh schedule or timezone | No |
 
 Repeat `--repo` or `--capability` for multiple values. On update, supplying either replaces the entire corresponding list; include all values to keep, or use `--clear-repos` / `--clear-capabilities` to empty it. Lifecycle, environment, gateway, and schedule edits can be made with their `update` flags; check `islo factory machine update --help` for the current names and clear options. Use `build` when a new version is wanted without a spec change. Jobs keep using the last published version until that build succeeds.
+
+## Outcome in chat
+
+After a successful create, post exactly one Machine outcome card in its own paragraph: `[MACHINE_NAME](/factories/FACTORY_ID/machines/MACHINE_NAME?view=card)`. Use the Factory public UUID from `islo factory current` with the same Factory selection, and URL-encode the Machine name. Follow [chat-embeds.md](chat-embeds.md#creation-outcomes). The card may show a build still running; do not claim the Machine is ready until it has a usable published version.
