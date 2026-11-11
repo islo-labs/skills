@@ -7,6 +7,10 @@ description: Design, create, and manage Islo Factories, Machines, reusable Agent
 
 A Factory contains Machines, reusable Agents, and Lines. Agents are the user-facing execution units. A Line connects Agent interactions and routes their results. The runtime may compile an Agent stage into an internal Job; do not make the user choose or configure a Job. Managers route a Line between stages.
 
+## Log in before Line creation
+
+Before starting a Line creation workflow, tell the user to run `islo login` in their local terminal outside a sandbox. Wait for the user to confirm successful login before inventory, design, or resource creation. If they are already logged in, accept their confirmation and continue. This authenticates the user with Islo; provider connections still use the integration cards below.
+
 ## Setup contract
 
 For a request to build or substantially change a Factory, follow [factory-design.md](references/factory-design.md) before [create-a-line.md](references/create-a-line.md). Inventory with read-only commands first. Distinguish observed resources, inferred defaults, and decisions still needed from the user. Ask one batch containing only unresolved decisions, then recommend one complete blueprint. Wait for explicit approval of that blueprint before any create, update, deploy, provider event, or external write.
