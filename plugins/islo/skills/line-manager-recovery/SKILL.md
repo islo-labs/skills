@@ -51,7 +51,7 @@ When a person must decide, post the question with what you attempted and found,
 then end the turn:
 
 ```bash
-islo api -X POST /factory/line-runs/RUN_ID/questions --input - <<'EOF'
+islo api -X POST "/factories/$ISLO_FACTORY/line-runs/$ISLO_LINE_RUN_ID/questions" --input - <<'EOF'
 {"questions":["QUESTION"],"attempted":["WHAT WAS TRIED"],"findings":["WHAT WAS FOUND"]}
 EOF
 ```
