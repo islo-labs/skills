@@ -14,7 +14,7 @@ jobs:
         run: |
           python3 scripts/validate_manifest_shapes.py
           python3 scripts/test_factory_examples_validation.py
-      - name: Validate chat-only guidance stays in islo-chat
+      - name: Validate integration connection guidance
         run: |
           python3 scripts/validate_integration_guidance.py
           python3 scripts/test_integration_guidance.py
