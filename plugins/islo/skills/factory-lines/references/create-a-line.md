@@ -2,7 +2,7 @@
 
 Start with [factory-design.md](factory-design.md). This page starts only after the user has approved its complete blueprint. Keep the approved effects checklist nearby while implementing and verifying.
 
-Confirm that the [CLI authentication check](authentication.md) has passed before creating resources. Valid authentication needs no login prompt. If the check required local login, wait for the user's confirmation and recheck before continuing.
+Verify that the Islo CLI is logged in before creating resources, following the skill's [login check](../SKILL.md#log-in-before-line-creation). Request local login only for missing or invalid authentication, then wait for confirmation and recheck.
 
 ## Dependency order
 

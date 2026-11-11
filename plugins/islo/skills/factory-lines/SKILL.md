@@ -9,7 +9,13 @@ A Factory contains Machines, reusable Agents, and Lines. Agents are the user-fac
 
 ## Log in before Line creation
 
-Before starting a Line creation workflow, [check CLI authentication](references/authentication.md) with `islo factory list --output json`. If authentication is valid, continue without asking the user to log in. Only if the check confirms missing or invalid authentication, tell the user to run `islo login` in their local terminal outside a sandbox and wait for confirmation before inventory, design, or resource creation. Other failures require diagnosis, not a login request. Provider connections still use the integration cards below.
+Before starting a Line creation workflow, verify that the Islo CLI is logged in with this read-only check:
+
+```bash
+islo factory list --output json
+```
+
+On success, including an empty array, continue without asking the user to log in. Only for missing or invalid authentication, ask the user to run `islo login` in their local terminal outside a sandbox. Wait for confirmation and recheck before inventory, design, or resource creation. Diagnose other failures without requesting login. Provider connections still use the integration cards below.
 
 ## Setup contract
 

@@ -2,7 +2,7 @@
 
 Use this workflow for a new Factory or a substantial change to an existing one. The user's outcome and approved effects drive the design; do not ask them to select a Job or understand a Job manifest.
 
-For Line creation, complete the [CLI authentication check](authentication.md) before the read-only inventory below. Continue directly when authenticated; request local login and wait for confirmation only when authentication is missing or invalid.
+For Line creation, follow the skill's [login check](../SKILL.md#log-in-before-line-creation) before the read-only inventory below. Continue directly when authenticated; request local login only when authentication is missing or invalid.
 
 ## Read-only inventory
 
