@@ -14,6 +14,7 @@ Replace `FACTORY_ID`, `RUN_ID`, `LINE_NAME`, and `SLUG` with values returned by 
 
 | Object | URL | What appears |
 |---|---|---|
+| Integration | `/integrations?connect=linear&view=connect` | Provider logo, description, browser connection status, and Connect dialog |
 | Line run | `/factories/FACTORY_ID/runs/lines/RUN_ID?view=inbox` | Compact row with the current question, stop reason, or artifacts |
 | Line run | `/factories/FACTORY_ID/runs/lines/RUN_ID?view=card` | Run stages, status, and cost |
 | Run question | `/factories/FACTORY_ID/runs/lines/RUN_ID?view=question` | The stored question and answer form when the run accepts answers |
@@ -46,3 +47,19 @@ For example, show up to three matching runs awaiting answers:
 ```
 
 To ask a new question, follow the permission and request-body rules in [questions.md](questions.md). A `view=question` link only displays a question already stored on the referenced run.
+
+## Integration connect cards
+
+Post one card for each provider a line trigger or tool needs, before or alongside deployment. State why it is needed in the paragraph before its link:
+
+```markdown
+Slack is needed to start this line when a message arrives in the selected channel.
+
+[Slack](/integrations?connect=slack&view=connect)
+```
+
+Integrations belong to the tenant, so use `/integrations`, without a Factory prefix. Only known preset ids render cards; unknown providers remain plain links. The same URL outside chat opens the dialog on the integrations page.
+
+The browser reads the user's status: not connected, pending owner approval, or Connected with Tenant or Personal scope. Connect opens the existing dialog over chat. OAuth returns to the conversation, and the card refreshes on return and window focus.
+
+The sandbox cannot read integration status. Never claim a provider is connected or run `islo login --tool` in a sandbox. Ask the user to say when done, or offer to deploy now; the line starts once its required integration is connected.
