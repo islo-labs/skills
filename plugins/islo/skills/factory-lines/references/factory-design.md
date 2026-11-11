@@ -2,7 +2,7 @@
 
 Use this workflow for a new Factory or a substantial change to an existing one. The user's outcome and approved effects drive the design; do not ask them to select a Job or understand a Job manifest.
 
-For Line creation, complete [Islo login](../SKILL.md#log-in-before-line-creation) before the read-only inventory below.
+For Line creation, complete the [CLI authentication check](authentication.md) before the read-only inventory below. Continue directly when authenticated; request local login and wait for confirmation only when authentication is missing or invalid.
 
 ## Read-only inventory
 
