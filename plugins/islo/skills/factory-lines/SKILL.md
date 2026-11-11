@@ -15,6 +15,12 @@ Keep the discussion in product terms: Factory, Machines, Agents, their interacti
 
 Never write a manifest from memory. Check the installed `islo schema factory --short` and `islo schema agent`; validate before deploy. If the installed CLI lacks a required command or Agent-stage field, report the exact gap rather than silently substituting an unrelated resource. Use an internal Job only when a required capability is demonstrably unavailable to Agent stages and `islo schema job --short` unambiguously supports the exact requirement. If either side is unclear, report only the unresolved semantic capability and stop; do not name internal fields, propose implementation workarounds, ask the user to resolve the implementation gap, or infer support from a similarly named field. Keep an internal Job out of the user's choices and its configuration out of the blueprint unless a developer asks.
 
+## Integration connections
+
+Before or alongside deploying, post one standalone `[Provider](/integrations?connect=PROVIDER_ID&view=connect)` card for every provider a trigger or tool needs. Explain why each is needed. The browser card reads status with the user's session. Never claim that a provider is connected from sandbox evidence. Ask the user to say when done, or offer to deploy now; the Line starts once connected.
+
+Do not run `islo login --tool`, `islo status`, or `islo factory triggers list --with-status` inside a sandbox. Use `islo factory triggers list` for the event catalog and follow [triggers.md](references/triggers.md) and [chat-embeds.md](references/chat-embeds.md) for connection cards.
+
 ## References
 
 | Need | Read |

@@ -62,4 +62,4 @@ Integrations belong to the tenant, so use `/integrations`, without a Factory pre
 
 The browser reads the user's status: not connected, pending owner approval, or Connected with Tenant or Personal scope. Connect opens the existing dialog over chat. OAuth returns to the conversation, and the card refreshes on return and window focus.
 
-The sandbox cannot read integration status. Never claim a provider is connected or run `islo login --tool` in a sandbox. Ask the user to say when done, or offer to deploy now; the line starts once its required integration is connected.
+The sandbox cannot read integration status. Never claim a provider is connected from sandbox evidence. Do not run `islo login --tool` in a sandbox. Ask the user to say when done, or offer to deploy now; the line starts once its required integration is connected.
