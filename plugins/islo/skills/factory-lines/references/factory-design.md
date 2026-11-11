@@ -2,6 +2,8 @@
 
 Use this workflow for a new Factory or a substantial change to an existing one. The user's outcome and approved effects drive the design; do not ask them to select a Job or understand a Job manifest.
 
+For Line creation, complete [Islo login](../SKILL.md#log-in-before-line-creation) before the read-only inventory below.
+
 ## Read-only inventory
 
 Read the request for the goal, done condition, repositories, trigger, result destination, and any approved external side effects. Inspect the selected Factory and tenant before asking anything:
