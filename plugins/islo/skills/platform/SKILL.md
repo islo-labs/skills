@@ -11,8 +11,8 @@ Ground rules that apply everywhere:
 
 - The installed CLI is the source of truth. Use `islo schema <command>` and `--help` for exact flags; do not write config shapes from memory.
 - Claude Code, Cursor agent, and Codex are preinstalled in sandboxes. OpenCode is installed on first `islo use --agent opencode`. They run without in-sandbox auth when the matching integration (or Islo inference for OpenCode) is available.
-- Provider tokens stay out of sandboxes. Post one standalone `[Provider](/integrations?connect=PROVIDER_ID&view=connect)` card for every provider a trigger or tool needs, before or alongside deploying. The browser card owns connection status. Never claim a connection from sandbox evidence. See [gateway-integrations.md](references/gateway-integrations.md) for the flow.
-- Do not run `islo login --tool`, `islo status`, or `islo factory triggers list --with-status` inside a sandbox. Use `islo factory triggers list` for the event catalog.
+- Provider tokens stay out of sandboxes. Connect integrations with `islo login --tool <provider>` and let the `default` gateway profile inject credentials.
+- If you were explicitly told you are running inside Islo chat, the `islo-chat` skill overrides the connection steps here (it replaces `islo login --tool` and `islo status` with connection cards). Otherwise ignore it.
 
 ## Where to go
 

@@ -77,6 +77,9 @@ plugins/islo/skills/
 │   └── scripts/              # validate_commands.sh, validate_examples.sh
 ├── line-manager-recovery/    # TASK skill: Line Manager policy for failed stages
 │   └── SKILL.md              # read by the Line Manager on stage failures
+├── islo-chat/                # CHAT-ONLY skill: connection cards and object embeds,
+│   ├── SKILL.md              # used only when explicitly told the agent is in Islo chat
+│   └── references/
 ├── surfaces/                 # TASK skill: publish live line-run interfaces
 │   ├── SKILL.md              # router
 │   └── references/           # target-specific readiness and safety

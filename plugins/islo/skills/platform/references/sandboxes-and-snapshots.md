@@ -35,6 +35,8 @@ Check `islo schema use` for the current `islo.yaml` shape and flag precedence. U
 
 ```bash
 islo ls
+islo status
+islo status <name>
 islo pause <name>
 islo resume <name>
 islo stop <name>
@@ -43,7 +45,7 @@ islo cp <local> <name>:<remote>
 islo doctor
 ```
 
-`pause` is the normal cost-saving path and keeps state; `stop` halts; `rm` deletes. Prefer JSON output (`--output json`) in scripts. Check `islo ls` before destructive commands.
+`pause` is the normal cost-saving path and keeps state; `stop` halts; `rm` deletes. Prefer JSON output (`--output json`) in scripts. Check `islo status` and `islo ls` before destructive commands.
 
 ## Environments
 
@@ -58,16 +60,15 @@ islo use <name> --environment production
 
 ## Sources
 
-For private repositories, post a standalone `[GitHub](/integrations?connect=github&view=connect)` card first. The browser card shows connection status and opens the connection dialog. Follow [gateway-integrations.md](gateway-integrations.md).
-
 Clone repos during sandbox bootstrap with `--source` or the sources field in `islo.yaml` (shapes per `islo schema use`):
 
 ```bash
+islo login --tool github   # required for private repos
 islo use my-sandbox --source github://owner/repo
 islo use my-sandbox --source github://owner/repo:main
 ```
 
-Checkout happens during bootstrap, before your command or shell. Do not embed tokens in clone URLs. `Repository not found` on a private repo can mean the integration lacks access. Post the GitHub connect card so the browser can show connection status before investigating the repository path.
+Checkout happens during bootstrap, before your command or shell. Do not embed tokens in clone URLs. `Repository not found` on a private repo usually means GitHub is not connected; check `islo status` before assuming the path is wrong.
 
 ## Default image
 

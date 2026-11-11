@@ -1,6 +1,6 @@
 # Islo object links in Agent chat
 
-Use this reference to show an existing Islo object inside an Agent chat reply. It teaches the link shape, like [questions.md](questions.md) teaches question shape. Keep the saved Agent prompt unchanged; do not append these instructions when launching a chat.
+Use this reference to show an existing Islo object inside an Agent chat reply. It teaches the link shape, like [questions.md](../../factory-lines/references/questions.md) teaches question shape. Keep the saved Agent prompt unchanged; do not append these instructions when launching a chat.
 
 Write a Markdown link alone in its own paragraph to request an embed:
 
@@ -46,20 +46,20 @@ For example, show up to three matching runs awaiting answers:
 [Release runs awaiting answers](/factories/FACTORY_ID/runs?view=inbox&name=release&q=approval&waiting_for_answer=true&limit=3)
 ```
 
-To ask a new question, follow the permission and request-body rules in [questions.md](questions.md). A `view=question` link only displays a question already stored on the referenced run.
+To ask a new question, follow the permission and request-body rules in [questions.md](../../factory-lines/references/questions.md). A `view=question` link only displays a question already stored on the referenced run.
 
 ## Integration connect cards
 
-Post one card for each provider a line trigger or tool needs, before or alongside deployment. State why it is needed in the paragraph before its link:
+Post one card for each provider a Line trigger or tool needs, before or alongside deployment. State why it is needed in the paragraph before its link:
 
 ```markdown
-Slack is needed to start this line when a message arrives in the selected channel.
+Slack is needed to start this Line when a message arrives in the selected channel.
 
 [Slack](/integrations?connect=slack&view=connect)
 ```
 
-Integrations belong to the tenant, so use `/integrations`, without a Factory prefix. Only known preset ids render cards; unknown providers remain plain links. The same URL outside chat opens the dialog on the integrations page.
+Integrations belong to the tenant, so use `/integrations` without a Factory prefix. Only known preset ids render cards; unknown providers remain plain links. The same URL outside chat opens the dialog on the integrations page.
 
 The browser reads the user's status: not connected, pending owner approval, or Connected with Tenant or Personal scope. Connect opens the existing dialog over chat. OAuth returns to the conversation, and the card refreshes on return and window focus.
 
-The sandbox cannot read integration status. Never claim a provider is connected from sandbox evidence. Do not run `islo login --tool` in a sandbox. Ask the user to say when done, or offer to deploy now; the line starts once its required integration is connected.
+The sandbox cannot read integration status. Never claim a provider is connected from sandbox evidence. Ask the user to say when done, or offer to deploy now; the Line starts once its required integration is connected.
