@@ -56,6 +56,8 @@ islo environment create --name production --variable PUBLIC_FLAG=enabled
 islo use <name> --environment production
 ```
 
+After creating an environment successfully, post exactly one card link in its own paragraph: `[ENVIRONMENT_NAME](/settings/environments/ENVIRONMENT_ID?view=card)`. Use the ID returned by the CLI, URL-encode it, and keep environments tenant-scoped with no Factory prefix. See [chat object links](../../factory-lines/references/chat-embeds.md#creation-outcomes). Do not expose variable or secret values in the card text.
+
 ## Sources
 
 For private repositories, post a standalone `[GitHub](/integrations?connect=github&view=connect)` card first. The browser card shows connection status and opens the connection dialog. Follow [gateway-integrations.md](gateway-integrations.md).

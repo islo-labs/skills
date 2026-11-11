@@ -30,7 +30,7 @@ Do not run `islo login --tool`, `islo status`, or `islo factory triggers list --
 | Machine lifecycle and readiness | [machines.md](references/machines.md) |
 | Agent, Manager, harness, model, Skills, or MCP | [agents-and-managers.md](references/agents-and-managers.md) |
 | Line manifest, triggers, or run debugging | [line-manifest.md](references/line-manifest.md), [triggers.md](references/triggers.md), [run-control-and-debugging.md](references/run-control-and-debugging.md) |
-| Show a Line, run, question, or Knowledge item in Agent chat | [chat-embeds.md](references/chat-embeds.md) |
+| Show an outcome card, Line, run, question, Machine, environment, Job, or Knowledge item in Agent chat | [chat-embeds.md](references/chat-embeds.md) |
 | Internal Job harness, model, Knowledge, manifest, or explicit standalone Job request | [harness-models-knowledge.md](references/harness-models-knowledge.md), [job-manifest.md](references/job-manifest.md), and [standalone-jobs.md](references/standalone-jobs.md) |
 
 Use the platform skill for sandbox and snapshot lifecycle, environments, gateway profiles, provider connections, incoming webhooks, and Knowledge CRUD. Treat nearby examples as shape references; never copy their repo, selector, destination, or gateway identity into a new Factory.

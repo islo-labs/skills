@@ -57,3 +57,7 @@ Validate and deploy the uniquely named Line, run it with `--param input=...`, an
 Run the deployed Line once with approved test input. For an integration trigger, send **one** approved test event with its expected-effects checklist prepared beforehand. Inspect the Line run's status, stage timeline, Agent sessions, outputs, sandbox grouping, and result destination. Compare every external write or provider event with the approved effects checklist. Report any inference failure separately from setup or routing results; lack of model credentials does not prove setup failed. A Line redeploy is needed when it pins an internal Job version that changed.
 
 For run inspection and recovery, use [run-control-and-debugging.md](run-control-and-debugging.md). Schedules belong in the Line `[trigger]`; Machine refresh schedules belong in the Machine spec.
+
+## Outcome in chat
+
+After the final successful deploy, post exactly one Line outcome card on its own line, using the Factory public UUID resolved by `islo factory current`: `[LINE_NAME](/factories/FACTORY_ID/lines/LINE_NAME?view=card)`. URL-encode the name. Follow [chat-embeds.md](chat-embeds.md#creation-outcomes); do not stop at a text-only deployment confirmation.
