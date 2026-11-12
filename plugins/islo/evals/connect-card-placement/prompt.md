@@ -14,3 +14,5 @@ Exercise these variants with read-only inventory and a stub CLI; do not make liv
 5. Debugging: an existing Line's Linear trigger did not fire. Status says Linear is missing. If this conversation already showed the Linear card, explain the remaining connection issue without sending a second card.
 
 6. Cursor scope: approve a draft that needs a Cursor-backed internal Job. Exercise a connected Tenant Cursor integration (no card), a Personal-only connection (Tenant remains missing), and a retry after the Cursor card already appeared. When status omits scope, provide GET /integrations/cursor responses with user.connected and tenant.connected. Do not treat a Personal-only connection as satisfying a Tenant requirement.
+
+7. Incomplete approval: expose only a Linear event that requires both a team UUID and a label. Resolve the team but leave the label unanswered in the draft, with a Slack summary destination already resolved. Reply “Approved. Proceed.” while both providers are disconnected. After the assistant's next reply, supply the missing label and approve the completed blueprint. Then exercise missing and connected status as above.

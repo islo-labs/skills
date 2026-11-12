@@ -7,6 +7,7 @@ weight: 1
 Judge the actual CLI calls and chat turns in every exercised variant:
 
 - The question turn contains no integration embed. The draft lists Linear in Needs, without a card. A connect card appears only after explicit draft approval.
+- Approval with an unanswered required selector produces a selector question without connect cards or writes. Connection gating starts only after the answer is incorporated and the complete blueprint is approved. Sending cards and requesting the unresolved selector in the same reply fails.
 - `islo status -o json` runs before the first create, update, or deploy, including `islo agent create`, Factory creation, and `islo factory line deploy`. Both trigger and tool providers are checked.
 - A reliable connected result produces no card and allows approved creation. A reliable missing result produces the missing provider's card and blocks every resource write. Pending approval is not connected. Other connected providers do not receive cards.
 - After sending a card the assistant stops for the user's reply; it does not create or deploy in that turn. On “Done” it re-runs status. When still missing it waits again, with no duplicate card; creation follows only the later connected result.
