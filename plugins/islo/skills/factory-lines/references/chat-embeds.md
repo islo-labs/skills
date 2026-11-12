@@ -55,19 +55,27 @@ To ask a new question, follow the permission and request-body rules in [question
 
 ## Integration connect cards
 
-Post one card for each provider a line trigger or tool needs, before or alongside deployment. State why it is needed in the paragraph before its link:
+After the user approves the draft, check every provider the request needs, including both triggers and tools. Complete this gate before any create, update, or deploy command, including Factory, Machine, Environment, Agent, Job, and Line creation. Keep design and question turns free of connect cards; list the providers in the blueprint's Needs line instead.
+
+1. Run `islo status -o json` and read `integrations`. A provider is connected when at least one matching entry has `connected: true`. A reliable result without such an entry means the provider is missing. Do not send a card for a connected provider.
+2. If a needed provider is missing, send its connect card, then wait for the user to say they are done. Do not create or deploy while waiting, or while any needed provider remains missing or pending owner approval.
+3. After the user says done, run `islo status -o json` again. Continue only when all needed providers are connected. If a provider is still missing, explain that status and wait; do not repeat its card.
+
+Treat status as **unknown** if the command fails, reports integration status unavailable (including a non-null `integrations_error`), or returns an empty `integrations` array with a null `auth.tenant_name` (called `tenant_name` in older output). Missing or malformed status fields are also unknown. This covers older CLIs and backends that hide lookup failures. Tell the user you could not check; send the card unless they say the provider is connected. Wait and re-check after they say done. When status remains unknown, the user's explicit confirmation that the provider is connected is sufficient to continue; never override a reliable missing result with that fallback. Never claim a provider is connected without a positive status result or the user's word.
+
+Send at most one card per provider per conversation, including retries and debugging. Put the link alone in its own paragraph. Do not add a notice-style lead-in such as “Linear is required:”. At most one plain sentence may tie the provider to the user's goal:
 
 ```markdown
-Slack is needed to start this line when a message arrives in the selected channel.
+To start from Linear labels, connect Linear.
 
-[Slack](/integrations?connect=slack&view=connect)
+[Linear](/integrations?connect=linear&view=connect)
 ```
 
-Integrations belong to the tenant, so use `/integrations`, without a Factory prefix. Only known preset ids render cards; unknown providers remain plain links. The same URL outside chat opens the dialog on the integrations page.
+Integrations belong to the tenant, so use `/integrations`, without a Factory prefix. Use a known preset id, such as `github`, `slack`, `linear`, `sentry`, `notion`, `atlassian`, `anthropic`, `cursor`, or `openai`. Unknown providers remain plain links. The same URL outside chat opens the dialog on the integrations page.
 
-The browser reads the user's status: not connected, pending owner approval, or Connected with Tenant or Personal scope. Connect opens the existing dialog over chat. OAuth returns to the conversation, and the card refreshes on return and window focus.
+The browser card shows not connected, pending owner approval, or Connected with Tenant or Personal scope. Connect opens the existing dialog over chat. OAuth returns to the conversation, and the card refreshes on return and window focus. Browser refresh alone is not confirmation to resume work. Do not run `islo login --tool` in a sandbox. Use `islo factory triggers list` for the event catalog; `--with-status` is not the sandbox connection check.
 
-The sandbox cannot read integration status. Never claim a provider is connected from sandbox evidence. Do not run `islo login --tool` in a sandbox. Ask the user to say when done, or offer to deploy now; the line starts once its required integration is connected.
+When a trigger does not fire or a provider call fails, run `islo status -o json` and apply the same missing/unknown checks and card limit before retrying dependent work. A connection does not authorize provider events or external writes; those still require the approved effects checklist.
 
 ## Creation outcomes
 

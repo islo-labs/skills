@@ -60,7 +60,7 @@ After creating an environment successfully, post exactly one card link in its ow
 
 ## Sources
 
-For private repositories, post a standalone `[GitHub](/integrations?connect=github&view=connect)` card first. The browser card shows connection status and opens the connection dialog. Follow [gateway-integrations.md](gateway-integrations.md).
+For private repositories, follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards).
 
 Clone repos during sandbox bootstrap with `--source` or the sources field in `islo.yaml` (shapes per `islo schema use`):
 
@@ -69,7 +69,7 @@ islo use my-sandbox --source github://owner/repo
 islo use my-sandbox --source github://owner/repo:main
 ```
 
-Checkout happens during bootstrap, before your command or shell. Do not embed tokens in clone URLs. `Repository not found` on a private repo can mean the integration lacks access. Post the GitHub connect card so the browser can show connection status before investigating the repository path.
+Checkout happens during bootstrap, before your command or shell. Do not embed tokens in clone URLs. `Repository not found` on a private repo can mean the integration lacks access. Follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) before investigating the repository path.
 
 ## Default image
 

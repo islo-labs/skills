@@ -27,9 +27,7 @@ Never write a manifest from memory. Check the installed `islo schema factory --s
 
 ## Integration connections
 
-Before or alongside deploying, post one standalone `[Provider](/integrations?connect=PROVIDER_ID&view=connect)` card for every provider a trigger or tool needs. Explain why each is needed. The browser card reads status with the user's session. Never claim that a provider is connected from sandbox evidence. Ask the user to say when done, or offer to deploy now; the Line starts once connected.
-
-Do not run `islo login --tool`, `islo status`, or `islo factory triggers list --with-status` inside a sandbox. Use `islo factory triggers list` for the event catalog and follow [triggers.md](references/triggers.md) and [chat-embeds.md](references/chat-embeds.md) for connection cards.
+Follow the [integration connection gate](references/chat-embeds.md#integration-connect-cards) before creating or deploying resources.
 
 ## Chat links
 

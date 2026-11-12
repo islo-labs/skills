@@ -25,7 +25,7 @@ islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<messa
 
 | Symptom | Do this |
 |---------|---------|
-| Trigger fired but no run appeared | `islo factory line-run list --line <name>`, `islo factory triggers list`, then post the provider's [connect card](chat-embeds.md#integration-connect-cards) |
+| Trigger fired but no run appeared | `islo factory line-run list --line <name>`, `islo factory triggers list`, then follow the [integration connection gate](chat-embeds.md#integration-connect-cards) |
 | Stage failed | `islo factory line-run events <run-id>`, then `islo job event <command-id>` for the failing step's detail |
 | Agent did the wrong thing mid-stage | `islo factory line-run agent-turn` with a corrective message; inspect with `islo ssh <sandbox>` and `islo logs <sandbox>` |
 | Manager routed wrong or you want a reassessment | `islo factory line-run ask` |
@@ -34,7 +34,7 @@ islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<messa
 | Schedule reverted after a deploy | The schedule was created outside the manifest; move it into the line `[trigger]` |
 | Run stuck at a decision | `islo factory line-run status`, then stop, retry, or steer as fits |
 
-The sandbox cannot check provider connection status. Let the browser card show whether a connection is missing, pending owner approval, or connected. Deploying a Line does not validate readiness.
+For trigger and provider failures, follow the [integration connection gate](chat-embeds.md#integration-connect-cards).
 
 ## Debug loop for a failed stage
 
