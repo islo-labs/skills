@@ -16,3 +16,7 @@ Judge actual chat turns and tool calls:
 The browser owns rendering, live status, supersession, and folding; grade these through frontend fixtures without requiring model inference or provider delivery. A contract replay checks shape and revisions; it does not by itself prove the live agent's tool ordering.
 
 Run `python3 scripts/test_line_draft_eval.py` for the documented contract replay and rejected violations. To check a recorded design trace, run `python3 scripts/evaluate_line_draft.py trace.json`; turns have `role`, `text`, and optional `tool_calls` strings. This deterministic check complements the trace grader; it does not replace the live agent eval.
+
+The recorded-trace checker validates every field with `schema.json`, exported from the frontend's zod input schema. Its workspace checks also enforce the renderer's distinct-step and range refinement. Install checker dependencies with `python3 -m pip install -r scripts/requirements-line-draft-eval.txt`.
+
+When the renderer shape changes, update `src/components/agents/line-draft-schema.ts` in islo-frontend, run `npm run test:unit -- src/components/agents/line-draft-schema.test.ts --update`, and copy the resulting `src/components/agents/line-draft.schema.json` into this eval's `schema.json`. The frontend file-snapshot check detects drift from zod; run the checker tests after copying. Compare the two files before releasing either PR.

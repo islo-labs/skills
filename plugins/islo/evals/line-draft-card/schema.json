@@ -1,0 +1,433 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "draft": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "line": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "starts_when": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "text",
+        "scope"
+      ],
+      "additionalProperties": false
+    },
+    "steps": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "agent": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "kind": {
+                "type": "string",
+                "const": "prompt"
+              },
+              "model": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "origin": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "existing"
+                ]
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "agent",
+              "kind",
+              "model",
+              "origin",
+              "purpose"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "agent": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "kind": {
+                "type": "string",
+                "const": "script"
+              },
+              "origin": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "existing"
+                ]
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "agent",
+              "kind",
+              "origin",
+              "purpose"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "agent": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "kind": {
+                "type": "string",
+                "const": "decision"
+              },
+              "origin": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "existing"
+                ]
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "agent",
+              "kind",
+              "origin",
+              "purpose"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "shared_workspace": {
+      "type": "array",
+      "items": {
+        "minItems": 2,
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "manager": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "on_failure": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "runs_on": {
+      "type": "object",
+      "properties": {
+        "factory": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "origin": {
+              "type": "string",
+              "enum": [
+                "new",
+                "existing"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "origin"
+          ],
+          "additionalProperties": false
+        },
+        "machine": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "origin": {
+              "type": "string",
+              "enum": [
+                "new",
+                "existing"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "origin"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "factory",
+        "machine"
+      ],
+      "additionalProperties": false
+    },
+    "creates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      }
+    },
+    "reuses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      }
+    },
+    "needs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9_-]*$"
+      }
+    },
+    "you_get": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "writes": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "max_cost_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_minutes": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "result",
+        "writes",
+        "max_cost_usd",
+        "max_minutes"
+      ],
+      "additionalProperties": false
+    },
+    "details": {
+      "type": "object",
+      "properties": {
+        "repos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "environment": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "origin": {
+              "type": "string",
+              "enum": [
+                "new",
+                "existing"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "origin"
+          ],
+          "additionalProperties": false
+        },
+        "gateway": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "host": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "auth": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "origin": {
+              "type": "string",
+              "enum": [
+                "new",
+                "existing"
+              ]
+            }
+          },
+          "required": [
+            "host",
+            "auth",
+            "origin"
+          ],
+          "additionalProperties": false
+        },
+        "size": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "flow": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "retained_resources": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        }
+      },
+      "required": [
+        "repos",
+        "environment",
+        "gateway",
+        "size",
+        "flow"
+      ],
+      "additionalProperties": false
+    },
+    "details_expanded": {
+      "default": false,
+      "type": "boolean"
+    },
+    "assumed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      }
+    },
+    "updated": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      }
+    }
+  },
+  "required": [
+    "draft",
+    "title",
+    "description",
+    "line",
+    "starts_when",
+    "steps",
+    "shared_workspace",
+    "manager",
+    "on_failure",
+    "runs_on",
+    "creates",
+    "reuses",
+    "needs",
+    "you_get",
+    "details",
+    "assumed",
+    "updated"
+  ],
+  "additionalProperties": false
+}
