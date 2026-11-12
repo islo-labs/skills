@@ -53,6 +53,107 @@ For example, show up to three matching runs awaiting answers:
 
 To ask a new question, follow the permission and request-body rules in [questions.md](questions.md). A `view=question` link only displays a question already stored on the referenced run.
 
+## Line draft cards
+
+Before approval, present the complete blueprint as exactly one fenced `islo-line-draft` JSON block per draft. The draft has no stored object or URL. Keep the block free of links, buttons, Connect actions, and connection status claims. The browser validates it with zod and renders a read-only card; invalid JSON or an invalid shape stays an ordinary code block. While the block streams, the browser shows "Drafting the line...".
+
+```islo-line-draft
+{
+  "draft": 1,
+  "title": "Polish a Linear ticket",
+  "description": "Rewrites a labeled ticket into an implementation-ready one.",
+  "line": "linear-ticket-polisher",
+  "starts_when": {
+    "provider": "linear",
+    "text": "A Linear ticket is labeled \"Islo-check-my-ticket\"",
+    "scope": "Any team or project"
+  },
+  "steps": [
+    {
+      "agent": "polish-and-rewrite",
+      "kind": "prompt",
+      "model": "codex",
+      "origin": "new",
+      "purpose": "Reads the ticket and the repos, rewrites the description."
+    }
+  ],
+  "shared_workspace": [],
+  "manager": "built-in",
+  "on_failure": "The run stops and is marked failed.",
+  "runs_on": {
+    "factory": {
+      "name": "polish-factory",
+      "origin": "existing"
+    },
+    "machine": {
+      "name": "islo-dev",
+      "origin": "existing"
+    }
+  },
+  "creates": [
+    "1 agent",
+    "1 line"
+  ],
+  "reuses": [],
+  "needs": [
+    "linear"
+  ],
+  "you_get": {
+    "result": "A rewritten ticket description",
+    "writes": "Writes to Linear: the description, and removes the label.",
+    "max_cost_usd": 2,
+    "max_minutes": 30
+  },
+  "details": {
+    "repos": [
+      "acme/web",
+      "acme/api"
+    ],
+    "environment": {
+      "name": "dev-env",
+      "origin": "existing"
+    },
+    "gateway": {
+      "name": "linear-profile",
+      "host": "api.linear.app",
+      "auth": "Linear OAuth",
+      "origin": "existing"
+    },
+    "size": "medium",
+    "flow": "label added → polish-and-rewrite → done; on failure → run failed",
+    "retained_resources": [
+      "dev-env environment",
+      "linear-profile gateway profile",
+      "provider connections"
+    ]
+  },
+  "assumed": [
+    "starts_when.scope",
+    "you_get.max_cost_usd"
+  ],
+  "updated": []
+}
+```
+
+Field rules:
+
+- `draft` starts at 1 and increases by one on each revision. Keep `line` stable for revisions of the same proposal. `title` and `description` explain the outcome.
+- `starts_when.text` is a readable trigger sentence; `scope` includes the resolved selector scope, or the schedule and timezone for a scheduled Line. `provider` is optional for manual and schedule triggers.
+- Each `steps` entry has `agent`, `kind` (`script`, `decision`, or `prompt`), `origin` (`new` or `existing`), and a one-line `purpose`. Prompt steps also require `model`; Script and Decision steps omit it. Include the semantic input and output in the purpose when useful. Steps follow execution order.
+- `shared_workspace` contains groups of at least two distinct, one-based step numbers, such as `[[1, 2]]`. Every number must refer to a step in this draft. Omit notes for isolated steps by using `[]`.
+- `manager` is `built-in` unless a named reusable Manager is justified. `on_failure` describes the failure path and any retry behavior.
+- `runs_on.factory` and `runs_on.machine` are always present, each with `name` and `origin`. Never silently create a Factory. `creates` lists every new resource and `reuses` lists reused Agents and other resources.
+- `needs` contains provider ids only. Never send a status, a connection object, or a claim that a provider is connected. The browser reads live connection status with the user's session.
+- `you_get.result` states the done condition. Every external write goes in `you_get.writes`, including provider events and any test run that writes outside Islo. Say "No external writes" when there are none. A test run with no external effect needs no mention. `max_cost_usd` is a nonnegative number and `max_minutes` is a positive number; these are caps per run.
+- `details` contains `repos`, `environment` (`name`, `origin`), `gateway` (`host`, `auth`, `origin`, and optional profile `name`), `size`, and `flow` including the failure path. Optional `model` can describe the model configuration; otherwise the browser uses the Prompt step models. `retained_resources` lists tenant-wide environments, gateway profiles, and connections that deleting the Factory keeps. Put relevant capabilities, lifecycle, readiness, ownership, instructions, Skills, MCP hosts, and semantic contracts into the corresponding concise descriptions. Do not expose credentials.
+- `details_expanded` is optional and defaults to false. Set it to true in a full revised draft when the user asks to see Details. This is a native open/closed section, with no button.
+- `assumed` lists every guessed field path, such as `starts_when.scope` or `you_get.max_cost_usd`. `updated` lists all paths changed since the previous draft. Use dot-separated paths and zero-based array indexes, such as `steps.0.purpose`. Both arrays are required; use `[]` when empty.
+- Do not add unlisted fields. Required strings are nonempty. The frontend owns the header, section titles, footer, numbering, and fold: at six or more steps it shows the first two, a visible "N more steps" row, and the last two with their actual numbers.
+
+After the card, wait for the user to write "approve". On a change request, answer in one sentence and post a full new card with `draft` increased by one and `updated` filled in. Never edit or repeat the old card. The frontend automatically collapses earlier drafts with the same `line` to "Draft 1 · superseded by draft 2"; the agent does not send that row. If the name changes, keep the proposal's `line` identity stable until approval and describe the requested final name in the title or description.
+
+The sequence is draft card, "approve", integration check, a connect card only for missing providers, then creation once connected. The draft's Needs section replaces connect cards during design. Follow the [integration connection gate](#integration-connect-cards) after approval. Do not create, deploy, send provider events, or write externally before approval.
+
 ## Integration connect cards
 
 After the user approves the draft, check every provider the request needs, including both triggers and tools. Complete this gate before any create, update, or deploy command, including Factory, Machine, Environment, Agent, Job, and Line creation. Keep design and question turns free of connect cards; list the providers in the blueprint's Needs line instead.
