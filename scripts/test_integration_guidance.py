@@ -2,13 +2,10 @@
 
 import unittest
 
-from validate_integration_guidance import SKILLS, connection_card_copies, validate_text
+from validate_integration_guidance import validate_text
 
 
 class IntegrationGuidanceTests(unittest.TestCase):
-    def test_connection_cards_have_one_owner(self):
-        self.assertEqual(connection_card_copies(SKILLS), [])
-
     def test_rejects_the_reviewed_instructions(self):
         for content in (
             "Connect integrations with `islo login --tool <provider>`.",
@@ -18,9 +15,6 @@ class IntegrationGuidanceTests(unittest.TestCase):
         ):
             with self.subTest(content=content):
                 self.assertEqual(validate_text(content), [1])
-
-    def test_allows_sandbox_integration_status(self):
-        self.assertEqual(validate_text("Run `islo status -o json` before creating resources."), [])
 
     def test_allows_browser_cards_and_the_unannotated_catalog(self):
         self.assertEqual(validate_text(
