@@ -31,6 +31,10 @@ Before or alongside deploying, post one standalone `[Provider](/integrations?con
 
 Do not run `islo login --tool`, `islo status`, or `islo factory triggers list --with-status` inside a sandbox. Use `islo factory triggers list` for the event catalog and follow [triggers.md](references/triggers.md) and [chat-embeds.md](references/chat-embeds.md) for connection cards.
 
+## Chat links
+
+Always use explicit `/factories/FACTORY_KEY/...` routes for Factory objects. Resolve the object's Factory key with `islo factory current --factory KEY_OR_UUID --output json` and read `factory.key`; use the same selection as the object operation. Never emit legacy singular-Factory run URLs or guess a Factory from the current conversation. If the key cannot be resolved, keep a known explicit link as a badge with `view=chip`, rather than requesting a card. If no explicit URL is known, describe the run in text until its Factory is identified. Follow [chat-embeds.md](references/chat-embeds.md) for views and filters.
+
 ## References
 
 | Need | Read |

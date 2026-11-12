@@ -262,4 +262,4 @@ Repeat `--repo` or `--capability` for multiple values. On update, supplying eith
 
 ## Outcome in chat
 
-After a successful create, post exactly one Machine outcome card in its own paragraph: `[MACHINE_NAME](/factories/FACTORY_ID/machines/MACHINE_NAME?view=card)`. Use the Factory public UUID from `islo factory current` with the same Factory selection, and URL-encode the Machine name. Follow [chat-embeds.md](chat-embeds.md#creation-outcomes). The card may show a build still running; do not claim the Machine is ready until it has a usable published version.
+After a successful create, post exactly one Machine outcome card in its own paragraph: `[MACHINE_NAME](/factories/FACTORY_KEY/machines/MACHINE_NAME?view=card)`. Use `factory.key` from `islo factory current --output json` with the same Factory selection, and URL-encode the Machine name. Follow [chat-embeds.md](chat-embeds.md#creation-outcomes). The card may show a build still running; do not claim the Machine is ready until it has a usable published version.

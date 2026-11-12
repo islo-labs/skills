@@ -45,4 +45,4 @@ islo job rm <name>
 
 ## Outcome in chat
 
-After successfully deploying an explicitly requested standalone Job, post exactly one card in its own paragraph: `[JOB_NAME](/factories/FACTORY_ID/jobs/JOB_NAME?view=card)`. Use the Factory public UUID resolved by `islo factory current` with the deployment's Factory selection, and URL-encode the Job name. Follow [chat-embeds.md](chat-embeds.md#creation-outcomes). Do not post cards for internal Jobs compiled from Agent stages.
+After successfully deploying an explicitly requested standalone Job, post exactly one card in its own paragraph: `[JOB_NAME](/factories/FACTORY_KEY/jobs/JOB_NAME?view=card)`. Use the Factory key from `factory.key` in `islo factory current --output json` with the deployment's Factory selection, and URL-encode the Job name. Follow [chat-embeds.md](chat-embeds.md#creation-outcomes). Do not post cards for internal Jobs compiled from Agent stages.
