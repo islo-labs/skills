@@ -2,10 +2,13 @@
 
 import unittest
 
-from validate_integration_guidance import validate_text
+from validate_integration_guidance import SKILLS, connection_card_copies, validate_text
 
 
 class IntegrationGuidanceTests(unittest.TestCase):
+    def test_connection_cards_have_one_owner(self):
+        self.assertEqual(connection_card_copies(SKILLS), [])
+
     def test_rejects_the_reviewed_instructions(self):
         for content in (
             "Connect integrations with `islo login --tool <provider>`.",

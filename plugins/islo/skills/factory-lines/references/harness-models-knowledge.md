@@ -63,7 +63,9 @@ harness = "cursor"
 model = "<id from agent --list-models>"
 ```
 
-Job VMs do not receive a personal Cursor key. Interactive `islo use` stamps the user identity. Job provision is tenant-only: it looks up the tenant Cursor slot (`cursor-org`). Post a standalone `[Cursor](/integrations?connect=cursor&view=connect)` card and ask the user to choose Tenant scope before running a Cursor stage. The browser card must show Connected · Tenant; a personal connection is not enough for jobs. Never infer connection status from the sandbox.
+Job VMs do not receive a personal Cursor key. Interactive `islo use` stamps the user identity. Job provision is tenant-only: it looks up the tenant Cursor slot (`cursor-org`). A personal Cursor connection is not enough for jobs; the required scope is Tenant.
+
+Follow the [integration connection gate](chat-embeds.md#integration-connect-cards) for status checks and connection cards.
 
 Claimed session outputs are prompt-only. The agent must emit the claimed keys; JSON that appears only in chat while the CLI hangs will not harvest.
 

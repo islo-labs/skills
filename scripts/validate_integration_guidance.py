@@ -22,6 +22,14 @@ def validate_text(content: str) -> list[int]:
     ]
 
 
+def connection_card_copies(root: Path) -> list[Path]:
+    owner = root / "factory-lines/references/chat-embeds.md"
+    return [
+        path for path in sorted(root.rglob("*.md"))
+        if path != owner and "/integrations?connect=" in path.read_text()
+    ]
+
+
 def main() -> int:
     failures = []
     for name in ("factory-lines", "platform"):
@@ -33,6 +41,12 @@ def main() -> int:
                     "Scope any retained connection CLI command to outside a sandbox "
                     "or explicitly prohibit running it in the sandbox."
                 )
+    for path in connection_card_copies(SKILLS):
+        failures.append(
+            f"{path.relative_to(SKILLS)}: Link to "
+            "factory-lines/references/chat-embeds.md#integration-connect-cards "
+            "instead of copying connection card instructions."
+        )
     if failures:
         print("\n".join(failures))
         return 1
