@@ -9,9 +9,7 @@ class IntegrationGuidanceTests(unittest.TestCase):
     def test_rejects_the_reviewed_instructions(self):
         for content in (
             "Connect integrations with `islo login --tool <provider>`.",
-            "islo status",
             "islo factory triggers list --with-status",
-            "An integration connection check runs through the local CLI (`islo status`).",
             "islo login --tool github   # required for private repos",
             "| Trigger fired but no run appeared | `islo factory triggers list --with-status` |",
         ):

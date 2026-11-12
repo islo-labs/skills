@@ -53,21 +53,132 @@ For example, show up to three matching runs awaiting answers:
 
 To ask a new question, follow the permission and request-body rules in [questions.md](questions.md). A `view=question` link only displays a question already stored on the referenced run.
 
-## Integration connect cards
+## Line draft cards
 
-Post one card for each provider a line trigger or tool needs, before or alongside deployment. State why it is needed in the paragraph before its link:
+Before approval, present the complete blueprint as exactly one fenced `islo-line-draft` JSON block per draft. The draft has no stored object or URL. Keep the block free of links, buttons, Connect actions, and connection status claims. The browser validates it with zod and renders a read-only card; invalid JSON or an invalid shape stays an ordinary code block. While the block streams, the browser shows "Drafting the line...".
 
-```markdown
-Slack is needed to start this line when a message arrives in the selected channel.
-
-[Slack](/integrations?connect=slack&view=connect)
+```islo-line-draft
+{
+  "draft": 1,
+  "title": "Polish a Linear ticket",
+  "description": "Rewrites a labeled ticket into an implementation-ready one.",
+  "line": "linear-ticket-polisher",
+  "starts_when": {
+    "provider": "linear",
+    "text": "A Linear ticket is labeled \"Islo-check-my-ticket\"",
+    "scope": "Any team or project"
+  },
+  "steps": [
+    {
+      "agent": "polish-and-rewrite",
+      "kind": "prompt",
+      "model": "codex",
+      "origin": "new",
+      "purpose": "Reads the ticket and the repos, rewrites the description."
+    }
+  ],
+  "shared_workspace": [],
+  "manager": "built-in",
+  "on_failure": "The run stops and is marked failed.",
+  "runs_on": {
+    "factory": {
+      "name": "polish-factory",
+      "origin": "existing"
+    },
+    "machine": {
+      "name": "islo-dev",
+      "origin": "existing"
+    }
+  },
+  "creates": [
+    "1 agent",
+    "1 line"
+  ],
+  "reuses": [],
+  "needs": [
+    "linear"
+  ],
+  "you_get": {
+    "result": "A rewritten ticket description",
+    "writes": "Writes to Linear: the description, and removes the label.",
+    "max_cost_usd": 2,
+    "max_minutes": 30
+  },
+  "details": {
+    "repos": [
+      "acme/web",
+      "acme/api"
+    ],
+    "environment": {
+      "name": "dev-env",
+      "origin": "existing"
+    },
+    "gateway": {
+      "name": "linear-profile",
+      "host": "api.linear.app",
+      "auth": "Linear OAuth",
+      "origin": "existing"
+    },
+    "size": "medium",
+    "flow": "label added → polish-and-rewrite → done; on failure → run failed",
+    "retained_resources": [
+      "dev-env environment",
+      "linear-profile gateway profile",
+      "provider connections"
+    ]
+  },
+  "assumed": [
+    "starts_when.scope",
+    "you_get.max_cost_usd"
+  ],
+  "updated": []
+}
 ```
 
-Integrations belong to the tenant, so use `/integrations`, without a Factory prefix. Only known preset ids render cards; unknown providers remain plain links. The same URL outside chat opens the dialog on the integrations page.
+Field rules:
 
-The browser reads the user's status: not connected, pending owner approval, or Connected with Tenant or Personal scope. Connect opens the existing dialog over chat. OAuth returns to the conversation, and the card refreshes on return and window focus.
+- `draft` starts at 1 and increases by one on each revision. Keep `line` stable for revisions of the same proposal. `title` and `description` explain the outcome.
+- `starts_when.text` is a readable trigger sentence; `scope` includes the resolved selector scope, or the schedule and timezone for a scheduled Line. `provider` is optional for manual and schedule triggers.
+- Each `steps` entry has `agent`, `kind` (`script`, `decision`, or `prompt`), `origin` (`new` or `existing`), and a one-line `purpose`. Prompt steps also require `model`; Script and Decision steps omit it. Include the semantic input and output in the purpose when useful. Steps follow execution order.
+- `shared_workspace` contains groups of at least two distinct, one-based step numbers, such as `[[1, 2]]`. Every number must refer to a step in this draft. Omit notes for isolated steps by using `[]`.
+- `manager` is `built-in` unless a named reusable Manager is justified. `on_failure` describes the failure path and any retry behavior.
+- `runs_on.factory` and `runs_on.machine` are always present, each with `name` and `origin`. Never silently create a Factory. `creates` lists every new resource and `reuses` lists reused Agents and other resources.
+- `needs` contains provider ids only. Never send a status, a connection object, or a claim that a provider is connected. The browser reads live connection status with the user's session.
+- `you_get.result` states the done condition. Every external write goes in `you_get.writes`, including provider events and any test run that writes outside Islo. Say "No external writes" when there are none. A test run with no external effect needs no mention. `max_cost_usd` is a nonnegative number and `max_minutes` is a positive number; these are caps per run.
+- `details` contains `repos`, `environment` (`name`, `origin`), `gateway` (`host`, `auth`, `origin`, and optional profile `name`), `size`, and `flow` including the failure path. Optional `model` can describe the model configuration; otherwise the browser uses the Prompt step models. `retained_resources` lists tenant-wide environments, gateway profiles, and connections that deleting the Factory keeps. Put relevant capabilities, lifecycle, readiness, ownership, instructions, Skills, MCP hosts, and semantic contracts into the corresponding concise descriptions. Do not expose credentials.
+- `details_expanded` is optional and defaults to false. Set it to true in a full revised draft when the user asks to see Details. This is a native open/closed section, with no button.
+- `assumed` lists every guessed field path, such as `starts_when.scope` or `you_get.max_cost_usd`. `updated` lists all paths changed since the previous draft. Use dot-separated paths and zero-based array indexes, such as `steps.0.purpose`. Both arrays are required; use `[]` when empty.
+- Do not add unlisted fields. Required strings are nonempty. The frontend owns the header, section titles, footer, numbering, and fold: at six or more steps it shows the first two, a visible "N more steps" row, and the last two with their actual numbers.
 
-The sandbox cannot read integration status. Never claim a provider is connected from sandbox evidence. Do not run `islo login --tool` in a sandbox. Ask the user to say when done, or offer to deploy now; the line starts once its required integration is connected.
+After the card, wait for the user to write "approve". On a change request, answer in one sentence and post a full new card with `draft` increased by one and `updated` filled in. Never edit or repeat the old card. The frontend automatically collapses earlier drafts with the same `line` to "Draft 1 · superseded by draft 2"; the agent does not send that row. If the name changes, keep the proposal's `line` identity stable until approval and describe the requested final name in the title or description.
+
+The sequence is draft card, "approve", integration check, a connect card only for missing providers, then creation once connected. The draft's Needs section replaces connect cards during design. Follow the [integration connection gate](#integration-connect-cards) after approval. Do not create, deploy, send provider events, or write externally before approval.
+
+## Integration connect cards
+
+After the user approves the draft, check every provider the request needs, including both triggers and tools. Complete this gate before any create, update, or deploy command, including Factory, Machine, Environment, Agent, Job, and Line creation. Keep design and question turns free of connect cards; list the providers in the blueprint's Needs line instead.
+
+Before starting the gate, confirm that the blueprint has no unanswered choices or required selectors. Approval does not fill in an unresolved trigger label, team, channel, or destination. If the user approves an incomplete draft, ask for the missing answers without connect cards, then incorporate the answers and confirm the complete blueprint's approval before checking connections. Keep any further design question in its own turn, before the connection gate.
+
+1. Run `islo status -o json` and read `integrations`. A provider is connected when at least one matching entry has `connected: true` in the scope the request needs. If status omits scope and the provider requires one (for example Tenant for Cursor Jobs), run `islo api /integrations/PROVIDER_ID` and check that scope’s `connected` value; a personal connection cannot satisfy a Tenant requirement. A failed scope lookup is unknown. A reliable result without such an entry means the provider is missing. Do not send a card for a connected provider.
+2. If a needed provider is missing, check whether its card already appeared in an earlier assistant reply in this conversation. If it has, refer to that earlier card in plain text, such as "Use the Slack card above to reconnect." Do not emit another connect link. Otherwise, send its card and remember the provider ID as already shown. In either case, wait for the user to say they are done. Do not create or deploy while waiting, or while any needed provider remains missing or pending owner approval.
+3. After the user says done, run `islo status -o json` again. Continue only when all needed providers are connected. If a provider is still missing, explain that status and wait; do not repeat its card.
+
+Treat status as **unknown** if the command fails, reports integration status unavailable (including a non-null `integrations_error`), or returns an empty `integrations` array with a null `auth.tenant_name` (called `tenant_name` in older output). Missing or malformed status fields are also unknown. This covers older CLIs and backends that hide lookup failures. Tell the user you could not check. Unless they say the provider is connected, use step 2 to send its first card or refer to its earlier card. Wait and re-check after they say done. When status remains unknown, the user's explicit confirmation that the provider is connected in the required scope is sufficient to continue; never override a reliable missing result with that fallback. Never claim a provider is connected without a positive status result or the user's word.
+
+Send at most one card per provider per conversation, including retries and debugging. Track the provider IDs whose cards have appeared across the whole conversation, and preserve them in any conversation summary. Successful connection, creation, deployment, and later disconnection never clear that history. A provider becoming missing again changes its connection status, not whether its card was already shown. Put a first card's link alone in its own paragraph. Do not add a notice-style lead-in such as “Linear is required:”. At most one plain sentence may tie the provider to the user's goal:
+
+```markdown
+To start from Linear labels, connect Linear.
+
+[Linear](/integrations?connect=linear&view=connect)
+```
+
+Integrations belong to the tenant, so use `/integrations`, without a Factory prefix. Use a known preset id, such as `github`, `slack`, `linear`, `sentry`, `notion`, `atlassian`, `anthropic`, `cursor`, or `openai`. Unknown providers remain plain links. The same URL outside chat opens the dialog on the integrations page.
+
+The browser card shows not connected, pending owner approval, or Connected with Tenant or Personal scope. Connect opens the existing dialog over chat. OAuth returns to the conversation, and the card refreshes on return and window focus. Browser refresh alone is not confirmation to resume work. Do not run `islo login --tool` in a sandbox. Use `islo factory triggers list` for the event catalog; `--with-status` is not the sandbox connection check.
+
+When a trigger does not fire or a provider call fails, run `islo status -o json` and apply the same missing/unknown checks before retrying dependent work. If the provider needs reconnection, check its card history using step 2, even after a successful deployment. Refer to an earlier card in plain text when one exists; otherwise send its first card. Wait for confirmation and a status recheck before retrying. A connection does not authorize provider events or external writes; those still require the approved effects checklist.
 
 ## Creation outcomes
 

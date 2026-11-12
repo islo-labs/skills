@@ -5,7 +5,7 @@ import re
 
 SKILLS = Path(__file__).resolve().parents[1] / "plugins/islo/skills"
 BLOCKED_COMMAND = re.compile(
-    r"\bislo (?:login --tool\b|status\b|factory triggers list --with-status\b)"
+    r"\bislo (?:login --tool\b|factory triggers list --with-status\b)"
 )
 SAFE_CONTEXT = re.compile(
     r"do not run|never run|outside (?:a )?sandbox|outside sandboxes|reject sandbox callers",

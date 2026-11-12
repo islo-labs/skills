@@ -4,25 +4,13 @@ Provider credentials without tokens in the sandbox: GitHub, Slack, model provide
 
 ## Core rule
 
-Do not put provider tokens inside the sandbox by default. Ask the user to connect providers through a chat card and use the `default` gateway profile. The gateway injects credentials on allowed outbound requests at the network layer; real tokens stay in the control plane.
+Do not put provider tokens inside the sandbox by default. Use the `default` gateway profile. The gateway injects credentials on allowed outbound requests at the network layer; real tokens stay in the control plane.
 
 Sandboxes may expose phantom placeholder env vars (`GITHUB_TOKEN`, `SLACK_TOKEN`, values starting `islo_p`). Some tools read them directly; the gateway replaces them on egress. Treat them as placeholders, not secrets.
 
 ## Flow
 
-Before or alongside deploying, post one card for every provider a trigger or tool needs. Explain why it is needed, then put the link alone in its own paragraph:
-
-```markdown
-[GitHub](/integrations?connect=github&view=connect)
-
-[Slack](/integrations?connect=slack&view=connect)
-```
-
-Use a known integration preset id for `connect`: `github`, `slack`, `linear`, `sentry`, `notion`, `atlassian`, `anthropic`, `cursor`, or `openai`. Outbound provider ids also include `gitlab` and `npm`; a provider without a matching UI preset remains a plain integrations link.
-
-The browser card reads connection status with the user's session and opens the existing dialog over chat. Never claim an integration is connected from sandbox evidence. Ask the user to say when done, or offer to deploy now; the line starts once connected. Deploy does not check integration readiness.
-
-Do not run `islo login --tool`, `islo status`, or `islo factory triggers list --with-status` inside a sandbox. Their connection-status calls are rejected. The card is the source of truth for not connected, pending owner approval, and connected states.
+Follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for provider status, connection cards, and when work can continue.
 
 Sandboxes pick up the `default` profile automatically. Inspect the gateway profile when a provider request fails:
 
@@ -42,11 +30,11 @@ If you change gateway rules after a sandbox was created, recreate or reconnect t
 
 ## GitHub
 
-Post a GitHub connect card before sandbox work that touches private repos or the GitHub API. Let the browser card show connection status. Covers `gh` commands, REST and GraphQL to allowed hosts, private checkout during `islo use` bootstrap (see the sandboxes reference), and Actions runner registration.
+For private repos or the GitHub API, follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards). Covers `gh` commands, REST and GraphQL to allowed hosts, private checkout during `islo use` bootstrap (see the sandboxes reference), and Actions runner registration.
 
 ## Slack
 
-Post a Slack connect card; the `default` profile already allows Slack hosts. Do not store a bot token in `islo.yaml`, job params, setup scripts, or sandbox env unless the user explicitly bypasses gateway-managed credentials.
+For Slack, follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards); the `default` profile already allows Slack hosts. Do not store a bot token in `islo.yaml`, job params, setup scripts, or sandbox env unless the user explicitly bypasses gateway-managed credentials.
 
 ## Incoming webhook secrets are different
 
@@ -69,7 +57,7 @@ Users can pass their own tokens. Warn that it weakens the no-token-in-sandbox mo
 
 ## Troubleshooting
 
-- Provider call fails: post a connect card for the browser to resolve status, run `islo gateway ls` for the profile, then check allow rules cover the destination host.
+- Provider call fails: follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards), run `islo gateway ls` for the profile, then check allow rules cover the destination host.
 - `Repository not found` or 404 on a private repo: usually GitHub is not connected, or the clone happened outside `islo use` source bootstrap.
 - 401 from a provider API: confirm connection and host allow rules before debugging inside the sandbox.
 - Rules changed after sandbox creation: recreate or reconnect the sandbox.

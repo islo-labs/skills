@@ -32,15 +32,7 @@ After `triggers get`, ask the user which resource to scope to. Do not copy team,
 | GitHub | Owner/repo (and which event) |
 | Slack | Workspace and channel |
 
-Before or alongside deploying, post one connect card for every provider the trigger or its tools need. Explain why each provider is needed, then put its link alone in a paragraph:
-
-```markdown
-[Slack](/integrations?connect=slack&view=connect)
-```
-
-Use the provider id in `connect`, such as `github`, `slack`, `linear`, or `sentry`. See [chat-embeds.md](chat-embeds.md) for the full link contract.
-
-The browser card resolves the user's connection status. The agent cannot check it: `islo status`, `islo login --tool`, and `triggers list --with-status` use status endpoints that reject sandbox callers. Never claim a provider is connected. Ask the user to say when done, or offer to deploy now; the line starts once its required integration is connected. Deploying a line does not validate its integration.
+Follow the [integration connection gate](chat-embeds.md#integration-connect-cards) for providers used by triggers and tools.
 
 ## Schedules
 
