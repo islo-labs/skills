@@ -24,8 +24,7 @@ islo api --method POST --input - "/factories/$ISLO_FACTORY/line-runs/$ISLO_LINE_
       "kind": "single_choice",
       "prompt": "Prompt from the granting document",
       "options": [
-        {"id": "option-a", "label": "First option", "selected": true},
-        {"id": "option-b", "label": "Second option", "recommended": true}
+        {"id": "option-a", "label": "Suggested option", "selected": true, "recommended": true}
       ]
     }
   ]
@@ -35,7 +34,7 @@ EOF
 
 `ISLO_FACTORY` and `ISLO_LINE_RUN_ID` identify the current Factory and Line run. Job steps export both variables. `stage_name` comes from the document that granted permission. Omit `stage_name` only when that document says to omit it.
 
-A batch holds 1 to 10 question objects. Each question has a stable `id`, a `kind`, and a `prompt`. Use `single_choice` or `multi_choice` with 2 to 8 options. Each option has a stable `id` and a `label`. Option ids are unique inside the question. Question ids are unique inside the batch. `required` defaults to true.
+A batch holds 1 to 10 question objects. Each question has a stable `id`, a `kind`, and a `prompt`. Use `single_choice` or `multi_choice` with 1 to 8 explicit options. One explicit option is enough because Other is always available. Zero explicit options are rejected. Each option has a stable `id` and a `label`. Option ids are unique inside the question. Question ids are unique inside the batch. `required` defaults to true.
 
 Keep each question prompt to 30 words or fewer. This is authoring guidance; the backend does not enforce a word limit.
 

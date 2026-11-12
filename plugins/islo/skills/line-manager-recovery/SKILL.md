@@ -48,8 +48,8 @@ ends the run `failed` regardless of the last stage's status; `steer done` is
 for normal completion, not giving up.
 
 When a person must decide, post the question with what you attempted and found,
-then end the turn. Use a choice question object with a prompt of 30 words or fewer.
-Both choice kinds include Other for a custom answer. Follow the
+then end the turn. Use a choice question object with 1 to 8 explicit options and a prompt of 30 words or fewer.
+One option is enough because both choice kinds include Other for a custom answer. Do not add Other yourself. Follow the
 [question format](../factory-lines/references/questions.md).
 
 ```bash

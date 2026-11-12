@@ -35,7 +35,7 @@ Always use explicit `/factories/FACTORY_KEY/...` routes for Factory objects. Res
 
 ## References
 
-When authorized to ask Line-run questions, send choice question objects with prompts of 30 words or fewer. Every choice includes Other for a custom answer. Follow [questions.md](references/questions.md) for the request format.
+When authorized to ask Line-run questions, send choice question objects with 1 to 8 explicit options and prompts of 30 words or fewer. One option is enough because every choice includes Other for a custom answer. Follow [questions.md](references/questions.md) for the request format.
 
 | Need | Read |
 |---|---|
