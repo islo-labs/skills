@@ -48,11 +48,25 @@ ends the run `failed` regardless of the last stage's status; `steer done` is
 for normal completion, not giving up.
 
 When a person must decide, post the question with what you attempted and found,
-then end the turn:
+then end the turn. Use a choice question object with a prompt of 30 words or fewer.
+Both choice kinds include Other for a custom answer. Follow the
+[question format](../factory-lines/references/questions.md).
 
 ```bash
 islo api -X POST "/factories/$ISLO_FACTORY/line-runs/$ISLO_LINE_RUN_ID/questions" --input - <<'EOF'
-{"questions":["QUESTION"],"attempted":["WHAT WAS TRIED"],"findings":["WHAT WAS FOUND"]}
+{
+  "questions": [{
+    "id": "recovery",
+    "kind": "single_choice",
+    "prompt": "Which recovery should I try?",
+    "options": [
+      {"id": "retry", "label": "Retry after fixing the blocker"},
+      {"id": "fail", "label": "End the run as failed"}
+    ]
+  }],
+  "attempted": ["WHAT WAS TRIED"],
+  "findings": ["WHAT WAS FOUND"]
+}
 EOF
 ```
 
