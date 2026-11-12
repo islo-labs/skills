@@ -105,7 +105,7 @@ When more than one new module is discovered, ask that choice, then stop.
 When the question is skipped, continue into the build suites on this turn.
 The person may select nothing new; an empty selection is complete and keeps existing definitions selected, so do not add a `none` option to the multi-choice.
 For more than 8, split into more questions in the same batch, with at most 8 options each.
-Redistribute options so each group has at least two options; do not add `none` for a singleton group.
+Each group may have one to eight explicit options because Other is automatic. Do not add `none` to pad a singleton group.
 Do not drop a module to stay under that limit.
 Each multi-choice group uses `required: false`.
 Every newly discovered module appears in exactly one question, unless the single-module skip applies.
