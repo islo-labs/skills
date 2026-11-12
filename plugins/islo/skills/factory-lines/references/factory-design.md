@@ -31,7 +31,7 @@ Ask once in a single batch for decisions that inventory and the request cannot r
 
 ## Recommend one complete blueprint
 
-Present one proposed configuration, marking inferred defaults. It must contain:
+Keep this table as the decision checklist. Present the result as a [Line draft card](chat-embeds.md#line-draft-cards), rather than a long Markdown blueprint. Mark every guess in `assumed`. Decide each area before requesting approval:
 
 | Area | What to show |
 |---|---|
@@ -43,8 +43,10 @@ Present one proposed configuration, marking inferred defaults. It must contain:
 | Needs | Required provider names only; gateway host/auth rules and any tenant-scoped environment/profile changes |
 | Verification | Resource checks, one stage in isolation, one end-to-end run, and expected effects checklist |
 
+Map Outcome to the title, description, and You get; Factory to Runs on; Machines, Agents, and Needs to Runs on, Steps, Needs, and Details; and Line to Starts when, Steps, Manager, and the failure line. Put every external write, including externally writing test runs, in `you_get.writes`. A test run without an external effect needs no mention.
+
 For Agents with the same `sandbox_name` in one Line run, explain that they share one Machine-backed filesystem but have separate sessions. Every Agent in a shared-sandbox group must use the **same Machine**. Different `sandbox_name` values create workspace boundaries; pass results through Line outputs or an approved external artifact instead of assuming files cross the boundary. Include failure and retry paths in the graph when relevant.
 
 Describe inputs and outputs by meaning, such as “issue URL in” and “PR URL out.” Use the Agent-stage contracts exposed by the live Factory schema. If a required capability is absent, verify that gap against both Agent and Job schemas before proposing an internal Job. Snapshot pinning, fan-out with output reduction, verification, and lifecycle actions are Job candidates only when the Agent schema cannot express them and the Job schema unambiguously supports the exact required behavior. A similarly named field is not proof. If either side is unclear, report only the unresolved semantic capability and stop the dependent design; do not name internal fields, offer implementation workarounds, or ask the user how to solve it. Otherwise record only that the smallest necessary internal Job will implement the capability, never present it as a user choice or expose its fields unless a developer asks; keep every other stage Agent-backed. A standalone or user-facing Job requires an explicit user request. Include a proposed Manager: built-in unless a reusable Prompt Agent is justified.
 
-Ask for explicit approval of this **complete** blueprint before creating or changing any resource, deploying, sending a provider event, or writing to an external destination. Read-only inventory and local draft files are allowed before approval. If a requested effect was not included, obtain approval for the revised blueprint before doing it.
+After the complete draft card, wait for the user to write "approve" before creating or changing any resource, deploying, sending a provider event, or writing externally. Read-only inventory and local draft files are allowed. On a change request, answer in one sentence and post a full new card with `draft` + 1 and all changed paths in `updated`; never edit or repeat the old draft. If a requested effect was not included, obtain "approve" for the revised card before doing it. Only after approval, check integrations, post connect cards for missing providers, and create the approved resources once connected, following the [connection gate](chat-embeds.md#integration-connect-cards).
