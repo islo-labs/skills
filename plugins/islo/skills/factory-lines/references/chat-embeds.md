@@ -5,29 +5,31 @@ Use this reference to show an existing Islo object inside an Agent chat reply. I
 Write a Markdown link alone in its own paragraph to request an embed:
 
 ```markdown
-[Run awaiting your answer](/factories/FACTORY_ID/runs/lines/RUN_ID?view=question)
+[Run awaiting your answer](/factories/FACTORY_KEY/runs/lines/RUN_ID?view=question)
 ```
 
-Replace `FACTORY_ID`, `RUN_ID`, `LINE_NAME`, `MACHINE_NAME`, `JOB_NAME`, `ENVIRONMENT_ID`, and `SLUG` with values returned by Islo tools. Use the object's Factory ID, including when it differs from the surrounding chat's Factory. URL-encode path segments and filter values. An embed link reads an existing object; it does not create a run, post a question, or grant permission to act.
+Replace `FACTORY_KEY`, `RUN_ID`, `LINE_NAME`, `MACHINE_NAME`, `JOB_NAME`, `ENVIRONMENT_ID`, and `SLUG` with values returned by Islo tools. Use the object's Factory key, including when it differs from the surrounding chat's Factory. URL-encode path segments and filter values. An embed link reads an existing object; it does not create a run, post a question, or grant permission to act.
 
 ## Supported views
 
 | Object | URL | What appears |
 |---|---|---|
 | Integration | `/integrations?connect=linear&view=connect` | Provider logo, description, browser connection status, and Connect dialog |
-| Line run | `/factories/FACTORY_ID/runs/lines/RUN_ID?view=inbox` | Compact row with the current question, stop reason, or artifacts |
-| Line run | `/factories/FACTORY_ID/runs/lines/RUN_ID?view=card` | Run stages, status, and cost |
-| Run question | `/factories/FACTORY_ID/runs/lines/RUN_ID?view=question` | The stored question and answer form when the run accepts answers |
-| Run list | `/factories/FACTORY_ID/runs?view=inbox` | Run rows; `view=table` also works |
-| Line | `/factories/FACTORY_ID/lines/LINE_NAME?view=card` | Line details, next run or Manual, and Run it now |
-| Machine | `/factories/FACTORY_ID/machines/MACHINE_NAME?view=card` | Level, last build, version, and capabilities; plain link when Machines are disabled |
+| Line run | `/factories/FACTORY_KEY/runs/lines/RUN_ID?view=inbox` | Compact row with the current question, stop reason, or artifacts |
+| Line run | `/factories/FACTORY_KEY/runs/lines/RUN_ID?view=card` | Run stages, status, and cost |
+| Run question | `/factories/FACTORY_KEY/runs/lines/RUN_ID?view=question` | The stored question and answer form when the run accepts answers |
+| Run list | `/factories/FACTORY_KEY/runs?view=inbox` | Run rows; `view=table` also works |
+| Line | `/factories/FACTORY_KEY/lines/LINE_NAME?view=card` | Line details, next run or Manual, and Run it now |
+| Machine | `/factories/FACTORY_KEY/machines/MACHINE_NAME?view=card` | Level, last build, version, and capabilities; plain link when Machines are disabled |
 | Environment | `/settings/environments/ENVIRONMENT_ID?view=card` | Variable and secret counts and default status |
-| Job | `/factories/FACTORY_ID/jobs/JOB_NAME?view=card` | Schedule, last run, version, Machine, and Run it now |
-| Line list | `/factories/FACTORY_ID/lines?view=table` | Lines table |
-| Knowledge item | `/factories/FACTORY_ID/knowledge/SLUG?view=card` | Stored content; images remain media |
-| Knowledge list | `/factories/FACTORY_ID/knowledge?view=table` | Knowledge table |
+| Job | `/factories/FACTORY_KEY/jobs/JOB_NAME?view=card` | Schedule, last run, version, Machine, and Run it now |
+| Line list | `/factories/FACTORY_KEY/lines?view=table` | Lines table |
+| Knowledge item | `/factories/FACTORY_KEY/knowledge/SLUG?view=card` | Stored content; images remain media |
+| Knowledge list | `/factories/FACTORY_KEY/knowledge?view=table` | Knowledge table |
 
-Use the Factory public UUID resolved by `islo factory current`, not its key. The chat passes this segment directly to the API. The `/factory` prefix also works and inherits the surrounding Factory. Explicit Factory links keep that Factory for reads, answers, and navigation. Prefer an explicit prefix when the Factory is known. App-relative links and `https://app.islo.dev` URLs are supported.
+Resolve the object's Factory with `islo factory current --factory KEY_OR_UUID --output json` and use `factory.key` in the URL. Select the Factory that owns the object, even when it differs from the surrounding chat. Never emit a legacy singular-Factory URL, substitute a UUID for the key, or infer the Factory from the current conversation. App-relative links and `https://app.islo.dev` URLs are supported.
+
+If the key cannot be resolved, keep a known explicit URL as a badge by omitting `view` or using `view=chip`. Do not request a run-list card, guess a key, or generate an ambiguous URL. If there is no known explicit URL, describe the run in text until its Factory is identified. Historical ambiguous run links remain badges in the app.
 
 Inline links inside sentences, multiple links in one paragraph, links without `view`, `view=chip`, unsupported views, and external URLs remain ordinary references. List-item links remain ordinary references in tight, loose, and nested lists; blank lines between list items do not request embeds. Shared Markdown outside Agent chat also keeps ordinary rendering.
 
@@ -46,7 +48,7 @@ List embeds default to 5 items. Add `limit=1` through `limit=10` to choose a sma
 For example, show up to three matching runs awaiting answers:
 
 ```markdown
-[Release runs awaiting answers](/factories/FACTORY_ID/runs?view=inbox&name=release&q=approval&waiting_for_answer=true&limit=3)
+[Release runs awaiting answers](/factories/FACTORY_KEY/runs?view=inbox&name=release&q=approval&waiting_for_answer=true&limit=3)
 ```
 
 To ask a new question, follow the permission and request-body rules in [questions.md](questions.md). A `view=question` link only displays a question already stored on the referenced run.
@@ -69,10 +71,10 @@ The sandbox cannot read integration status. Never claim a provider is connected 
 
 ## Creation outcomes
 
-After successfully creating or deploying an item, post exactly one card link for it, alone in its own paragraph. Use the name or ID returned by the CLI. For Factory resources, run `islo factory current` with the same Factory selection used for the create or deploy, and use its resolved public UUID. The CLI does not print an app URL; build the URL from that UUID and the URL-encoded item name.
+After successfully creating or deploying an item, post exactly one card link for it, alone in its own paragraph. Use the name or ID returned by the CLI. For Factory resources, run `islo factory current --output json` with the same Factory selection used for the create or deploy, and use `factory.key`. The CLI does not print an app URL; build the URL from that key and the URL-encoded item name.
 
 ```markdown
-[linear-standup](/factories/FACTORY_ID/lines/linear-standup?view=card)
+[linear-standup](/factories/FACTORY_KEY/lines/linear-standup?view=card)
 ```
 
 Use the same rule for Machines, explicitly requested standalone Jobs, and Knowledge items. Environments belong to the tenant: use their returned ID at `/settings/environments/ENVIRONMENT_ID?view=card`, with no Factory prefix. Do not post a success card when creation failed, repeat the same card in a list or sentence, or add follow-up suggestion chips.

@@ -62,4 +62,4 @@ For run inspection and recovery, use [run-control-and-debugging.md](run-control-
 
 ## Outcome in chat
 
-After the final successful deploy, post exactly one Line outcome card on its own line, using the Factory public UUID resolved by `islo factory current`: `[LINE_NAME](/factories/FACTORY_ID/lines/LINE_NAME?view=card)`. URL-encode the name. Follow [chat-embeds.md](chat-embeds.md#creation-outcomes); do not stop at a text-only deployment confirmation.
+After the final successful deploy, post exactly one Line outcome card on its own line, using the Factory key from `factory.key` in `islo factory current --output json`: `[LINE_NAME](/factories/FACTORY_KEY/lines/LINE_NAME?view=card)`. URL-encode the name. Follow [chat-embeds.md](chat-embeds.md#creation-outcomes); do not stop at a text-only deployment confirmation.
