@@ -26,7 +26,9 @@ Use `--output json` for structured output.
 
 ## Types and linking
 
-Items have a type (memory, skill, rule, prompt, image, video, or audio) and can be linked to repositories and tags. `islo knowledge render` concatenates matching bodies as Markdown for a repo and tag filter. Check `islo schema knowledge` for type and linking options.
+Items have a type (memory, skill, rule, prompt, image, video, audio, or html) and can be linked to repositories and tags. Use `--body @file.md` for Markdown text and `--file` for image, video, audio, or HTML uploads. `islo knowledge render` concatenates matching bodies as Markdown for a repo and tag filter. Check `islo schema knowledge` for type and linking options.
+
+For reports in the run canvas, media embedded in Markdown, and self-contained HTML, read [Knowledge surfaces](../../surfaces/references/knowledge.md). Set `--discoverable false` on images used only inside a document. This excludes them from lists and search while preserving access by identifier and embedded rendering.
 
 ## Using knowledge from agents
 

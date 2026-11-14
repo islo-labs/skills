@@ -1,20 +1,25 @@
 # Surface usage
 
-Surface commands publish interfaces from the current line-run stage sandbox into the run canvas.
+Surface commands publish knowledge items and interfaces from the current line-run stage sandbox into the run canvas.
 
 ## Commands
 
 ```bash
+islo surface knowledge SLUG --label "LABEL"
 islo surface web PORT --label "LABEL"
 islo surface terminal NAME --label "LABEL" -- COMMAND ...
 islo surface ls
 ```
 
-The current CLI supports `web` and `terminal`. Inspect `islo surface --help` and the kind-specific help before use. Adapt to additional installed kinds using their help.
+In addition to `web` and `terminal`, the current CLI supports `knowledge`. Inspect `islo surface --help` and the kind-specific help before use. Adapt to additional installed kinds using their help.
 
 ## What to publish
 
 Choose useful user-facing interfaces from the repository and running stack. A run can have multiple useful interfaces or none. A listening port alone does not show that a service is user-facing. Do not select services through blind port scanning.
+
+## Knowledge
+
+Use a knowledge Surface for a stored Markdown report, image, video, audio, or HTML document. Create the item before opening it with `islo surface knowledge SLUG`. The canvas follows updates to that slug. Read [Knowledge surfaces](knowledge.md) for creation commands, media embeds, and HTML constraints.
 
 ## Web
 
