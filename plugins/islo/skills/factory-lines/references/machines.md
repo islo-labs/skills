@@ -82,37 +82,13 @@ Record only applicable setting names in component.toml, never values. At build, 
 If this sandbox already has a Machine environment, use a secret or setting when its name is present.
 Do not print values.
 Do not invent a secret.
-If a required setting name is absent, collect the minimum setting names for every blocked module.
-The question names each setting and the goal it blocks.
-It does not ask for the value.
-Ask only for a setting name that is missing, asking the user to add the named setting to the Machine environment.
-Say when this Machine has no environment.
-Ask the user to create the environment and start a new Machine build, then stop.
-
-## Credentials the sandbox cannot attach
-
-From the author sandbox, do not create, list, or attach a Machine environment or gateway profile.
-Do not run `islo environment`, `islo gateway`, or `islo factory machine update` for that.
-`islo factory machine get` stays allowed, to see whether an environment or profile is already set.
-
-When a suite is blocked on a private registry, a package credential, or a missing Machine environment, say so in the summary and stop trying those CLIs. Name the host and the package. Tell the person to do this outside the sandbox:
-
-1. Add a gateway allow rule for that host using the approved credential.
-2. Attach that profile on the Machine. A gateway-profile edit on a ready Machine publishes a template version.
-3. If the Machine has no environment and the suite needs one, create the environment and attach it. An environment edit starts a new build that runs Author.
-4. Start a new build after the attachment so the next sandbox receives the credential.
-
-Resolve the Factory with `islo factory current --output json` and use `factory.key`. Put each embed in its own paragraph in the summary:
-
-Machine: `[MACHINE_NAME](/factories/FACTORY_KEY/machines/MACHINE_NAME?view=card)`
-
-Environment, only when `islo factory machine get` returns an environment id: `[ENVIRONMENT_NAME](/settings/environments/ENVIRONMENT_ID?view=card)`
-
-No environment yet: plain `https://app.islo.dev/settings/environments`.
-
-Gateway has no chat embed. Use a plain URL with no `view` parameter: `https://app.islo.dev/settings/gateway` or `https://app.islo.dev/settings/gateway/<profile>`.
-
-Question options are actions the person takes outside the sandbox, such as "I attached the profile; rebuild". Return `needs_input` with empty `questions` only after that question POST succeeds. If the POST fails or has no question ID, preserve the exact intended JSON body in `questions` for the Line Manager, following the question rules below.
+When required registry/package credentials, settings, or a Machine environment cannot be supplied from this sandbox, stop work immediately. Return author_state `blocked` with empty `questions` and end the turn. The Line Manager stops the run from that result. Do not post a question or wait for an answer. This rule takes precedence over failure and configuration questions.
+Do not try to attach credentials, gateway profiles, or environments from the sandbox. Read-only `islo factory machine get` remains allowed.
+In the summary, report the work as blocked and list every action the user must take outside the sandbox before trying the build again. Name each blocked component, failed command, required setting name, and registry host/package as applicable, without exposing secret values.
+For registry/package access, obtain an approved credential, add a gateway allow rule for the host, and attach that profile to the Machine. A gateway-profile edit on a ready Machine publishes a template version; it does not rebuild the sandbox.
+For missing settings or a missing Machine environment, create an environment if needed, add all required settings, and attach it to the Machine. An environment edit starts a new build that runs Author.
+Start a new build after all attachments are complete so its sandbox receives the credentials. If an environment edit already started that build after all attachments, use that build.
+Preserve completed work and include its results and any existing PRs in the blocked report. Do not discard completed work, retry in the same sandbox, or claim readiness.
 
 ## Questions Author may ask
 
@@ -220,7 +196,7 @@ If no module can be a verification target, include that unresolved decision in t
 
 Model cross-repository dependencies with registered keys. Each repository manifest has local active component names, and verification_targets is a subset of active_components. At build it is empty; at verify at least one target across the Machine is required. Only modules with the complete runtime lifecycle use driver mode at verify; retained non-booting modules use passive mode with their install/build/test entrypoints intact. Write runtime entrypoints for every driver in the active set, including modules that depend on other drivers. Do not invent entrypoints unsupported by repository commands. Do not write machine.md.
 
-The workflow above decides which questions are allowed and when work runs; this reference supplies the Machine layout to default and overridden author prompts. Preserve completed work when resuming. After the selected work, report every module as included or left out, with build, test, start, and surface results applicable at this level. Commit only `.islo/<machine>/` files, leave the repository clean, and open or update its Machine pull request unless declined. Return PRs as artifacts. Report local-only manifests that a fresh sandbox cannot fetch. At build, return ready only when selected suites pass, installed-context verification passes, and reports, pushes, pull requests, and artifacts are complete. At verify, return ready only when `islo machine verify` passes at the Machine level and reports, pushes, pull requests, and artifacts are complete. Otherwise return needs_input.
+The workflow above decides which questions are allowed and when work runs; this reference supplies the Machine layout to default and overridden author prompts. Preserve completed work when resuming. After the selected work, report every module as included or left out, with build, test, start, and surface results applicable at this level. Commit only `.islo/<machine>/` files, leave the repository clean, and open or update its Machine pull request unless declined. Return PRs as artifacts. Report local-only manifests that a fresh sandbox cannot fetch. At build, return ready only when selected suites pass, installed-context verification passes, and reports, pushes, pull requests, and artifacts are complete. At verify, return ready only when `islo machine verify` passes at the Machine level and reports, pushes, pull requests, and artifacts are complete. For credential or environment blockers, return blocked as described in "How to discover configuration". Otherwise return needs_input.
 
 ## Build lifecycle
 
