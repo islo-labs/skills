@@ -42,6 +42,7 @@ class MachineAuthorGuidanceTests(unittest.TestCase):
         self.assertNotIn("## Credentials the sandbox cannot attach", MACHINES)
         self.assertNotIn("I attached the profile; rebuild", MACHINES)
         self.assertNotIn("Ask the user to create the environment", MACHINES)
+        self.assertNotIn("missing-environment question rules", MACHINES)
 
 
 if __name__ == "__main__":
