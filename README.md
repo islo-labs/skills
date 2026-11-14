@@ -5,7 +5,7 @@ Agent skills and plugin metadata for working with [Islo](https://islo.dev), the 
 This repo teaches coding agents how to use Islo for:
 
 - **Factory lines**: multi-stage orchestration with typed transitions, integration triggers, and `islo factory line-run` controls
-- **Run surfaces**: publish live web and terminal interfaces from line-run stage sandboxes
+- **Run surfaces**: publish knowledge documents, media, live web interfaces, and terminals in line runs
 - **Harness and model selection**: pair Codex / Claude / Cursor to the matching catalog and host (not one shared model list)
 - **Jobs**: lower-level durable stage execution units
 - **Webhooks**: lower-level HTTP event ingress and egress
@@ -77,9 +77,9 @@ plugins/islo/skills/
 │   └── scripts/              # validate_commands.sh, validate_examples.sh
 ├── line-manager-recovery/    # TASK skill: Line Manager policy for failed stages
 │   └── SKILL.md              # read by the Line Manager on stage failures
-├── surfaces/                 # TASK skill: publish live line-run interfaces
+├── surfaces/                 # TASK skill: publish knowledge and live interfaces
 │   ├── SKILL.md              # router
-│   └── references/           # target-specific readiness and safety
+│   └── references/           # readiness, media embeds, and self-contained HTML
 └── platform/                 # REFERENCE skill: Islo infrastructure
     ├── SKILL.md
     └── references/           # sandboxes and snapshots, gateway integrations,
