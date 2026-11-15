@@ -4,10 +4,10 @@ Agent skills and plugin metadata for working with [Islo](https://islo.dev), the 
 
 This repo teaches coding agents how to use Islo for:
 
-- **Factory lines**: multi-stage orchestration with typed transitions, integration triggers, and `islo factory line-run` controls
+- **Factory lines**: Agent-only multi-stage orchestration with typed transitions, integration triggers, and `islo factory line-run` controls
 - **Run surfaces**: publish knowledge documents, media, live web interfaces, and terminals in line runs
 - **Harness and model selection**: pair Codex / Claude / Cursor to the matching catalog and host (not one shared model list)
-- **Jobs**: lower-level durable stage execution units
+- **Jobs**: maintenance of existing Jobs or `job.toml` only when explicitly requested; no fallback for new Lines
 - **Webhooks**: lower-level HTTP event ingress and egress
 - **Knowledge**: tenant memories, skills, and rules for agent steps
 - Sandbox lifecycle: create, connect, exec, pause, resume, stop, delete, snapshots, sharing
@@ -113,6 +113,8 @@ npx skills add islo-labs/skills -y --copy --all
 Keep each SKILL.md a lean router and move details into one-level reference files. CI runs these; run them locally before publishing:
 
 ```bash
+python3 scripts/validate_agent_only_lines.py
+python3 scripts/test_agent_only_lines.py
 python3 scripts/validate_manifest_shapes.py
 python3 scripts/validate_integration_guidance.py
 python3 scripts/test_integration_guidance.py

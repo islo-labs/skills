@@ -8,7 +8,7 @@ An Agent is reusable across Lines. It belongs to one Factory and uses one Machin
 | Decision | Typed classification or scoring | `questions` with `choice`, `score`, or other kinds exposed by the schema; optional System One model |
 | Prompt | Open-ended judgment, repository work, or tool use | `harness`, `model`, `prompt`, optional effort, Skills, and MCP servers |
 
-Do not create a Job merely because a stage runs shell commands or makes a typed decision. Create a user-facing or standalone Job only when the user explicitly asks for one. For a required capability absent from Agent stages, use an internal Job only when the live Job schema unambiguously supports the exact requirement. If either schema is unclear, report the unresolved capability instead of inferring support.
+Build new Lines from Agent stages only. If `islo schema agent` and `islo schema factory --short` cannot express a required capability, report the missing capability and stop the dependent design and deployment. Do not author a Job or consult the Job schema for a fallback. Leave existing Job stages in place and add no new ones. Read Job references only when the user explicitly asks to maintain an existing Job or `job.toml`.
 
 ## Agent examples
 
@@ -56,6 +56,29 @@ prompt = "Investigate the ticket in the available repositories and return a reco
 The Machine supplies the filesystem, repositories, environment, gateway profile, and lifecycle for every Agent type. Job-only `run_agent` fields and sandbox environment variables do not belong in an Agent configuration.
 
 For a Prompt Agent, recommend a model from the appropriate live catalog, taking capability, cost, and provider connection into account. Do not assume one catalog works for every harness. Its prompt should say what it owns and what it must return, while Line inputs provide task-specific context. Attach repository procedures as Skills or keep them in the repository.
+
+## Pair harnesses and models
+
+The harness determines the protocol, catalog, and host. Confirm the supported `harness`, `model`, and `model_provider` fields with `islo schema agent` before configuring a Prompt Agent or Manager. Use literal harness names supported by that schema.
+
+| Harness | Model selection |
+|---|---|
+| `codex` | Native OpenAI ids for direct OpenAI routing; compatible ids from `GET /inference/models` with `model_provider = "islo_inference"` |
+| `claude` | Anthropic ids for direct routing; catalog ids advertising `anthropic_messages` for Islo inference |
+| `cursor` | Discover ids with `agent --list-models` in a sandbox with Cursor auth; the Islo inference catalog does not list Cursor models |
+| `opencode` | Bare Islo catalog ids or aliases on the OpenAI-compatible inference endpoint; omit `model_provider` |
+
+Codex uses OpenAI Responses and Claude uses Anthropic Messages. A shared marketing name does not prove protocol compatibility. Do not put Anthropic-only ids on Codex or send Islo catalog ids to direct OpenAI routing. Cursor also omits `model_provider`. For OpenCode, prefer aliases for slash-containing ids so the CLI does not interpret the prefix as a provider name.
+
+Follow the [integrations skill](../../integrations/SKILL.md#check-connection-status) for provider checks and the [chat connection gate](chat-embeds.md#integration-connect-cards) for connect cards and waiting. The platform skill's gateway reference covers inference URLs, gateway proxying, and phantom tokens.
+
+## Use Knowledge for declarative content
+
+Knowledge holds conventions, policies, and house rules. Procedural content, including Skills and playbooks, is rejected at Knowledge deploy. Keep procedures in the Machine's checked-out repository or attach them as Skills. Point a short Agent prompt at the procedure rather than copying it.
+
+Use only Knowledge bindings exposed by the live Agent schema, and deploy referenced Knowledge before dependent resources. A Prompt Agent Manager uses its Agent `prompt`, optionally replaced for one Line by `manager.prompt`. Legacy built-in Manager instructions can bind Knowledge only when `[manager]` is absent. Knowledge CRUD is in the platform skill.
+
+## Validate and connect Agents
 
 For a Decision Agent, use only question kinds and model aliases exposed by the live schema and model catalog. Its Line contract may use a fixed state input and one typed output per question; inspect `islo schema factory --short` before binding them.
 

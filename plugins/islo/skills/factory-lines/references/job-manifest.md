@@ -1,6 +1,6 @@
 # Job manifests
 
-Do not reconstruct `job.toml` from this skill. Scaffold with `islo job init`, then confirm every key against the live schema:
+Read this reference only when the user explicitly asks to maintain an existing Job or `job.toml`. Edit the existing manifest and confirm every key against the live schema. Do not scaffold a new Job or add a Job stage to a Line.
 
 ```bash
 islo schema job --short

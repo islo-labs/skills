@@ -56,6 +56,6 @@ Once the aggregated debug API ships, `GET /factories/{ref}/line-runs/{run_id}/de
 
 After an Agent update, start a fresh Line run. Retrying an already visited stage keeps the Agent configuration that run first resolved.
 
-After an internal Job update, deploy the new Job version, update the Line to use it, validate, redeploy, and start a fresh run. After a Machine update, wait for the Machine to return to ready before starting a fresh run.
+Only when explicitly asked to maintain an existing Job, deploy its updated version, update its existing Line binding, validate, redeploy, and start a fresh run. Leave existing Job stages in place and add no new ones. After a Machine update, wait for the Machine to return to ready before starting a fresh run.
 
 Verify the fresh run with `status` and `events`.
