@@ -10,6 +10,12 @@ When no document has granted permission, do not call the questions endpoint, do 
 
 When a document has granted permission, ask only the decisions it names, in the batches it names. Use this page for the request body. Do not add a question it did not list.
 
+## Briefing
+
+This turn's prose is not shown to the person. Posting a question stops the run before structured output is collected, so the question card is the message.
+
+Set the optional batch `briefing` when the prompt and options leave out a fact the person needs to decide. Use short markdown, such as the proposed goals, the relevant evidence, or a tradeoff. It appears above the choices. Omit it when the question already says enough. A supplied briefing must contain 1 to 4,000 characters after trimming. Blank values are rejected.
+
 ## One batch
 
 Put every question for the turn in one request. End the turn after a successful post. Do not ask the next batch in the same turn.
