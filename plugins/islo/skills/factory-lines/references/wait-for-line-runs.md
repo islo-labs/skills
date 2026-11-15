@@ -34,7 +34,7 @@ islo factory line-run stages <run-id> -o json
 islo factory line-run events <run-id> -o json
 ```
 
-For a stopped run following stage failure, inspect events for an active Manager recovery turn or scheduled retry. If recovery is underway, continue polling without intervening. If the evidence is unclear, recheck after the next sleep; do not wait indefinitely on an old Manager event. An explicit pause or a Manager decision to park for input takes precedence over recovery assumptions.
+For a stopped run following stage failure, inspect events for an active Manager recovery turn or scheduled retry. Match `manager_turn_started` and `manager_turn` events by `payload.workflow_run_id`; inspect `payload.resolved_action` and later events for the Manager's decision. An old unmatched start alone does not prove recovery is still active. If recovery is underway, continue polling without intervening. If the evidence is unclear, recheck after the next sleep; do not wait indefinitely on an old Manager event. An explicit pause or a Manager decision to park for input takes precedence over recovery assumptions.
 
 ## Read the result and continue
 
