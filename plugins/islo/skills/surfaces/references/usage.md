@@ -27,9 +27,9 @@ Publish a web interface only when its service is healthy and reachable through t
 
 Before publishing a web Surface, ensure the server listens on `0.0.0.0`. Verify the service at `http://localhost:PORT` inside the sandbox before and after publishing. For example, run `curl --fail --show-error http://localhost:8080/` and check the page content or an application-specific readiness response.
 
-Web Surfaces are private by default. Only signed-in members of the organization can open a private share. The returned Surface URL requires a browser session, so an unauthenticated `curl` returns `401`. A `401` from that URL does not mean the local service failed. Use localhost for service verification.
+The server decides the default visibility for Web Surfaces according to your organization's rollout settings. Without a visibility flag, the CLI leaves that decision to the server. Only signed-in members of the organization can open a private share. A private Surface URL requires a browser session, so an unauthenticated `curl` returns `401`. A `401` from that URL does not mean the local service failed. Use localhost for service verification.
 
-To allow anyone with the link to open the interface, use `islo surface web PORT --public` only when the installed CLI supports it and public access is intended. Upgrade the CLI if `--public` is unavailable.
+To request a private Surface explicitly, use `islo surface web PORT --private`. To allow anyone with the link to open the interface, use `islo surface web PORT --public` only when public access is intended. The flags cannot be combined. Check the installed CLI's help for supported flags. Upgrade the CLI if `--public` or `--private` is unavailable.
 
 The web server must remain running while the Surface is in use. Check the exposed UI and responses for secrets, private data, privileged admin actions, or unintended access before publishing. Never expose databases, debug ports, internal metrics, or other internal services.
 
