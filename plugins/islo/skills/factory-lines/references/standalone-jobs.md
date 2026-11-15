@@ -1,11 +1,10 @@
-# Standalone jobs
+# Maintain existing standalone Jobs
 
-For a developer who explicitly requests the low-level Job layer. In ordinary Factory setup, Agents are the user-facing execution units and Jobs are internal runtime resources. Start with `factory-design.md` for an outcome request.
+Read this reference only when the user explicitly asks to maintain an existing Job or `job.toml`. For a new automation goal, start with `factory-design.md` and use Agent stages. Leave existing Job stages in place and add no new ones.
 
 ## Workflow
 
 ```bash
-islo job init <name>
 islo job deploy --path jobs/<name>/job.toml --dry-run
 islo job deploy --path jobs/<name>/job.toml
 islo job run <name> --param KEY=VALUE --watch
@@ -15,13 +14,13 @@ islo job event <command-id>
 
 Run `islo job run` with representative params and inspect step output via `islo job event` **before** wiring incoming webhooks, integration triggers, or schedules to production traffic.
 
-Always scaffold with `islo job init` and edit per `job-manifest.md`; the manifest anatomy is identical to a stage job.
+Inspect the existing Job and edit its manifest per `job-manifest.md`. Do not scaffold a new Job.
 
 ## Agent-first
 
 When the work needs judgment (triage, summarization, review, cross-service tool use), the job runs an agent via `run_agent`, not a hand-written shell script calling APIs. Do not shell-wrap `claude`, `cursor`, `codex`, or `opencode` CLI entrypoints in exec steps; `run_agent` is the path.
 
-Good standalone jobs: post a daily Linear-to-Slack summary, review open PRs every morning, investigate failed CI runs and open a fix PR. If the work grows a second stage, routing, or a decision point, it is a line.
+For a new Line with routing or multiple stages, use Agents. If the Agent schemas cannot express a required capability, report the missing capability and stop the dependent design.
 
 ## Schedules
 
