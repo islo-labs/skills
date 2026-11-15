@@ -60,7 +60,7 @@ After creating an environment successfully, post exactly one card link in its ow
 
 ## Sources
 
-For private repositories, follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards).
+For private repositories, follow the [integrations skill](../../integrations/SKILL.md#check-connection-status) for the connection check and the [chat connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for connect cards and waiting.
 
 Clone repos during sandbox bootstrap with `--source` or the sources field in `islo.yaml` (shapes per `islo schema use`):
 
@@ -69,7 +69,7 @@ islo use my-sandbox --source github://owner/repo
 islo use my-sandbox --source github://owner/repo:main
 ```
 
-Checkout happens during bootstrap, before your command or shell. Do not embed tokens in clone URLs. `Repository not found` on a private repo can mean the integration lacks access. Follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) before investigating the repository path.
+Checkout happens during bootstrap, before your command or shell. Do not embed tokens in clone URLs. `Repository not found` on a private repo can mean the integration lacks access. Before investigating the repository path, re-check status with the [integrations skill](../../integrations/SKILL.md#check-connection-status). Follow the [chat connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for cards and waiting.
 
 ## Default image
 

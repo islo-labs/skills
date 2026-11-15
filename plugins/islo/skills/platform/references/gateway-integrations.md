@@ -10,7 +10,7 @@ Sandboxes may expose phantom placeholder env vars (`GITHUB_TOKEN`, `SLACK_TOKEN`
 
 ## Flow
 
-Follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for provider status, connection cards, and when work can continue.
+Follow the [integrations skill](../../integrations/SKILL.md#check-connection-status) for the connection check and the [chat connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for connect cards and when work can continue.
 
 Sandboxes pick up the `default` profile automatically. Inspect the gateway profile when a provider request fails:
 
@@ -30,11 +30,11 @@ If you change gateway rules after a sandbox was created, recreate or reconnect t
 
 ## GitHub
 
-For private repos or the GitHub API, follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards). Covers `gh` commands, REST and GraphQL to allowed hosts, private checkout during `islo use` bootstrap (see the sandboxes reference), and Actions runner registration.
+Before using private repos or the GitHub API, check GitHub with the [integrations skill](../../integrations/SKILL.md#check-connection-status). Follow the [chat connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for cards and waiting. This applies to `gh` commands, REST and GraphQL to allowed hosts, private checkout during `islo use` bootstrap (see the sandboxes reference), and Actions runner registration.
 
 ## Slack
 
-For Slack, follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards); the `default` profile already allows Slack hosts. Do not store a bot token in `islo.yaml`, job params, setup scripts, or sandbox env unless the user explicitly bypasses gateway-managed credentials.
+Check Slack with the [integrations skill](../../integrations/SKILL.md#check-connection-status). Follow the [chat connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for cards and waiting. The `default` profile already allows Slack hosts. Do not store a bot token in `islo.yaml`, job params, setup scripts, or sandbox env unless the user explicitly bypasses gateway-managed credentials.
 
 ## Incoming webhook secrets are different
 
@@ -57,7 +57,7 @@ Users can pass their own tokens. Warn that it weakens the no-token-in-sandbox mo
 
 ## Troubleshooting
 
-- Provider call fails: follow the [integration connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards), run `islo gateway ls` for the profile, then check allow rules cover the destination host.
+- Provider call fails: re-check status with the [integrations skill](../../integrations/SKILL.md#check-connection-status). Follow the [chat connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for cards and waiting. Run `islo gateway ls` for the profile, then check allow rules cover the destination host.
 - `Repository not found` or 404 on a private repo: usually GitHub is not connected, or the clone happened outside `islo use` source bootstrap.
 - 401 from a provider API: confirm connection and host allow rules before debugging inside the sandbox.
 - Rules changed after sandbox creation: recreate or reconnect the sandbox.

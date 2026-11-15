@@ -1,8 +1,10 @@
-"""Keep the conflicting instructions from ISL-2448 out of skill entrypoints."""
+"""Check integration command restrictions and documentation link resolution."""
 
+import tempfile
 import unittest
+from pathlib import Path
 
-from validate_integration_guidance import validate_text
+from validate_integration_guidance import validate_links, validate_text
 
 
 class IntegrationGuidanceTests(unittest.TestCase):
@@ -38,6 +40,49 @@ class IntegrationGuidanceTests(unittest.TestCase):
             "Do not run `islo status` inside a sandbox.\n"
             "Connect with `islo login --tool github`."
         ), [2])
+
+
+class IntegrationLinkTests(unittest.TestCase):
+    def test_relative_files_and_anchors_resolve(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "SKILL.md"
+            reference = root / "using providers.md"
+            source.write_text(
+                "# Check connections\n"
+                "[same file](#check-connections)\n"
+                "[provider](using%20providers.md#github-and-linear)\n"
+                "[duplicate](using%20providers.md#github-and-linear-1)\n"
+                "[external](https://example.com/missing#anchor)\n"
+                "[app](/integrations?connect=github&view=connect)\n"
+            )
+            reference.write_text("# GitHub and Linear\n## GitHub and Linear\n")
+            self.assertEqual(validate_links(source), [])
+
+    def test_rejects_missing_files_and_removed_anchors(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "SKILL.md"
+            source.write_text(
+                "# Connections\n"
+                "[missing](references/removed.md)\n"
+                "[removed](#old-connection-gate)\n"
+            )
+            errors = validate_links(source)
+            self.assertEqual(len(errors), 2)
+            self.assertIn("references/removed.md", errors[0])
+            self.assertIn("#old-connection-gate", errors[1])
+
+    def test_ignores_links_and_headings_in_code_examples(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "SKILL.md"
+            source.write_text(
+                "```markdown\n# Example heading\n[example](missing.md)\n```\n"
+                "`[inline example](missing.md)`\n"
+                "[bad anchor](#example-heading)\n"
+            )
+            errors = validate_links(source)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("#example-heading", errors[0])
 
 
 if __name__ == "__main__":

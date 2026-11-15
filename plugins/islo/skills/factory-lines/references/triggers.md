@@ -32,7 +32,7 @@ After `triggers get`, ask the user which resource to scope to. Do not copy team,
 | GitHub | Owner/repo (and which event) |
 | Slack | Workspace and channel |
 
-Follow the [integration connection gate](chat-embeds.md#integration-connect-cards) for providers used by triggers and tools.
+Check providers used by triggers and tools with the [integrations skill](../../integrations/SKILL.md#check-connection-status). Follow the [chat connection gate](chat-embeds.md#integration-connect-cards) for cards and waiting.
 
 ## Schedules
 
