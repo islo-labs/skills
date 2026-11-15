@@ -4,7 +4,7 @@ When you start a Line run to fulfill a chat request, wait for its result and con
 
 ## Record the run and wait
 
-1. Before starting, check `islo factory line-run list --line <name> -o json` in the selected Factory. If the same work already has an active run, observe that run instead of starting another. If a start response is lost, find the run before attempting another start.
+1. Before starting, check `islo factory line-run list --line <name> --limit 20 --offset 0 -o json` in the selected Factory. Match run params and origin to the same work, rather than the Line name alone. If a matching run is active, observe it instead of starting another. Otherwise, repeat with `--offset 20`, `--offset 40`, and so on until a page has fewer than 20 runs. A full page never proves no matching active run exists; increasing the limit once is insufficient. Apply this complete lookup after a lost start response too. If a page fails or the earlier start outcome remains uncertain, report the incomplete lookup and do not start another run.
 2. Record the run ID, Line name, Factory, URL, and start time immediately. Resolve `factory.key` with `islo factory current --factory KEY_OR_UUID --output json`. Follow [chat links](chat-embeds.md) for the URL `/factories/FACTORY_KEY/runs/lines/RUN_ID`. Preserve a known explicit URL if key lookup fails; never start another run because link lookup failed.
 3. Tell the user once: "Started line `<line>` (run `<id>`). Waiting for it to finish." Include the run link.
 4. Read status immediately, then wait with a sleep or await tool before each new poll. Use delays of 15 seconds, 30 seconds, 60 seconds, then 60–120 seconds. Split a delay into shorter awaits if the chat's tool limit requires it. Never busy-poll or end the turn expecting the run to wake you later.
@@ -44,6 +44,7 @@ The CLI uses `succeeded` for successful completion, not `completed`. Handle the 
 |---|---|
 | `succeeded` | Read the stages' outputs and artifacts. Summarize them in 2–4 lines, then use them to continue the original task in this turn. Do not merely offer to continue or claim downstream work is done. |
 | `failed` | Read stages and the run's error. Use events if the failing stage or cause is unclear, including a failure between stages. Report the stage or transition and cause. Fix within the original scope and start a fresh run after the old one has ended, then wait again. If the fix needs an owner decision or work outside scope, ask the user with the evidence. |
+| `cancelled` | End observation. Read the available stage outputs and cancellation reason from status or events. Report cancellation and ask the user how to proceed. Leave the run untouched; do not resume it or start a replacement without user direction. |
 | `stopped` | After ruling out active Manager recovery, report the pause or parking reason and ask the user how to proceed. Leave the run untouched. |
 | Any other value | Keep observing within the deadline. If the value is unfamiliar, inspect events and report it without inventing a terminal state. |
 
