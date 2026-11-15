@@ -66,10 +66,13 @@ Agents that support the common plugin layout can load `plugins/islo`. Agents tha
 
 ## Contents
 
-The plugin ships four skills:
+The plugin ships five skills:
 
 ```text
 plugins/islo/skills/
+├── integrations/             # Check provider connections and use connected providers
+│   ├── SKILL.md
+│   └── references/           # GitHub, Linear, and provider environment variables
 ├── factory-lines/            # TASK skill: create and operate factory lines
 │   ├── SKILL.md              # router + iron rules
 │   ├── references/           # create-a-line workflow, machines, question shape,
@@ -111,6 +114,8 @@ Keep each SKILL.md a lean router and move details into one-level reference files
 
 ```bash
 python3 scripts/validate_manifest_shapes.py
+python3 scripts/validate_integration_guidance.py
+python3 scripts/test_integration_guidance.py
 python3 scripts/validate_surfaces_skill.py
 python3 scripts/test_validate_surfaces_skill.py
 bash scripts/sync_plugin_manifests.sh --check

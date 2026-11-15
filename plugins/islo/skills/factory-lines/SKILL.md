@@ -27,7 +27,7 @@ Never write a manifest from memory. Check the installed `islo schema factory --s
 
 ## Integration connections
 
-Follow the [integration connection gate](references/chat-embeds.md#integration-connect-cards) before creating or deploying resources.
+Before creating or deploying resources, check providers with the [integrations skill](../integrations/SKILL.md#check-connection-status). Follow the [chat connection gate](references/chat-embeds.md#integration-connect-cards) for connect cards and waiting.
 
 ## Chat links
 
