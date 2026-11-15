@@ -2,6 +2,8 @@
 
 How to inspect, steer, and debug line runs. Verbs here match the current CLI contract.
 
+If you started the run for a chat request, follow [Waiting for line runs you start](wait-for-line-runs.md) before using recovery commands. The controls below do not authorize intervention in a run you are only observing.
+
 ## The verbs
 
 ```bash
@@ -58,4 +60,4 @@ After an Agent update, start a fresh Line run. Retrying an already visited stage
 
 Only when explicitly asked to maintain an existing Job, deploy its updated version, update its existing Line binding, validate, redeploy, and start a fresh run. Leave existing Job stages in place and add no new ones. After a Machine update, wait for the Machine to return to ready before starting a fresh run.
 
-Verify the fresh run with `status` and `events`.
+Follow [Waiting for line runs you start](wait-for-line-runs.md) for the fresh run, then verify its final outputs before continuing the original task.

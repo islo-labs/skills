@@ -13,6 +13,10 @@ Ground rules that apply everywhere:
 - Claude Code, Cursor agent, and Codex are preinstalled in sandboxes. OpenCode is installed on first `islo use --agent opencode`. They run without in-sandbox auth when the matching integration (or Islo inference for OpenCode) is available.
 - Provider tokens stay out of sandboxes; follow the [integrations skill](../integrations/SKILL.md#check-connection-status) for the connection check and the [chat connection gate](../factory-lines/references/chat-embeds.md#integration-connect-cards) for connect cards and waiting.
 
+## Waiting for line runs you start
+
+If you start a Line run for an interactive task through the SDK or a webhook, follow [Waiting for line runs you start](../factory-lines/references/wait-for-line-runs.md). Read its result and continue the original task in the same chat.
+
 ## Where to go
 
 | Topic | Read |

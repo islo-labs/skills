@@ -68,4 +68,6 @@ islo factory line-run list --line <name>
 islo factory triggers list
 ```
 
+Wait for the run started by your test event using [Waiting for line runs you start](wait-for-line-runs.md), then continue with its outputs.
+
 The one-real-event procedure with an approved expected-effects checklist is in `create-a-line.md` under End-to-end verification.
