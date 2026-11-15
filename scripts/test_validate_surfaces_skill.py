@@ -15,11 +15,15 @@ def test_router_defines_the_stage_capability_boundary() -> None:
     assert "Line Manager" in content
 
 
-def test_web_guidance_requires_end_to_end_surface_reachability() -> None:
+def test_web_guidance_verifies_service_locally() -> None:
     usage = (validator.SKILL.parent / "references/usage.md").read_text()
 
     assert "0.0.0.0" in usage
-    assert "returned Surface URL works" in usage
+    assert "http://localhost:PORT" in usage
+    assert "401" in usage
+    assert "private" in usage
+    assert "--public" in usage
+    assert "returned Surface URL works" not in usage
 
 
 def test_validator_rejects_malformed_yaml_frontmatter() -> None:
@@ -45,5 +49,5 @@ def test_validator_rejects_malformed_yaml_frontmatter() -> None:
 if __name__ == "__main__":
     test_validator_rejects_malformed_yaml_frontmatter()
     test_router_defines_the_stage_capability_boundary()
-    test_web_guidance_requires_end_to_end_surface_reachability()
+    test_web_guidance_verifies_service_locally()
     print("validated Surfaces router and malformed-frontmatter rejection")
