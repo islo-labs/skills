@@ -51,6 +51,8 @@ Auth separation: incoming webhook secrets verify the sender; outbound provider c
 
 For services, dashboards, bots, and custom launchers built on Islo. Use the CLI when a human or coding agent works interactively in a repo; use the SDK when code needs to manage sandboxes, start jobs or line runs, manage webhooks, configure gateway profiles, or inspect runs.
 
+When you start a Line run to complete an interactive request, follow [Waiting for line runs you start](../../factory-lines/references/wait-for-line-runs.md). Creating SDK automation does not require observing every future scheduled run.
+
 Packages: TypeScript `@islo-labs/sdk`, Python `islo`; generated SDKs also exist for Go. They are generated from the OpenAPI/Fern pipeline, so method names change; check docs MCP or the package reference before writing non-trivial code.
 
 ```bash

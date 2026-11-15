@@ -33,6 +33,10 @@ Before creating or deploying resources, check providers with the [integrations s
 
 Always use explicit `/factories/FACTORY_KEY/...` routes for Factory objects. Resolve the object's Factory key with `islo factory current --factory KEY_OR_UUID --output json` and read `factory.key`; use the same selection as the object operation. Never emit legacy singular-Factory run URLs or guess a Factory from the current conversation. If the key cannot be resolved, keep a known explicit link as a badge with `view=chip`, rather than requesting a card. If no explicit URL is known, describe the run in text until its Factory is identified. Follow [chat-embeds.md](references/chat-embeds.md) for views and filters.
 
+## Waiting for line runs you start
+
+Read and follow [Waiting for line runs you start](references/wait-for-line-runs.md) whenever you start a run for a chat request. Wait through Manager recovery, read the final outputs, and continue the original task in the same turn.
+
 ## References
 
 When authorized to ask Line-run questions, send choice question objects with 1 to 8 explicit options and prompts of 30 words or fewer. One option is enough because every choice includes Other for a custom answer. Follow [questions.md](references/questions.md) for the request format.
