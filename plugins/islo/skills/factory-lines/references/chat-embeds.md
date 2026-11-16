@@ -193,10 +193,16 @@ islo api -X POST /factories/$ISLO_FACTORY/line-runs/$ISLO_LINE_RUN_ID/environmen
 JSON
 ```
 
-   `kind` is `line`, `machine`, or `agent`. `environment` is the name the user will save the environment under. The API rejects any non-empty value, malformed line, or duplicate name, and stores nothing in that case.
-2. Post the returned `href` alone in its own paragraph. It looks like `/settings/environments/setup/SETUP_ID?view=card`. Use it exactly as returned and do not build it yourself. Send one card per request and do not repeat it in a list.
+   `kind` is `line`, `machine`, or `agent`. `environment` is the name of a new environment to create, or of an existing one to add values to. The API rejects any non-empty value, malformed line, or duplicate name, and stores nothing in that case.
+
+   List every name the resource needs. You cannot see which names are already saved, and you do not need to, because the card handles both cases:
+   - If no environment has that name, the user gets the environment form with the name filled in and one empty secret row per listed name.
+   - If an environment with that name already exists, the user gets it with its saved entries unchanged and an empty secret row only for each listed name it does not have yet. Use the existing environment's name to add values to it.
+2. Post the returned `href` as a Markdown link, `[ENVIRONMENT_NAME](HREF)`, alone in its own paragraph. The `href` looks like `/settings/environments/setup/SETUP_ID?view=card`. Use it exactly as returned and do not build it yourself. Send one card per request and do not repeat it in a list.
 3. Tell the user to open it, enter the values privately, save, and reply "finished". Wait for that reply. Do not poll and do not create dependent resources meanwhile.
 4. After "finished", continue and refer to the environment by name. Never read its values to check it. If it is missing or incomplete when used, say so and issue a new card for only the missing names.
+
+Setup cards can only be issued by the Manager of a Factory run, because the request needs `$ISLO_FACTORY` and `$ISLO_LINE_RUN_ID`. Outside a Manager run, for example in a plain chat, do not try to issue one and do not build the link yourself. Tell the user which names are needed and ask them to add them on the Environments settings page, then wait for them to reply "finished".
 
 ## Creation outcomes
 
