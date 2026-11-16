@@ -22,7 +22,6 @@ Replace `FACTORY_KEY`, `RUN_ID`, `LINE_NAME`, `MACHINE_NAME`, `JOB_NAME`, `ENVIR
 | Line | `/factories/FACTORY_KEY/lines/LINE_NAME?view=card` | Line details, next run or Manual, and Run it now |
 | Machine | `/factories/FACTORY_KEY/machines/MACHINE_NAME?view=card` | Level, last build, version, and capabilities; plain link when Machines are disabled |
 | Environment | `/settings/environments/ENVIRONMENT_ID?view=card` | Variable and secret counts and default status |
-| Environment setup | `/settings/environments/setup/SETUP_ID?view=card` | Environment name, required names, and how to fill them in |
 | Job | `/factories/FACTORY_KEY/jobs/JOB_NAME?view=card` | Schedule, last run, version, Machine, and Run it now |
 | Line list | `/factories/FACTORY_KEY/lines?view=table` | Lines table |
 | Knowledge item | `/factories/FACTORY_KEY/knowledge/SLUG?view=card` | Stored content; images remain media |
@@ -185,24 +184,26 @@ When a trigger does not fire or a provider call fails, run `islo status -o json`
 
 When a Line, Machine, or Agent needs environment values the user has not saved yet, ask for them with a setup card. Work with names only. Never ask for values in chat, read a `.env`, or put a value in a command, link, or message.
 
-1. In a Factory Manager run, write a names-only `.env` with one `NAME=` per line and issue one card:
+Like a line draft, the card has no stored object or URL. Post one fenced block with the language `islo-env-setup`. The browser validates it with zod and draws the card. A block that does not match exactly stays an ordinary code block, so add nothing else to it.
 
-```bash
-islo api -X POST /factories/$ISLO_FACTORY/line-runs/$ISLO_LINE_RUN_ID/environment-setups --input - <<'JSON'
-{"environment":"worker-env","resource":{"kind":"machine","name":"worker"},"env":"SERVICE_TOKEN=\nSTRIPE_KEY=\n"}
-JSON
+```islo-env-setup
+{"environment": "worker-env", "resource": {"kind": "machine", "name": "worker"}, "keys": ["SERVICE_TOKEN", "STRIPE_KEY"]}
 ```
 
-   `kind` is `line`, `machine`, or `agent`. `environment` is the name of a new environment to create, or of an existing one to add values to. The API rejects any non-empty value, malformed line, or duplicate name, and stores nothing in that case.
+- `environment` is the name of a new environment to create, or of an existing one to add values to.
+- `resource` is the thing that needs them: `kind` is `line`, `machine`, or `agent`, and `name` is its name.
+- `keys` lists 1 to 100 distinct names. List every name the resource needs. You cannot see which are already saved, and you do not need to, because the card handles both cases:
+  - If no environment has that name, the form starts a new environment with the name filled in and one empty secret row per listed name.
+  - If an environment with that name already exists, it keeps its saved entries and gets an empty secret row only for each listed name it does not have yet.
+- Use no other fields. The frontend builds the link to the form, so never write a URL.
 
-   List every name the resource needs. You cannot see which names are already saved, and you do not need to, because the card handles both cases:
-   - If no environment has that name, the user gets the environment form with the name filled in and one empty secret row per listed name.
-   - If an environment with that name already exists, the user gets it with its saved entries unchanged and an empty secret row only for each listed name it does not have yet. Use the existing environment's name to add values to it.
-2. Post the returned `href` as a Markdown link, `[ENVIRONMENT_NAME](HREF)`, alone in its own paragraph. The `href` looks like `/settings/environments/setup/SETUP_ID?view=card`. Use it exactly as returned and do not build it yourself. Send one card per request and do not repeat it in a list.
-3. Tell the user to open it, enter the values privately, save, and reply "finished". Wait for that reply. Do not poll and do not create dependent resources meanwhile.
-4. After "finished", continue and refer to the environment by name. Never read its values to check it. If it is missing or incomplete when used, say so and issue a new card for only the missing names.
+Then:
 
-Setup cards can only be issued by the Manager of a Factory run, because the request needs `$ISLO_FACTORY` and `$ISLO_LINE_RUN_ID`. Outside a Manager run, for example in a plain chat, do not try to issue one and do not build the link yourself. Tell the user which names are needed and ask them to add them on the Environments settings page, then wait for them to reply "finished".
+1. Post one block per request. Do not repeat it in a list.
+2. Tell the user to open the card, enter the values privately, save, and reply "finished". Wait for that reply. Do not poll and do not create dependent resources meanwhile.
+3. After "finished", continue and refer to the environment by name. Never read its values to check it. If it is missing or incomplete when used, say so and post a new block for only the missing names.
+
+This works in any chat that renders Markdown blocks, including plain chats outside a Factory run.
 
 ## Creation outcomes
 
