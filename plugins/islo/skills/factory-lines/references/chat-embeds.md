@@ -180,6 +180,31 @@ The browser card shows not connected, pending owner approval, or Connected with 
 
 When a trigger does not fire or a provider call fails, run `islo status -o json` and apply the same missing/unknown checks before retrying dependent work. If the provider needs reconnection, check its card history using step 2, even after a successful deployment. Refer to an earlier card in plain text when one exists; otherwise send its first card. Wait for confirmation and a status recheck before retrying. A connection does not authorize provider events or external writes; those still require the approved effects checklist.
 
+## Environment setup cards
+
+When a Line, Machine, or Agent needs environment values the user has not saved yet, ask for them with a setup card. Work with names only. Never ask for values in chat, read a `.env`, or put a value in a command, link, or message.
+
+Like a line draft, the card has no stored object or URL. Post one fenced block with the language `islo-env-setup`. The browser validates it with zod and draws the card. A block that does not match exactly stays an ordinary code block, so add nothing else to it.
+
+```islo-env-setup
+{"environment": "worker-env", "resource": {"kind": "machine", "name": "worker"}, "keys": ["SERVICE_TOKEN", "STRIPE_KEY"]}
+```
+
+- `environment` is the name of a new environment to create, or of an existing one to add values to.
+- `resource` is the thing that needs them: `kind` is `line`, `machine`, or `agent`, and `name` is its name.
+- `keys` lists 1 to 100 distinct names. List every name the resource needs. You cannot see which are already saved, and you do not need to, because the card handles both cases:
+  - If no environment has that name, the form starts a new environment with the name filled in and one empty secret row per listed name.
+  - If an environment with that name already exists, it keeps its saved entries and gets an empty secret row only for each listed name it does not have yet.
+- Use no other fields. The frontend builds the link to the form, so never write a URL.
+
+Then:
+
+1. Post one block per request. Do not repeat it in a list.
+2. Tell the user to open the card, enter the values privately, save, and reply "finished". Wait for that reply. Do not poll and do not create dependent resources meanwhile.
+3. After "finished", continue and refer to the environment by name. Never read its values to check it. If it is missing or incomplete when used, say so and post a new block for only the missing names.
+
+This works in any chat that renders Markdown blocks, including plain chats outside a Factory run.
+
 ## Creation outcomes
 
 After successfully creating or deploying an item, post exactly one card link for it, alone in its own paragraph. Use the name or ID returned by the CLI. For Factory resources, run `islo factory current --output json` with the same Factory selection used for the create or deploy, and use `factory.key`. The CLI does not print an app URL; build the URL from that key and the URL-encoded item name.

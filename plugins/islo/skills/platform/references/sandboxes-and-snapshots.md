@@ -58,6 +58,8 @@ islo use <name> --environment production
 
 After creating an environment successfully, post exactly one card link in its own paragraph: `[ENVIRONMENT_NAME](/settings/environments/ENVIRONMENT_ID?view=card)`. Use the ID returned by the CLI, URL-encode it, and keep environments tenant-scoped with no Factory prefix. See [chat object links](../../factory-lines/references/chat-embeds.md#creation-outcomes). Do not expose variable or secret values in the card text.
 
+If a required name has no saved value, do not ask for the value in chat. Use an [environment setup card](../../factory-lines/references/chat-embeds.md#environment-setup-cards).
+
 ## Sources
 
 For private repositories, follow the [integrations skill](../../integrations/SKILL.md#check-connection-status) for the connection check and the [chat connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for connect cards and waiting.
