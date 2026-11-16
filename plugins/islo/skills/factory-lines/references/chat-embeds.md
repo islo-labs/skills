@@ -22,6 +22,7 @@ Replace `FACTORY_KEY`, `RUN_ID`, `LINE_NAME`, `MACHINE_NAME`, `JOB_NAME`, `ENVIR
 | Line | `/factories/FACTORY_KEY/lines/LINE_NAME?view=card` | Line details, next run or Manual, and Run it now |
 | Machine | `/factories/FACTORY_KEY/machines/MACHINE_NAME?view=card` | Level, last build, version, and capabilities; plain link when Machines are disabled |
 | Environment | `/settings/environments/ENVIRONMENT_ID?view=card` | Variable and secret counts and default status |
+| Environment setup | `/settings/environments/setup/SETUP_ID?view=card` | Environment name, required names, and how to fill them in |
 | Job | `/factories/FACTORY_KEY/jobs/JOB_NAME?view=card` | Schedule, last run, version, Machine, and Run it now |
 | Line list | `/factories/FACTORY_KEY/lines?view=table` | Lines table |
 | Knowledge item | `/factories/FACTORY_KEY/knowledge/SLUG?view=card` | Stored content; images remain media |
@@ -179,6 +180,23 @@ Integrations belong to the tenant, so use `/integrations`, without a Factory pre
 The browser card shows not connected, pending owner approval, or Connected with Tenant or Personal scope. Connect opens the existing dialog over chat. OAuth returns to the conversation, and the card refreshes on return and window focus. Browser refresh alone is not confirmation to resume work. Do not run `islo login --tool` in a sandbox. Use `islo factory triggers list` for the event catalog; `--with-status` is not the sandbox connection check.
 
 When a trigger does not fire or a provider call fails, run `islo status -o json` and apply the same missing/unknown checks before retrying dependent work. If the provider needs reconnection, check its card history using step 2, even after a successful deployment. Refer to an earlier card in plain text when one exists; otherwise send its first card. Wait for confirmation and a status recheck before retrying. A connection does not authorize provider events or external writes; those still require the approved effects checklist.
+
+## Environment setup cards
+
+When a Line, Machine, or Agent needs environment values the user has not saved yet, ask for them with a setup card. Work with names only. Never ask for values in chat, read a `.env`, or put a value in a command, link, or message.
+
+1. In a Factory Manager run, write a names-only `.env` with one `NAME=` per line and issue one card:
+
+```bash
+islo api -X POST /factories/$ISLO_FACTORY/line-runs/$ISLO_LINE_RUN_ID/environment-setups --input - <<'JSON'
+{"environment":"worker-env","resource":{"kind":"machine","name":"worker"},"env":"SERVICE_TOKEN=\nSTRIPE_KEY=\n"}
+JSON
+```
+
+   `kind` is `line`, `machine`, or `agent`. `environment` is the name the user will save the environment under. The API rejects any non-empty value, malformed line, or duplicate name, and stores nothing in that case.
+2. Post the returned `href` alone in its own paragraph. It looks like `/settings/environments/setup/SETUP_ID?view=card`. Use it exactly as returned and do not build it yourself. Send one card per request and do not repeat it in a list.
+3. Tell the user to open it, enter the values privately, save, and reply "finished". Wait for that reply. Do not poll and do not create dependent resources meanwhile.
+4. After "finished", continue and refer to the environment by name. Never read its values to check it. If it is missing or incomplete when used, say so and issue a new card for only the missing names.
 
 ## Creation outcomes
 
