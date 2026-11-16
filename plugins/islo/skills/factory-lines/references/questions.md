@@ -12,7 +12,7 @@ When a document has granted permission, ask only the decisions it names, in the 
 
 ## Briefing
 
-This turn's prose is not shown to the person. Posting a question stops the run before structured output is collected, so the question card is the message.
+This turn's prose is not shown to the person. Posting a question stops active work before structured output is collected, so the question card is the message. For a failed, stopped, succeeded, or stopping run, the API records the question, leaves the run parked, and returns 201 with a question ID.
 
 Set the optional batch `briefing` when the prompt and options leave out a fact the person needs to decide. Use short markdown, such as the proposed goals, the relevant evidence, or a tradeoff. It appears above the choices. Omit it when the question already says enough. A supplied briefing must contain 1 to 4,000 characters after trimming. Blank values are rejected.
 
@@ -52,6 +52,8 @@ Open-ended `text` questions are disabled. Both choice kinds automatically includ
 
 The API returns HTTP 400 for the old string-array format, including a batch that mixes strings and objects. Send question objects with options.
 
-A successful response contains a question ID. That ID confirms the question was recorded. If the post fails or returns no question ID, do not claim the question was asked. Follow the fallback the granting document specifies. If it specifies none, stop with the failure.
+A successful response contains a question ID. That ID confirms the question was recorded. End the turn and wait for the person's answer or dismissal. While any question is unanswered, steer and retry return 409. Do not choose a value for the person or reset iterations to bypass the wait.
+
+If the POST fails or returns no question ID, inspect the run conversation for the intended question before retrying or reporting delivery failure. If it is recorded and unanswered, end the turn and wait. If it was answered, use the recorded answer. If it is absent, follow the fallback the granting document specifies. If recording cannot be confirmed, report the failure and end the turn. A delivery error never approves a choice.
 
 The example above is the request shape. The granting document decides `stage_name`, the question ids, the prompts, and the options.

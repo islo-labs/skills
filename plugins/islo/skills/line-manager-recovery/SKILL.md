@@ -19,6 +19,12 @@ that drive this policy are:
 
 ## Decide by `recovery_attempt`
 
+Before any recovery control, check whether the run has an unanswered question.
+If it does, end the turn and wait for the person's answer or dismissal. Do not
+steer, retry, choose an answer, or reset iterations to bypass that wait.
+For a failed question POST, follow the
+[delivery checks](../factory-lines/references/questions.md) before trying again.
+
 - **0: plain retry.** Run `islo factory line-run retry RUN_ID` with no changes.
   Each outcome is evidence: the same error again suggests a deterministic
   failure, a different error suggests a flaky one. This is the only case where
