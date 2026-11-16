@@ -12,7 +12,7 @@ When a document has granted permission, ask only the decisions it names, in the 
 
 ## Briefing
 
-This turn's prose is not shown to the person. Posting a question stops the run before structured output is collected, so the question card is the message.
+This turn's prose is not shown to the person. Posting a question stops active work before structured output is collected, so the question card is the message. For a failed, stopped, succeeded, or stopping run, the API records the question, leaves the run parked, and returns 201 with a question ID.
 
 Set the optional batch `briefing` when the prompt and options leave out a fact the person needs to decide. Use short markdown, such as the proposed goals, the relevant evidence, or a tradeoff. It appears above the choices. Omit it when the question already says enough. A supplied briefing must contain 1 to 4,000 characters after trimming. Blank values are rejected.
 
@@ -52,6 +52,8 @@ Open-ended `text` questions are disabled. Both choice kinds automatically includ
 
 The API returns HTTP 400 for the old string-array format, including a batch that mixes strings and objects. Send question objects with options.
 
-A successful response contains a question ID. That ID confirms the question was recorded. If the post fails or returns no question ID, do not claim the question was asked. Follow the fallback the granting document specifies. If it specifies none, stop with the failure.
+A successful response contains a question ID. That ID confirms the question was recorded. End the turn after posting. The person can answer through the bottom free-text Islo chat textarea as well as the question card. A text-only message resolves the latest open question and preserves the person's exact words. If it does not match an option, the Manager receives a null choice with `raw_text`; the Manager may interpret that text and route using the supplied value. An open-question marker alone does not block steer or retry. Never invent an answer without user input, replace their message with a suggested choice, or dismiss remaining questions merely to route.
+
+If the POST fails or returns no question ID, inspect the run conversation for the intended question before retrying or reporting delivery failure. If it is recorded, do not duplicate it. Use the person's supplied answer, including a clear free-text chat message; if no answer was supplied, end the turn. If it is absent, follow the fallback the granting document specifies. If recording cannot be confirmed, report the failure and end the turn. A delivery error never approves a choice.
 
 The example above is the request shape. The granting document decides `stage_name`, the question ids, the prompts, and the options.
