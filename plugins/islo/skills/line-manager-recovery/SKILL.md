@@ -19,11 +19,13 @@ that drive this policy are:
 
 ## Decide by `recovery_attempt`
 
-Before any recovery control, check whether the run has an unanswered question.
-If it does, end the turn and wait for the person's answer or dismissal. Do not
-steer, retry, choose an answer, or reset iterations to bypass that wait.
-For a failed question POST, follow the
-[delivery checks](../factory-lines/references/questions.md) before trying again.
+The person can answer a question through the bottom free-text Islo chat textarea.
+Interpret their exact message when clear and route using the answer they supplied;
+an open question alone does not block steer or retry. Never invent an answer
+without user input or dismiss remaining questions merely to route. If their
+message leaves the decision unclear, ask for clarification. For a failed question
+POST, follow the [delivery checks](../factory-lines/references/questions.md)
+before trying again.
 
 - **0: plain retry.** Run `islo factory line-run retry RUN_ID` with no changes.
   Each outcome is evidence: the same error again suggests a deterministic

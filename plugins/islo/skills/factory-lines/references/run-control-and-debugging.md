@@ -19,7 +19,7 @@ islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<messa
 - `stop` kills in-flight stage work for real (compute events resolved, children cancelled) but parks the run resumable: status becomes `stopped` with an open control window for `steer`.
 - `retry` reruns the latest failed stage and continues the line. No flags; the failed stage is implied.
 - `steer` sends a stopped or finished run back to a named stage. Steering an active run returns 409; stop first, then steer. `--param` overrides merge over the stage's last attempt params and are type-coerced against the job manifest; unset params are inherited.
-- While any question is unanswered, `steer` and `retry` return 409. Wait for the person to answer or dismiss it. A failed question POST is no permission to choose an answer; check the run conversation as described in [questions.md](questions.md).
+- An open question alone does not block `steer` or `retry`. The Manager may interpret the person's exact free-text chat message as their answer and route accordingly. Never invent an answer without user input or dismiss remaining questions merely to route. For question delivery and reply handling, see [questions.md](questions.md).
 - A failed stage goes to the Line Manager, which follows the `line-manager-recovery` skill: plain retries until the stage's `max_attempts` (default 3) is reached, then up to two diagnosed recovery attempts, then stop. To opt a stage out, see "Failed stages and opting out of recovery" in [line-manifest.md](line-manifest.md).
 - `ask` messages the line manager about the run: reassess, explain, or route.
 - `agent-turn` sends another turn to one stage's successful agent session. Use it for the stage's agent; use `ask` for the manager.
