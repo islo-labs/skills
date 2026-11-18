@@ -5,7 +5,7 @@ import re
 
 SKILLS = Path(__file__).resolve().parents[1] / "plugins/islo/skills"
 BLOCKED_COMMAND = re.compile(
-    r"\bislo (?:login --tool\b|factory triggers list --with-status\b)"
+    r"\bislo (?:login --tool\b|factory triggers list --with-status\b|environment list\b|gateway ls\b)"
 )
 SAFE_CONTEXT = re.compile(
     r"do not run|never run|outside (?:a )?sandbox|outside sandboxes|reject sandbox callers",
@@ -29,8 +29,9 @@ def main() -> int:
             for number in validate_text(path.read_text()):
                 failures.append(
                     f"{path.relative_to(SKILLS)}:{number}: "
-                    "Use a browser connect card for integration status. "
-                    "Scope any retained connection CLI command to outside a sandbox "
+                    "Use browser connect cards for integrations, Machine get for attached "
+                    "configuration, or Settings for tenant environments and gateway profiles. "
+                    "Scope any retained blocked CLI command to outside a sandbox "
                     "or explicitly prohibit running it in the sandbox."
                 )
     if failures:

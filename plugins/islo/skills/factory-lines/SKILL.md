@@ -1,11 +1,24 @@
 ---
 name: factory-lines
-description: Design, create, and manage Islo Factories, Machines, reusable Agents, and Lines from an automation goal. Use for Factory setup, Machine setup, line runs, triggers, chat object links, or low-level manifests when explicitly requested.
+description: Design, create, and manage Islo Factories, Machines, reusable Agents, and Lines from an automation goal. Use for "how do I use Islo", "what should I do next", onboarding, verification readiness, testing existing preview environments, Factory setup, Machine setup, line runs, triggers, chat object links, or low-level manifests when explicitly requested.
 ---
 
 # Islo Factories
 
 A Factory contains Machines, reusable Agents, and Lines. Agents are the execution units for new Lines. A Line connects Agent interactions and routes their results. Managers route a Line between stages.
+
+For getting started or "what now?", read [first-run.md](references/first-run.md). Inspect what exists, name the user's current step, and offer to do the next step yourself. For verification on an existing preview environment, read [remote-verification.md](references/remote-verification.md). Answer the approach question briefly before offering a Line draft card.
+
+## Where you are running
+
+This skill runs in two places. Check which one before you run tenant commands or write links.
+
+- **Inside an Islo sandbox**, such as Agent chat or a Line stage. `ISLO_LINE_RUN_ID` is set there. Tenant inventory commands such as `islo environment list` and `islo gateway ls` return `ACCESS_DENIED: Operation is not allowed from inside a sandbox`, so never run them inside a sandbox. Inspect the Machine with `islo factory machine get <name>` instead. Write app-relative links such as `/factories/FACTORY_KEY/lines/LINE_NAME?view=card`; Agent chat draws them as cards.
+- **In the user's own agent**, such as Claude Code, Cursor, or Codex on their computer. All `islo` commands work there, including tenant inventory. Write full links such as `https://app.islo.dev/factories/FACTORY_KEY/lines/LINE_NAME`, because cards render only in Agent chat.
+
+An `ACCESS_DENIED` response with that message also means you are inside a sandbox.
+
+In both places, do the work through the CLI rather than sending the user to a button. Start Line runs, wait for them, and report results after the user approves the input and effects. Send the user to the UI only for what you cannot do: connecting a provider, entering secret values, and commands blocked where you run.
 
 ## Log in before Line creation
 
@@ -43,6 +56,8 @@ When authorized to ask Line-run questions, send choice question objects with 1 t
 
 | Need | Read |
 |---|---|
+| Get started, find the next step, or understand what Machine levels let Lines do | [first-run.md](references/first-run.md) |
+| Verify PRs against an existing preview or ephemeral environment | [remote-verification.md](references/remote-verification.md) |
 | Discover resources, design a Factory, get approval | [factory-design.md](references/factory-design.md) |
 | Create resources and verify a Line | [create-a-line.md](references/create-a-line.md) |
 | Machine lifecycle and readiness | [machines.md](references/machines.md) |
