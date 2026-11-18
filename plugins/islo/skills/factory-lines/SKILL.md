@@ -1,11 +1,13 @@
 ---
 name: factory-lines
-description: Design, create, and manage Islo Factories, Machines, reusable Agents, and Lines from an automation goal. Use for Factory setup, Machine setup, line runs, triggers, chat object links, or low-level manifests when explicitly requested.
+description: Design, create, and manage Islo Factories, Machines, reusable Agents, and Lines from an automation goal. Use for "how do I use Islo", "what should I do next", onboarding, verification readiness, testing existing preview environments, Factory setup, Machine setup, line runs, triggers, chat object links, or low-level manifests when explicitly requested.
 ---
 
 # Islo Factories
 
 A Factory contains Machines, reusable Agents, and Lines. Agents are the execution units for new Lines. A Line connects Agent interactions and routes their results. Managers route a Line between stages.
+
+For getting started or "what now?", read [first-run.md](references/first-run.md). Inspect what exists, name the user's current step, and offer one next step with a link. For verification on an existing preview environment, read [remote-verification.md](references/remote-verification.md). Answer the approach question briefly before offering a Line draft card.
 
 ## Log in before Line creation
 
@@ -43,6 +45,8 @@ When authorized to ask Line-run questions, send choice question objects with 1 t
 
 | Need | Read |
 |---|---|
+| Get started, find the next step, or understand what Machine levels let Lines do | [first-run.md](references/first-run.md) |
+| Verify PRs against an existing preview or ephemeral environment | [remote-verification.md](references/remote-verification.md) |
 | Discover resources, design a Factory, get approval | [factory-design.md](references/factory-design.md) |
 | Create resources and verify a Line | [create-a-line.md](references/create-a-line.md) |
 | Machine lifecycle and readiness | [machines.md](references/machines.md) |

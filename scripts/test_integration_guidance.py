@@ -6,6 +6,23 @@ from validate_integration_guidance import validate_text
 
 
 class IntegrationGuidanceTests(unittest.TestCase):
+    def test_rejects_sandbox_blocked_environment_and_gateway_inventory(self):
+        for content in (
+            "islo environment list",
+            "islo gateway ls",
+            "Inspect profiles with `islo gateway ls` before retrying.",
+            "List environments with `islo environment list --output json`.",
+        ):
+            with self.subTest(content=content):
+                self.assertEqual(validate_text(content), [1])
+
+    def test_allows_local_inventory_and_machine_inspection(self):
+        self.assertEqual(validate_text(
+            "Never run `islo environment list` inside a sandbox.\n"
+            "Outside a sandbox, run `islo gateway ls`.\n"
+            "islo factory machine get <name>"
+        ), [])
+
     def test_rejects_the_reviewed_instructions(self):
         for content in (
             "Connect integrations with `islo login --tool <provider>`.",

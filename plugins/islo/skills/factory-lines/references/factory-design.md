@@ -14,12 +14,12 @@ islo factory list
 islo factory machine list
 islo agent list
 islo factory line list
-islo environment list
-islo gateway ls
 islo factory triggers list
 islo schema factory --short
 islo schema agent
 ```
+
+Inside a chat sandbox, never run `islo environment list` or `islo gateway ls`. Both return `ACCESS_DENIED: Operation is not allowed from inside a sandbox`. Inspect each relevant Machine with `islo factory machine get <name>` for its attached environment and gateway profile. For tenant-wide configuration, link [Environments](/settings/environments) and [Settings for gateway profiles](/settings). Those tenant inventory commands are available from the user's authenticated local terminal outside a sandbox. Do not read secret values during inventory.
 
 List Agents in the selected Factory and inspect plausible matches with `islo agent get <name>` before proposing a new Agent. Use Factory, Machine, Line, trigger, and model-catalog detail commands only for relevant candidates; check subcommand help on the installed CLI first. `islo factory current` can be inherited from a project or environment and is not proof that the user chose that Factory. Label every item as **observed**, **inferred default**, or **unresolved**. Show Factory scope separately from tenant-scoped environments and gateway profiles; deleting a Factory does not own or delete those tenant resources. Never treat a nearby example or local checkout as authorization to use its repository or selector.
 
@@ -47,6 +47,6 @@ Map Outcome to the title, description, and You get; Factory to Runs on; Machines
 
 For Agents with the same `sandbox_name` in one Line run, explain that they share one Machine-backed filesystem but have separate sessions. Every Agent in a shared-sandbox group must use the **same Machine**. Different `sandbox_name` values create workspace boundaries; pass results through Line outputs or an approved external artifact instead of assuming files cross the boundary. Include failure and retry paths in the graph when relevant.
 
-Describe inputs and outputs by meaning, such as "issue URL in" and "PR URL out." Build new Lines from Agent stages only, using contracts exposed by `islo schema agent` and `islo schema factory --short`. If these schemas cannot express a required capability, including snapshot pinning, fan-out with output reduction, verification, or lifecycle actions, report the missing capability and stop the dependent design. Do not author a Job, consult the Job schema for a fallback, offer implementation workarounds, or ask the user to solve the gap. Leave existing Job stages in place when changing a Line, and add no new ones. Include a proposed Manager: built-in unless a reusable Prompt Agent is justified.
+Describe inputs and outputs by meaning, such as "issue URL in" and "PR URL out." For testing an existing preview, use [remote-verification.md](remote-verification.md). Build new Lines from Agent stages only, using contracts exposed by `islo schema agent` and `islo schema factory --short`. If these schemas cannot express a required capability, including snapshot pinning, fan-out with output reduction, verification, or lifecycle actions, report the missing capability and stop the dependent design. Do not author a Job, consult the Job schema for a fallback, offer implementation workarounds, or ask the user to solve the gap. Leave existing Job stages in place when changing a Line, and add no new ones. Include a proposed Manager: built-in unless a reusable Prompt Agent is justified.
 
 After the complete draft card, wait for the user to write "approve" before creating or changing any resource, deploying, sending a provider event, or writing externally. Read-only inventory and local draft files are allowed. On a change request, answer in one sentence and post a full new card with `draft` + 1 and all changed paths in `updated`; never edit or repeat the old draft. If a requested effect was not included, obtain "approve" for the revised card before doing it. Only after approval, check providers with the [integrations skill](../../integrations/SKILL.md#check-connection-status) and follow the [chat connection gate](chat-embeds.md#integration-connect-cards) for cards and waiting. Create the approved resources once connected.

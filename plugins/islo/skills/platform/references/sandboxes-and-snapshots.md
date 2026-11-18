@@ -49,8 +49,10 @@ islo doctor
 
 Reusable sandbox variables and environment-owned gateway-injected secrets live in named environments:
 
+Inside a chat sandbox, never run `islo environment list`; it returns `ACCESS_DENIED`. Inspect the attached environment with `islo factory machine get <machine-name>` and use [Environments](/settings/environments) for tenant-wide configuration. Run the following environment administration commands from an authenticated local terminal outside a sandbox:
+
 ```bash
-islo environment list
+islo environment list  # outside a sandbox only
 islo environment get production
 islo environment create --name production --variable PUBLIC_FLAG=enabled
 islo use <name> --environment production
