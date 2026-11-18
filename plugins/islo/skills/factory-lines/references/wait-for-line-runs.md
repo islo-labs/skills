@@ -4,6 +4,17 @@ When you start a Line run to fulfill a chat request, wait for its result and con
 
 ## Record the run and wait
 
+For a few targeted searches for related runs, use `--line` and one or more
+`--q` values, for example `islo factory line-run list --line feature-delivery --q ISL-2416 --q "shared initialization"`.
+Every `--q` is one case-insensitive substring, and all must match. Search
+covers names, run IDs, selected trigger fields, and artifact titles and
+identifiers. It does not search run params, so keep the complete lookup below.
+For new traversal, prefer `--paged --limit 20 -o json`, then pass the returned
+opaque `cursor` as `--cursor` with the same filters and sort until null.
+Paged JSON is `{items, cursor, total?}`. `--total` requests a point-in-time
+exact count on the first page only. Legacy `--offset` syntax and JSON arrays
+remain valid; do not combine `--offset` with `--cursor`.
+
 1. Before starting, check `islo factory line-run list --line <name> --limit 20 --offset 0 -o json` in the selected Factory. Match run params and origin to the same work, rather than the Line name alone. If a matching run is active, observe it instead of starting another. Otherwise, repeat with `--offset 20`, `--offset 40`, and so on until a page has fewer than 20 runs. A full page never proves no matching active run exists; increasing the limit once is insufficient. Apply this complete lookup after a lost start response too. If a page fails or the earlier start outcome remains uncertain, report the incomplete lookup and do not start another run.
 2. Record the run ID, Line name, Factory, URL, and start time immediately. Resolve `factory.key` with `islo factory current --factory KEY_OR_UUID --output json`. Follow [chat links](chat-embeds.md) for the URL `/factories/FACTORY_KEY/runs/lines/RUN_ID`. Preserve a known explicit URL if key lookup fails; never start another run because link lookup failed.
 3. Tell the user once: "Started line `<line>` (run `<id>`). Waiting for it to finish." Include the run link.
