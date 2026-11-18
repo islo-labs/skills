@@ -12,7 +12,7 @@ islo factory machine list --factory <key-or-uuid> --output json
 islo agent list --factory <key-or-uuid> --output json
 islo factory line list --factory <key-or-uuid> --output json
 islo factory line get <line-name> --factory <key-or-uuid> --output json
-islo factory line-run list --line <line-name> --factory <key-or-uuid> --output json
+islo factory line-run list --line <line-name> --paged --limit 20 --factory <key-or-uuid> --output json
 islo factory machine get <machine-name> --factory <key-or-uuid> --output json
 ```
 

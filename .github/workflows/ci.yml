@@ -24,6 +24,8 @@ jobs:
           python3 scripts/test_integration_guidance.py
           python3 scripts/test_machine_author_guidance.py
           python3 scripts/validate_chat_links.py
+      - name: Validate bounded Line-run discovery guidance
+        run: python3 scripts/test_line_run_discovery.py
       - name: Validate Surfaces skill frontmatter and references
         run: |
           python3 scripts/validate_surfaces_skill.py

@@ -28,7 +28,7 @@ islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<messa
 
 | Symptom | Do this |
 |---------|---------|
-| Trigger fired but no run appeared | `islo factory line-run list --line <name>`, `islo factory triggers list`, then check providers with the [integrations skill](../../integrations/SKILL.md#check-connection-status) |
+| Trigger fired but no run appeared | `islo factory line-run list --line <name> --paged --limit 20`, `islo factory triggers list`, then check providers with the [integrations skill](../../integrations/SKILL.md#check-connection-status) |
 | Stage failed | `islo factory line-run events <run-id>`, then `islo job event <command-id>` for the failing step's detail |
 | Agent did the wrong thing mid-stage | `islo factory line-run agent-turn` with a corrective message; inspect with `islo ssh <sandbox>` and `islo logs <sandbox>` |
 | Manager routed wrong or you want a reassessment | `islo factory line-run ask` |
