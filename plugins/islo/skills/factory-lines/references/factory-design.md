@@ -19,7 +19,15 @@ islo schema factory --short
 islo schema agent
 ```
 
-Inside a chat sandbox, never run `islo environment list` or `islo gateway ls`. Both return `ACCESS_DENIED: Operation is not allowed from inside a sandbox`. Inspect each relevant Machine with `islo factory machine get <name>` for its attached environment and gateway profile. For tenant-wide configuration, link [Environments](/settings/environments) and [Settings for gateway profiles](/settings). Those tenant inventory commands are available from the user's authenticated local terminal outside a sandbox. Do not read secret values during inventory.
+Also inspect tenant environments and gateway profiles. Choose the commands by [where you are running](../SKILL.md#where-you-are-running):
+
+```bash
+islo environment list  # outside a sandbox only
+islo gateway ls        # outside a sandbox only
+islo factory machine get <name>  # inside a sandbox: attached environment and gateway profile
+```
+
+Inside a sandbox, never run `islo environment list` or `islo gateway ls`; they return `ACCESS_DENIED`. Inspect each relevant Machine instead, and link the Environments (`/settings/environments`) and Gateway (`/settings/gateway`) pages for tenant-wide configuration. Do not read secret values during inventory.
 
 List Agents in the selected Factory and inspect plausible matches with `islo agent get <name>` before proposing a new Agent. Use Factory, Machine, Line, trigger, and model-catalog detail commands only for relevant candidates; check subcommand help on the installed CLI first. `islo factory current` can be inherited from a project or environment and is not proof that the user chose that Factory. Label every item as **observed**, **inferred default**, or **unresolved**. Show Factory scope separately from tenant-scoped environments and gateway profiles; deleting a Factory does not own or delete those tenant resources. Never treat a nearby example or local checkout as authorization to use its repository or selector.
 

@@ -18,7 +18,7 @@ Sandboxes pick up the `default` profile automatically. Inside a chat sandbox, ne
 islo factory machine get <machine-name>
 ```
 
-For tenant-wide configuration, link [Environments](/settings/environments) and [Settings for gateway profiles](/settings). From an authenticated local terminal outside a sandbox, `islo gateway ls` lists profiles. Do not read environment values to troubleshoot access.
+For tenant-wide configuration, link [Environments](/settings/environments) and [Gateway](/settings/gateway). From an authenticated local terminal outside a sandbox, `islo gateway ls` lists profiles. Do not read environment values to troubleshoot access.
 
 Create a custom profile only for stricter egress, extra hosts, or different auth rules. Run these administration commands from an authenticated local terminal outside a sandbox:
 
@@ -61,7 +61,7 @@ Users can pass their own tokens. Warn that it weakens the no-token-in-sandbox mo
 
 ## Troubleshooting
 
-- Provider call fails: re-check status with the [integrations skill](../../integrations/SKILL.md#check-connection-status). Follow the [chat connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for cards and waiting. Inspect the attached profile with `islo factory machine get <machine-name>`, then use [Settings](/settings) to check its destination host rules. Never run `islo gateway ls` inside a sandbox.
+- Provider call fails: re-check status with the [integrations skill](../../integrations/SKILL.md#check-connection-status). Follow the [chat connection gate](../../factory-lines/references/chat-embeds.md#integration-connect-cards) for cards and waiting. Inspect the attached profile with `islo factory machine get <machine-name>`, then use [Gateway](/settings/gateway) to check its destination host rules. Never run `islo gateway ls` inside a sandbox.
 - `Repository not found` or 404 on a private repo: usually GitHub is not connected, or the clone happened outside `islo use` source bootstrap.
 - 401 from a provider API: confirm connection and host allow rules before debugging inside the sandbox.
 - Rules changed after sandbox creation: recreate or reconnect the sandbox.

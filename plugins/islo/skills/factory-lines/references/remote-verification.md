@@ -34,7 +34,7 @@ A host allow rule does not create a route to a private VPC or cluster. Confirm t
 
 ## Inspect and prove the setup
 
-Inside a chat sandbox, inspect the attached environment and gateway profile with `islo factory machine get <machine-name>`. Never run `islo environment list` or `islo gateway ls` inside a sandbox; both return `ACCESS_DENIED`. For tenant-wide configuration, link [Environments](/settings/environments) and [Settings for gateway profiles](/settings). Never read environment values to check access.
+Inside a sandbox, inspect the attached environment and gateway profile with `islo factory machine get <machine-name>`. Never run `islo environment list` or `islo gateway ls` inside a sandbox; both return `ACCESS_DENIED`. From the user's own agent, those commands work. For tenant-wide configuration, link [Environments](/settings/environments) and [Gateway](/settings/gateway). Never read environment values to check access.
 
 The draft card should identify the preview URL source, PR revision, test command, required key names, allowed hosts, and result destination. List deployment, test-data writes, and cleanup effects in `you_get.writes` for approval. Default to leaving an existing preview in place; do not assume the Line owns it.
 

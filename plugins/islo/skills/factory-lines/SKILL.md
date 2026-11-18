@@ -7,7 +7,18 @@ description: Design, create, and manage Islo Factories, Machines, reusable Agent
 
 A Factory contains Machines, reusable Agents, and Lines. Agents are the execution units for new Lines. A Line connects Agent interactions and routes their results. Managers route a Line between stages.
 
-For getting started or "what now?", read [first-run.md](references/first-run.md). Inspect what exists, name the user's current step, and offer one next step with a link. For verification on an existing preview environment, read [remote-verification.md](references/remote-verification.md). Answer the approach question briefly before offering a Line draft card.
+For getting started or "what now?", read [first-run.md](references/first-run.md). Inspect what exists, name the user's current step, and offer to do the next step yourself. For verification on an existing preview environment, read [remote-verification.md](references/remote-verification.md). Answer the approach question briefly before offering a Line draft card.
+
+## Where you are running
+
+This skill runs in two places. Check which one before you run tenant commands or write links.
+
+- **Inside an Islo sandbox**, such as Agent chat or a Line stage. `ISLO_LINE_RUN_ID` is set there. Tenant inventory commands such as `islo environment list` and `islo gateway ls` return `ACCESS_DENIED: Operation is not allowed from inside a sandbox`, so never run them inside a sandbox. Inspect the Machine with `islo factory machine get <name>` instead. Write app-relative links such as `/factories/FACTORY_KEY/lines/LINE_NAME?view=card`; Agent chat draws them as cards.
+- **In the user's own agent**, such as Claude Code, Cursor, or Codex on their computer. All `islo` commands work there, including tenant inventory. Write full links such as `https://app.islo.dev/factories/FACTORY_KEY/lines/LINE_NAME`, because cards render only in Agent chat.
+
+An `ACCESS_DENIED` response with that message also means you are inside a sandbox.
+
+In both places, do the work through the CLI rather than sending the user to a button. Start Line runs, wait for them, and report results after the user approves the input and effects. Send the user to the UI only for what you cannot do: connecting a provider, entering secret values, and commands blocked where you run.
 
 ## Log in before Line creation
 

@@ -28,13 +28,19 @@ The user's path is:
 6. Answer questions and review the result in Runs, including outputs and PRs.
 7. Improve the instructions, tests, or routing based on that result, then run again.
 
-Name the observed step and offer **one** next action with a link. For example, if a deployed Line has no runs: "Your Line is set up, but it has not run yet. Try it on one real issue with Run it now."
+Name the observed step and offer to do **one** next action yourself. Do not treat deployment as completion of the user's first run.
 
-Link that suggestion to `[LINE_NAME](/factories/FACTORY_KEY/lines/LINE_NAME?view=card)`. Resolve `factory.key` from the inventory and URL-encode the Line name. Do not treat deployment as completion of the user's first run. Offer the run without starting it unless the user authorized its input and effects.
+For example, if a deployed Line has no runs: "Your Line `ship-ticket-ci` is set up but has not run yet. Want me to run it on one ticket? Which one?" A Line with an integration trigger can still run manually. Read its inputs with `islo factory line get <line-name>`, ask for the one real item, and name the effects the run will have, such as opening a PR. After the user confirms, start it:
 
-For a run waiting for an answer, link its question at `/factories/FACTORY_KEY/runs/lines/RUN_ID?view=question`. For a finished run, link its result at `/factories/FACTORY_KEY/runs/lines/RUN_ID?view=card`. Use `/factories/FACTORY_KEY/runs?view=inbox` for Runs. Follow [chat-embeds.md](chat-embeds.md) for exact link behavior. For a missing provider, use its connect card. For missing resources, offer a [Line draft card](chat-embeds.md#line-draft-cards) and link the relevant Factory's Lines or Machines page.
+```bash
+islo factory line run <line-name> --param KEY=VALUE --factory <key-or-uuid>
+```
 
-If you start a run, follow [wait-for-line-runs.md](wait-for-line-runs.md), read its outputs, and continue the user's task.
+Then follow [wait-for-line-runs.md](wait-for-line-runs.md): wait, read its outputs, and report the result and any PR. If the run asks a question, show it and relay the user's answer.
+
+Show objects as links for the user to see, not as tasks for the user to do. In Agent chat, use [chat-embeds.md](chat-embeds.md): the Line card at `/factories/FACTORY_KEY/lines/LINE_NAME?view=card`, a run at `/factories/FACTORY_KEY/runs/lines/RUN_ID?view=card`, or its question at `?view=question`. In the user's own agent, use full `https://app.islo.dev/...` URLs. Resolve `factory.key` from the inventory and URL-encode path segments.
+
+Hand a step to the user only when you cannot do it: connecting a provider (follow the [chat connection gate](chat-embeds.md#integration-connect-cards) in Agent chat, or link `https://app.islo.dev/settings/integrations?connect=PROVIDER` in the user's own agent), entering secret values (use an [environment setup card](chat-embeds.md#environment-setup-cards)), or a command blocked where you run. For missing resources, offer a [Line draft card](chat-embeds.md#line-draft-cards) and create the resources yourself after approval.
 
 ## What Machine levels let your Lines do
 

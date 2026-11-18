@@ -11,6 +11,7 @@ Ground rules that apply everywhere:
 
 - The installed CLI is the source of truth. Use `islo schema <command>` and `--help` for exact flags; do not write config shapes from memory.
 - Claude Code, Cursor agent, and Codex are preinstalled in sandboxes. OpenCode is installed on first `islo use --agent opencode`. They run without in-sandbox auth when the matching integration (or Islo inference for OpenCode) is available.
+- This skill runs inside Islo sandboxes and in the user's own agent. Some tenant commands are blocked inside a sandbox, and cards render only in Agent chat; see [where you are running](../factory-lines/SKILL.md#where-you-are-running).
 - Provider tokens stay out of sandboxes; follow the [integrations skill](../integrations/SKILL.md#check-connection-status) for the connection check and the [chat connection gate](../factory-lines/references/chat-embeds.md#integration-connect-cards) for connect cards and waiting.
 
 ## Install Islo in your own agent
