@@ -64,7 +64,7 @@ Incoming webhooks are covered in the platform skill. For anything multi-stage, u
 Deploy, then fire ONE real event and watch it arrive:
 
 ```bash
-islo factory line-run list --line <name>
+islo factory line-run list --line <name> --paged --limit 20
 islo factory triggers list
 ```
 
