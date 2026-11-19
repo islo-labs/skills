@@ -14,9 +14,12 @@ For example:
 islo factory line-run list --line feature-delivery --q ISL-2416 --q "shared initialization" --paged --limit 20 --sort -created_at -o json
 ```
 Each `--q` is one case-insensitive substring; repeated values require every
-phrase. Search covers names, run IDs, selected trigger fields, and artifact
-titles and identifiers. It does not search arbitrary run params or artifact URLs
-or repository fields. Use only terms likely to occur in the searchable fields.
+phrase. Search covers names, run IDs, selected trigger fields including origin,
+and artifact titles, URLs, external IDs, provider/kind, and repository identity.
+It does not search arbitrary run params, user messages, or Manager conversations.
+Normalize PR, repository, and provider URLs into canonical identities before
+searching. For GitHub, use a canonical URL or `owner/repo#number`; `owner/repo`
+also works. Composite fields must belong to the same artifact.
 Keep failed and stopped runs in scope. Reuse results within the task.
 
 Only when another targeted page can resolve the request, pass the returned
@@ -32,8 +35,12 @@ islo factory line-run list --paged --limit 100 --sort -created_at -o json
 Retain the selected Factory and any known `--line` on this fallback.
 Inspect its returned params, origins, and artifacts. Do not continue the fallback page.
 A substring match is only a candidate. Verify exact artifact identity first,
-then run params, using scoped status and stage reads as needed. For GitHub,
-verify owner/repo and number together. List artifacts can be truncated; a
+then hydrate only the selected candidate using scoped status and stage reads.
+For GitHub, verify owner/repo and number together on the same artifact.
+Origin is association evidence, not ownership. Multiple valid associations
+remain ambiguous; report them instead of choosing the newest run.
+When available, API `include=match_evidence` returns compact matched identities
+and provenance. Treat `incomplete: true` as truncated evidence, not absence. List artifacts can be truncated; a
 missing summary artifact is not proof of absence. Topic, recency, or Line
 name alone never proves ownership or authorizes an action.
 
