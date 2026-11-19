@@ -4,10 +4,13 @@ When you start a Line run to fulfill a chat request, wait for its result and con
 
 ## When the platform wakes this chat
 
-Use this case only when both conditions hold:
+Use this case only when all three conditions hold:
 
 - Your instructions say the platform wakes this chat when delegated work finishes.
 - You started the run with `islo factory line run` or contacted it with `islo factory line-run ask`.
+- This turn is not a wake-up turn. The event context does not show `trigger_source` as `chat_wake`.
+
+A run you start or ask during a wake-up turn is never woken. Follow the full flow below for it, including when you fix a failed run and start a fresh one.
 
 Before you start a run, still follow step 1 of the full flow. After the start or ask, do not poll and do not post a run card. The app already shows the pending work. Tell the user once, in plain text with no link: "Started line `<line>` (run `<id>`). I will report back here when it finishes or needs input." Then end the turn.
 
