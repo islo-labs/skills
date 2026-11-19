@@ -72,6 +72,9 @@ class LineRunDiscoveryTests(unittest.TestCase):
             "Stop waiting at 45 minutes",
             "Keep waiting through those attempts",
             "Waiting grants no run-control permission",
+            "all three conditions hold",
+            "`trigger_source` as `chat_wake`",
+            "never woken",
         ):
             self.assertIn(required, waiting)
 
