@@ -39,8 +39,7 @@ then hydrate only the selected candidate using scoped status and stage reads.
 For GitHub, verify owner/repo and number together on the same artifact.
 Origin is association evidence, not ownership. Multiple valid associations
 remain ambiguous; report them instead of choosing the newest run.
-When available, API `include=match_evidence` returns compact matched identities
-and provenance. Treat `incomplete: true` as truncated evidence, not absence. List artifacts can be truncated; a
+List artifacts can be truncated; a
 missing summary artifact is not proof of absence. Topic, recency, or Line
 name alone never proves ownership or authorizes an action.
 

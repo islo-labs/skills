@@ -39,7 +39,6 @@ class LineRunDiscoveryTests(unittest.TestCase):
             "Origin is association evidence, not ownership",
             "instead of choosing the newest run",
             "hydrate only the selected candidate",
-            "incomplete: true",
             "failed and stopped runs",
             "substring match is only a candidate",
             "owner/repo and number",
