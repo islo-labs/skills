@@ -2,6 +2,19 @@
 
 When you start a Line run to fulfill a chat request, wait for its result and continue the original task in the same chat. Starting the run does not finish the task. This applies to manual runs and runs started by an approved test event or SDK call. It does not make a stage agent wait for its own parent run or make a Line Manager wait inside a routing turn.
 
+## When the platform wakes this chat
+
+Use this case only when both conditions hold:
+
+- Your instructions say the platform wakes this chat when delegated work finishes.
+- You started the run with `islo factory line run` or contacted it with `islo factory line-run ask`.
+
+Before you start a run, still follow step 1 of the full flow. After the start or ask, do not poll and do not post a run card. The app already shows the pending work. Tell the user once, in plain text with no link: "Started line `<line>` (run `<id>`). I will report back here when it finishes or needs input." Then end the turn.
+
+On the wake-up turn, read the result as in [Read the result and continue](#read-the-result-and-continue). Continue the original task from where it stopped, including later steps such as inspecting stages or removing a temporary Line.
+
+Every other case follows the full flow below unchanged. That includes your own agent, a Line stage, and any run the chat did not start or ask itself, such as a run from a test event or webhook.
+
 ## Record the run and wait
 
 1. Before starting, follow [bounded Line-run discovery](line-run-discovery.md) in the selected Factory. Match exact identifiers, params, and origin to the same work. If a matching run is active, observe it instead of starting another. After a lost start response, use the same bounded lookup. If a page fails or the earlier start outcome remains uncertain, report the lookup incomplete and do not start another run.

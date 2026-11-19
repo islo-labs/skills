@@ -52,7 +52,7 @@ Before looking for an existing run or checking for duplicate work, read [bounded
 
 ## Waiting for line runs you start
 
-Read and follow [Waiting for line runs you start](references/wait-for-line-runs.md) whenever you start a run for a chat request. Wait through Manager recovery, read the final outputs, and continue the original task in the same turn.
+Read and follow [Waiting for line runs you start](references/wait-for-line-runs.md) whenever you start a run for a chat request. Wait through Manager recovery, read the final outputs, and continue the original task in the same turn. If your instructions say the platform wakes this chat when delegated work finishes, follow [When the platform wakes this chat](references/wait-for-line-runs.md#when-the-platform-wakes-this-chat) instead of waiting in the turn.
 
 ## References
 
