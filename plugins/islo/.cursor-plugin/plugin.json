@@ -1,6 +1,6 @@
 {
   "name": "islo",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Use Islo sandboxes, Factory lines, harness and model selection, knowledge, jobs, webhooks, gateway integrations, and SDKs from coding agents.",
   "author": {
     "name": "Islo Labs"
@@ -16,7 +16,8 @@
     "scheduled-jobs",
     "gateway",
     "inference",
-    "ai-agents"
+    "ai-agents",
+    "windows"
   ],
   "mcpServers": "./.mcp.json",
   "skills": "./skills/"
