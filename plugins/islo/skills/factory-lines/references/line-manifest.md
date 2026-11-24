@@ -118,6 +118,26 @@ to = "done"
 when = { op = "always" }
 ```
 
+## Run one Agent several times in parallel
+
+Set `fanout` on an Agent stage to run copies of it at the same time. Each copy has its own sandbox and session. `fanout` takes the same bindings as transition params:
+
+- a number, such as `{ type = "literal", value = 3 }`, runs that many copies with the same input;
+- a list runs one copy per item, and each copy gets its item as `input`. The list can be a literal, a run input (`{ type = "input", name = "repos" }`), or an earlier stage's output (`{ type = "output", stage = "plan", name = "repos" }`).
+
+When the user's prompt says how many copies or which items, have an earlier stage output the list and fan out over that output.
+
+```toml
+[[stages]]
+id = "review"
+agent = "reviewer"
+fanout = { type = "output", stage = "plan", name = "repos" }
+max_fanout = 20
+concurrency = 3
+```
+
+`max_fanout` (default 20) fails the stage when there are more copies. `concurrency` (default 3) limits how many run at once. Each output becomes a list in copy order, so the next stage must declare an array input to receive it. If one copy fails, the other copies still finish, and then the stage fails.
+
 ## Policy the schema does not state
 
 - Omit `[manager]` for the built-in Manager. Legacy `[agent.instructions]` is valid only without `[manager]`. Agentic transition instructions apply to that transition. Reusable Agent prompts live in the Agent configuration; optional Agent-stage overrides live in the Line.
