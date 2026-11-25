@@ -67,3 +67,4 @@ If you start a Line run for an interactive task through the SDK or a webhook, fo
 | Gateway profiles, provider integrations, phantom tokens, GitHub, Slack, Islo inference routing, credential troubleshooting | `references/gateway-integrations.md` |
 | Incoming webhooks (HTTP event to sandbox or single job) and the TypeScript/Python SDKs | `references/webhooks-and-sdk.md` |
 | Knowledge items: CRUD, levels, repo and tag links, rendering | `references/knowledge.md` |
+| GUI apps in Windows sandboxes: run, drive, screenshot, record (`global/windows-2025-desktop-v2`) | the [windows-desktop skill](../windows-desktop/SKILL.md) |

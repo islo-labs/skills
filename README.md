@@ -6,6 +6,7 @@ This repo teaches coding agents how to use Islo for:
 
 - **Factory lines**: Agent-only multi-stage orchestration with typed transitions, integration triggers, and `islo factory line-run` controls
 - **Run surfaces**: publish knowledge documents, media, live web interfaces, and terminals in line runs
+- **Windows desktop apps**: run, drive (by UI Automation element or coordinates), screenshot, and record GUI apps in Windows sandboxes with `islo-desktop` and agent-desktop
 - **Harness and model selection**: pair Codex / Claude / Cursor to the matching catalog and host (not one shared model list)
 - **Jobs**: maintenance of existing Jobs or `job.toml` only when explicitly requested; no fallback for new Lines
 - **Webhooks**: lower-level HTTP event ingress and egress
