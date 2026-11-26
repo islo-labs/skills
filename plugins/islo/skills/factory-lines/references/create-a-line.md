@@ -13,6 +13,8 @@ Verify that the Islo CLI is logged in before creating resources, following the s
 5. Confirm that every new stage uses a reusable Agent. If `islo schema agent` and `islo schema factory --short` cannot express a required snapshot, fan-out with reduction, verification, lifecycle, or contract capability, report the missing capability and stop the dependent design and deployment. Do not author a Job or look for a fallback in the Job schema. Leave existing Job stages in place and add no new ones.
 6. Author the Line using `islo schema factory --short` and [line-manifest.md](line-manifest.md). Agent stages name their reusable Agent and, where shared workspace is intended, their `sandbox_name`. Use only the Agent-stage contract fields exposed by the installed schema. Validate shared-sandbox Machine consistency. Configure Manager, transitions, trigger, limits, and destinations. Validate and deploy the Line **last**.
 
+Before validation, apply the [Line checklist and examples](line-best-practices.md). Put summary and publication instructions in the Agent prompts and declare their typed outputs in the Line. A promise in the chat reply does not configure future runs. Choose the trigger from the live catalog and verify both a matching input and an excluded input; use [the label-only Linear example](triggers.md#linear-label-only-selection) rather than assuming a labels list narrows all-issues scope.
+
 Check the installed CLI help before invoking create/update commands. If it lacks a required Agent or Manager surface, report the specific missing command or schema field and stop dependent deployment; do not substitute a Job.
 
 ## Static validation and isolated run
@@ -57,6 +59,8 @@ Validate and deploy the uniquely named Line, run it with `--param input=...`, an
 ## End-to-end verification
 
 Run the deployed Line once with approved test input. For an integration trigger, send **one** approved test event with its expected-effects checklist prepared beforehand. Follow [Waiting for line runs you start](wait-for-line-runs.md) for the resulting run, including runs started by a test event. After it finishes, inspect its stage timeline, Agent sessions, outputs, sandbox grouping, and result destination. Compare every external write or provider event with the approved effects checklist. Report any inference failure separately from setup or routing results; lack of model credentials does not prove setup failed.
+
+Check that every stage emitted its summary, every report/final-result reference resolves to a published artifact or Knowledge item, and the next stage received typed values rather than prose to parse. Check trigger inclusion and exclusion with local fixtures before live verification; live positive/negative provider events and their possible run effects need approval as described in [triggers.md](triggers.md#verifying-a-trigger-end-to-end). Do not emit live events merely to update documentation.
 
 For run inspection and recovery, use [run-control-and-debugging.md](run-control-and-debugging.md). Schedules belong in the Line `[trigger]`; Machine refresh schedules belong in the Machine spec.
 
