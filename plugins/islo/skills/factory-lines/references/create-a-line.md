@@ -4,6 +4,16 @@ Start with [factory-design.md](factory-design.md). This page starts only after t
 
 Verify that the Islo CLI is logged in before creating resources, following the skill's [login check](../SKILL.md#log-in-before-line-creation). Request local login only for missing or invalid authentication, then wait for confirmation and recheck.
 
+## Groups or fanout
+
+Use a group when different Agents or different work can run independently: for
+example `plan -> [backend, ui] -> review`, with review rerunning only `ui` when
+needed. Use fanout when the same Agent handles many inputs, such as reviewing
+`api` and `web`. A group member may itself fan out. Declare a covering join and
+separate sandboxes for group members; the same Agent in two members otherwise
+collides at its default `<agent>-{{line_run_id}}` sandbox. See
+[line-manifest.md](line-manifest.md) for `allowed`, `targets`, and output defaults.
+
 ## Dependency order
 
 1. Confirm that all blueprint choices and required selectors are resolved and the complete blueprint is approved. If answers are still missing, follow the [integration gate's readiness check](chat-embeds.md#integration-connect-cards) before proceeding. Select the approved Factory explicitly with `--factory KEY|UUID` for read-only commands. Never let an inherited default silently select the destination.

@@ -16,8 +16,8 @@ islo factory line-run ask <run-id> --message "<question>"
 islo factory line-run agent-turn <run-id> --stage-name <stage> --message "<message>"
 ```
 
-- `stop` kills in-flight stage work for real (compute events resolved, children cancelled) but parks the run resumable: status becomes `stopped` with an open control window for `steer`.
-- `retry` reruns the latest failed stage and continues the line. No flags; the failed stage is implied.
+- `stop` parks single-stage work resumably; during a parallel group it lets running members finish, skips the join, and leaves the run `stopped` with an open control window for `steer`.
+- `retry` reruns the latest failed stage, or only the failed group members with each member’s own params, and continues the line. No flags; the failed stage is implied.
 - `steer` sends a stopped or finished run back to a named stage. Steering an active run returns 409; stop first, then steer. `--param` overrides merge over the stage's last attempt params and are type-coerced against the job manifest; unset params are inherited.
 - An open question alone does not block `steer` or `retry`. The Manager may interpret the person's exact free-text chat message as their answer and route accordingly. Never invent an answer without user input or dismiss remaining questions merely to route. For question delivery and reply handling, see [questions.md](questions.md).
 - A failed stage goes to the Line Manager, which follows the `line-manager-recovery` skill: plain retries until the stage's `max_attempts` (default 3) is reached, then up to two diagnosed recovery attempts, then stop. To opt a stage out, see "Failed stages and opting out of recovery" in [line-manifest.md](line-manifest.md).
@@ -62,3 +62,38 @@ After an Agent update, start a fresh Line run. Retrying an already visited stage
 Only when explicitly asked to maintain an existing Job, deploy its updated version, update its existing Line binding, validate, redeploy, and start a fresh run. Leave existing Job stages in place and add no new ones. After a Machine update, wait for the Machine to return to ready before starting a fresh run.
 
 Follow [Waiting for line runs you start](wait-for-line-runs.md) for the fresh run, then verify its final outputs before continuing the original task.
+
+## Parallel controls (CLI v0.93.0+)
+
+For `plan -> [backend, ui] -> review`, steer UI alone to retain backend's last
+outputs. Steering a member clears only that stage and stages after its group.
+After success the run follows an own matching route, otherwise a covering join;
+a failed member parks. A blocked join never runs while a named member's latest
+result is failed: retry reruns that member and keeps siblings' newer results.
+
+```bash
+islo factory line-run steer RUN_ID backend ui --params-file - --reason "Revise both" <<'EOF'
+{"backend":{"follow_up":"Revise the API"},"ui":{"follow_up":"Revise the UI"}}
+EOF
+islo factory line-run steer RUN_ID ui --param follow_up="Address review" --reason "UI only"
+islo factory line-run steer RUN_ID review --fanout '["api","web"]' --reason "Review each input"
+```
+
+Use only declared params. Multi-stage `--params-file` takes an object keyed by
+stage name. `--param`, `--param-json`, and `--fanout` are single-stage only.
+The API sends either `stage_name` plus `params`, or `stages: [{stage_name, params}]`.
+`stages` forbids duplicates, `done`, `wait`, `fail`, and top-level `params` or
+`fanout`. Each steered stage counts toward the limit.
+
+Fanout is one Agent stage's per-visit override: a positive count repeats shared
+params; a non-empty list supplies each copy's `input`. The stage's `max_fanout`
+and `concurrency` apply, and outputs collect in item order. Retry reuses the
+visit's override; a later steer without it uses manifest fanout again.
+
+Group failures skip conditional routes, including fail-fast. Inspect the decision's
+`routing_context.stage_results` for every member and `failed_stages` for
+`{stage, error_code, reason}`. Retry only reruns failures with their own params.
+No covering join parks with every result for the Manager. Stop during a group
+lets running members finish without running the join, leaves the run `stopped`,
+and a later steer continues it. Group active time counts once, first start to
+last result, while each member adds an iteration.

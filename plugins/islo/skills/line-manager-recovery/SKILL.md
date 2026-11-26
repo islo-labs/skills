@@ -136,3 +136,40 @@ Never discard pushed commits, PR branches, or stage outputs.
 This policy is advisory. The Line's `max_iterations` limit is the backstop, and
 `[limits] timeout` or `budget_usd` caps still apply; see the Line Manager prompt
 for `--reset-iterations` and `--reset-usage`.
+
+## Parallel group recovery
+
+For `plan -> [backend, ui] -> review`, a group failure skips conditional routes,
+including fail-fast. Read `routing_context.stage_results` for every member and
+`failed_stages` for `{stage, error_code, reason}`. A group retry reruns every
+failed member with its own params and keeps successful siblings. Apply the
+recovery policy to the failing members, rather than assuming the last listed
+stage is the only failure.
+
+A join cannot run while any member named in `from` has a latest failed result.
+If UI failed and backend was steered alone, retry UI; review then receives
+backend's newest output. A single-member steer clears that member and stages
+after its group, preserving siblings. On success, the member's own matching
+route wins; otherwise a covering join continues. Failure parks. When no join
+covers the members that ran, the run parks with all results for your decision.
+
+Use CLI v0.93.0+ to supply separate recovery instructions:
+
+```bash
+islo factory line-run steer RUN_ID backend ui --params-file - --reason "Recover both" <<'EOF'
+{"backend":{"follow_up":"Fix the API failure"},"ui":{"follow_up":"Fix the UI failure"}}
+EOF
+islo factory line-run steer RUN_ID ui --param follow_up="Address review" --reason "UI only"
+islo factory line-run steer RUN_ID review --fanout '["api","web"]' --reason "Review each input"
+```
+
+Use declared params. Multi-stage stdin is keyed by stage name; `--param`,
+`--param-json`, and `--fanout` apply to one stage only. The API `stages` list
+cannot repeat names, target `done`, `wait`, or `fail`, or combine with top-level
+`params` or `fanout`. Every target counts toward the limit. Fanout accepts a
+positive count or non-empty list for one Agent stage, replacing manifest
+fanout for that visit and respecting `max_fanout` and `concurrency`. Retry
+reuses that override; a later steer without it uses the manifest again.
+
+Stop during a group lets running members finish, skips the join, and leaves the
+run `stopped`. A later steer continues it.
