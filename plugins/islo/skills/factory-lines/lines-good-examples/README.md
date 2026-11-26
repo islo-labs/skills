@@ -12,6 +12,8 @@ The manual report Line takes string input `request`; the manual PR Line takes st
 
 ## Pick the final deliverable first
 
+The `publish-draft` and `review-prs` handoffs require `$.status == "succeeded"` before consuming producer outputs. If `investigate` or `implement` fails, neither handoff matches: the engine invokes failed-stage Manager recovery without resolving the downstream params. Final stages that return an explicit `blocked` result instead take their existing `wait`/Manager path. Trigger entry transitions remain unconditional.
+
 | File | Final deliverable and publication | Stage outputs (types) |
 |---|---|---|
 | [final-report.line.toml](final-report.line.toml) | One report/text outcome, published as **one Knowledge item for the Line** by `publish`. The investigator does not publish. Retries update the same slug. A final artifact could serve the same purpose through the harness's supported artifact contract. | `investigate`: `summary:string`, `draft:string`, `evidence_refs:string[]`. `publish`: `summary:string`, `result:published\|blocked`, `report_slug:string?`. |
