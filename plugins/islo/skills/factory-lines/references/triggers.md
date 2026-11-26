@@ -41,36 +41,7 @@ Check the current catalog and `islo schema factory --short` before choosing an e
 
 The Linear matcher treats `scope = "all"` as an immediate selector match: it ignores `labels`, `team_ids`, `project_ids`, and `states`. Those fields constrain issues only with `scope = "selected"`. Under selected scope, populated dimensions combine with AND; alternatives within each list combine with OR. Empty lists add no constraint. Labels match IDs or names case-insensitively. Trigger `filters` are separate payload conditions, all of which must pass; setting a selector label is not a filter on an all-issues selector.
 
-**Bad, reported from a chat-created Line:** the labels look restrictive, but this selector admits unlabeled issues too (subject to the event and any separate filters).
-
-```toml
-[trigger.selector]
-kind = "issue"
-provider = "linear"
-scope = "all"
-labels = ["islo"]
-project_ids = []
-states = []
-team_ids = []
-```
-
-**Fixed for "start once when an issue is created with, or gains, label islo":** choose `issue.labeled` and selected scope. No team/project criteria are needed for a label-only request. Ask before adding them.
-
-```toml
-[trigger]
-type = "integration_trigger"
-provider = "linear"
-name = "issue.labeled"
-
-[trigger.selector]
-kind = "issue"
-provider = "linear"
-scope = "selected"
-labels = ["islo"]
-
-[trigger.outputs]
-issue_id = { type = "trigger_path", path = "trigger.raw.data.identifier" }
-```
+Use the bundled [bad all-issues TOML](../lines-bad-examples/all-issues.line.toml) and its [explanation](../lines-bad-examples/README.md), paired with the complete [good label-only TOML](../lines-good-examples/labeled-comment.line.toml). The corrected Line uses `issue.labeled` and selected scope for "start once when an issue is created with, or gains, label islo". Its final outcome is a comment link, with zero Knowledge items. The folders include Agent context, stage summaries, typed outputs, routing, and sample results; private source Lines are not required. No team/project criteria are needed for a label-only request. Ask before adding them.
 
 `issue.labeled` handles creation with a matching label and additions of a matching label, once per issue/subscription. It does not fire for unrelated updates while the issue merely retains the label. For every update to an already labeled issue, use `issue.updated` with the same selected selector. For creation only, keep `issue.labeled` and add a `trigger.filters` equality condition on `$.action` against literal `create`. For an update-only label-addition workflow, the existing `issue.updated` pattern uses an `exists` filter on `$.updatedFrom.labelIds`; that opts the selector into checking added labels rather than all current labels. Do not copy that filter when you want ordinary updates of labeled issues.
 

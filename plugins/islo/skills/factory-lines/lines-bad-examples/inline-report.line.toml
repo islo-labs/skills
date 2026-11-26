@@ -1,0 +1,26 @@
+# INTENTIONALLY BAD: report/text final deliverable exists only inline.
+# Fix: ../lines-good-examples/final-report.line.toml (one final publication).
+[line]
+name = "bad-inline-report"
+[trigger]
+type = "manual"
+[[stages]]
+id = "report"
+agent = "example-worker"
+prompt = "Investigate {{request}}. Return summary and the complete report as output only."
+params.request = { type = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.output = { type = "string", required = true }
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "report"
+when = { op = "always" }
+params = { request = { type = "input", name = "request" } }
+[[transitions]]
+id = "finish"
+type = "conditional"
+from = "report"
+to = "done"
+when = { op = "always" }

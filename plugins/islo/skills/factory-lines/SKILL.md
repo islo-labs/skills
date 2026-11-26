@@ -44,7 +44,7 @@ Before creating or deploying resources, check providers with the [integrations s
 
 ## Line quality and improvements
 
-Before drafting or changing a Line, read the [checklist and good/bad examples](references/line-best-practices.md). Every stage needs a summary, reports and final results need artifacts or Knowledge with typed output references, and triggers must match the requested inclusion and exclusion cases. Check the live event catalog and [trigger semantics](references/triggers.md); Linear `scope = "all"` bypasses label criteria.
+Before drafting or changing a Line, read the [checklist](references/line-best-practices.md), then the bundled [good Line examples](lines-good-examples/README.md) and [bad Line examples](lines-bad-examples/README.md) for TOMLs and explanations. No private tenant access is needed. Every stage needs a concise summary and appropriate typed outputs. Only a Line whose final deliverable is report/text requires a final artifact or Knowledge item, typically one per Line. PR/comment/action outcomes may use their existing links with zero Knowledge items. Triggers must match the requested inclusion and exclusion cases. Check the live event catalog and [trigger semantics](references/triggers.md); Linear `scope = "all"` bypasses label criteria.
 
 After repairing a recurring run problem, finish the work and then offer a concrete Line update for future runs. Require an explicit yes before persisting it; no leaves the definition unchanged. Skip one-off infrastructure or bad-input failures. Follow the shared [offer-to-fix flow](references/run-control-and-debugging.md#offer-to-fix-the-line), including when recovering a failed stage.
 

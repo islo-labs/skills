@@ -1,0 +1,9 @@
+# Shared prerequisite for these Line examples. Replace example-machine with an
+# approved ready Machine and confirm harness/model against the installed catalog.
+name = "example-worker"
+type = "prompt"
+machine = "example-machine"
+harness = "codex"
+model = "openai/gpt-6-sol"
+model_provider = "islo_inference"
+prompt = "Follow the Line stage instructions and typed output contract. Always return a concise summary, including on a no-op or blocker."

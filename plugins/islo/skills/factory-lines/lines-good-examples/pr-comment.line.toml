@@ -1,0 +1,78 @@
+# Final deliverable: PRs and their review comments. ZERO Knowledge items needed.
+# Agent prerequisites, approved writes, and sample outputs are in README.md.
+[line]
+name = "example-pr-comment"
+
+[trigger]
+type = "manual"
+
+[limits]
+max_iterations = 5
+timeout = "2h"
+
+[[stages]]
+id = "implement"
+agent = "example-worker"
+prompt = """
+Implement this approved task: {{task}}
+Follow the repository's guidance, run focused checks, and open the approved PRs.
+Return summary and the complete pull_requests string array of real PR URLs.
+The PRs are the deliverable: create no Knowledge items or duplicate reports.
+If implementation or PR creation is blocked, fail with an accurate summary.
+"""
+params.task = { type = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.pull_requests = { type = "array", items = "string", required = true }
+
+[[stages]]
+id = "review"
+agent = "example-worker"
+prompt = """
+Review these PRs: {{pull_requests}}
+Post the approved review comments on the PRs and confirm the writes.
+Return summary, result=reviewed, and actual comment_urls as a string array.
+PR/comment links are the final deliverable references; create no Knowledge items.
+If review or posting cannot complete, return result=blocked and explain the blocker
+in summary. Do not invent URLs; comment_urls can be empty on a blocker.
+"""
+params.pull_requests = { type = "array", items = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.result = { type = "string", enum = ["reviewed", "blocked"], required = true }
+outputs.comment_urls = { type = "array", items = "string", required = true }
+
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "implement"
+when = { op = "always" }
+params = { task = { type = "input", name = "task" } }
+
+[[transitions]]
+id = "review-prs"
+type = "conditional"
+from = "implement"
+to = "review"
+when = { op = "always" }
+params = { pull_requests = { type = "output", stage = "implement", name = "pull_requests" } }
+
+[[transitions]]
+id = "reviewed"
+type = "conditional"
+from = "review"
+to = "done"
+when = { op = "eq", left = { type = "stage", path = "$.outputs.result" }, right = { type = "literal", value = "reviewed" } }
+
+[[transitions]]
+id = "review-blocked"
+type = "conditional"
+from = "review"
+to = "wait"
+when = { op = "eq", left = { type = "stage", path = "$.outputs.result" }, right = { type = "literal", value = "blocked" } }
+
+[[transitions]]
+id = "resume-after-blocker"
+type = "agentic"
+from = "wait"
+instructions = { type = "literal", value = "Explain the blocker and ask the user if a decision is needed. Retry only after it is resolved and effects remain approved. Never mark the requested outcome complete without its real result reference; end the run as failed if recovery is unavailable." }
+options = [{ name = "retry-review", to = "review" }]
