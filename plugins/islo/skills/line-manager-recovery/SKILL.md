@@ -19,13 +19,8 @@ that drive this policy are:
 
 ## Decide by `recovery_attempt`
 
-The person can answer a question through the bottom free-text Islo chat textarea.
-Interpret their exact message when clear and route using the answer they supplied;
-an open question alone does not block steer or retry. Never invent an answer
-without user input or dismiss remaining questions merely to route. If their
-message leaves the decision unclear, ask for clarification. For a failed question
-POST, follow the [delivery checks](../factory-lines/references/questions.md)
-before trying again.
+For questions and answers, follow [questions.md](../factory-lines/references/questions.md).
+An open question alone does not block steer or retry using the person's answer.
 
 - **0: plain retry.** Run `islo factory line-run retry RUN_ID` with no changes.
   Each outcome is evidence: the same error again suggests a deterministic
@@ -55,10 +50,8 @@ unreachable. The reason is recorded on the timeline. `steer fail` explicitly
 ends the run `failed` regardless of the last stage's status; `steer done` is
 for normal completion, not giving up.
 
-When a person must decide, post the question with a `briefing` containing the
-facts the person needs, then end the turn. Use a choice question object with 1 to 8 explicit options and a prompt of 30 words or fewer.
-One option is enough because both choice kinds include Other for a custom answer. Do not add Other yourself. Follow the
-[question format](../factory-lines/references/questions.md).
+When a person must decide, ask as described in
+[questions.md](../factory-lines/references/questions.md), then end the turn.
 
 ```bash
 islo api -X POST "/factories/$ISLO_FACTORY/line-runs/$ISLO_LINE_RUN_ID/questions" --input - <<'EOF'
@@ -72,7 +65,7 @@ islo api -X POST "/factories/$ISLO_FACTORY/line-runs/$ISLO_LINE_RUN_ID/questions
       {"id": "fail", "label": "End the run as failed"}
     ]
   }],
-  "briefing": "WHAT WAS TRIED, WHAT WAS FOUND, AND THE DECISION NEEDED"
+  "briefing": "The build failed twice because the dependency is unavailable. Work is pushed to the PR. I recommend ending this run until access is restored."
 }
 EOF
 ```
