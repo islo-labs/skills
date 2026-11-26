@@ -1,0 +1,44 @@
+# INTENTIONALLY BAD: copying a $5 cap without estimating this multi-stage task.
+# Fix: README.md (Choose a workload budget with the requester; keep cost guards.)
+[line]
+name = "bad-copied-five-dollar-cap"
+[trigger]
+type = "manual"
+[limits]
+budget_usd = 5
+max_iterations = 5
+timeout = "2h"
+[[stages]]
+id = "implement"
+agent = "example-worker"
+prompt = "Implement {{task}}, run focused checks, and open the approved PRs. Return summary and actual pull_requests; fail accurately on a blocker."
+params.task = { type = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.pull_requests = { type = "array", items = "string", required = true }
+[[stages]]
+id = "review"
+agent = "example-worker"
+prompt = "Review {{pull_requests}} and post the approved comments. Return summary and actual comment_urls; fail accurately on a blocker. Create no Knowledge items."
+params.pull_requests = { type = "array", items = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.comment_urls = { type = "array", items = "string", required = true }
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "implement"
+when = { op = "always" }
+params = { task = { type = "input", name = "task" } }
+[[transitions]]
+id = "review-prs"
+type = "conditional"
+from = "implement"
+to = "review"
+when = { op = "eq", left = { type = "stage", path = "$.status" }, right = { type = "literal", value = "succeeded" } }
+params = { pull_requests = { type = "output", stage = "implement", name = "pull_requests" } }
+[[transitions]]
+id = "finish"
+type = "conditional"
+from = "review"
+to = "done"
+when = { op = "eq", left = { type = "stage", path = "$.status" }, right = { type = "literal", value = "succeeded" } }
