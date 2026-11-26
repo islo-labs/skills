@@ -1,6 +1,6 @@
 # Line checklist and bundled examples
 
-Read this before drafting a Line or proposing a persistent repair. Then use the local [good Line examples](../lines-good-examples/README.md) and [bad Line examples](../lines-bad-examples/README.md): they contain actual TOMLs, Agent prerequisites, typed contracts, sample stage results, and corrected counterparts. All needed context is bundled; readers do not need access to private tenant Lines. Confirm supported fields with the installed schemas and follow [create-a-line.md](create-a-line.md) for approval and validation.
+Read this before drafting a Line. Then use the local [good Line examples](../lines-good-examples/README.md) and [bad Line examples](../lines-bad-examples/README.md): they contain actual TOMLs, Agent prerequisites, typed contracts, sample stage results, and corrected counterparts. All needed context is bundled; readers do not need access to private tenant Lines. Confirm supported fields with the installed schemas and follow [create-a-line.md](create-a-line.md) for approval and validation.
 
 ## Checklist
 
@@ -13,4 +13,4 @@ Read this before drafting a Line or proposing a persistent repair. Then use the 
 
 The [good folder](../lines-good-examples/README.md) is for schema-checked positive examples. The [bad folder](../lines-bad-examples/README.md) contains intentional anti-examples that can be schema-valid but wrong; never deploy them. The example validator identifies and parses those separately, without treating them as successful deployment examples.
 
-For report publication commands, see [Knowledge surfaces](../../surfaces/references/knowledge.md#publish-a-markdown-document). For a recurring run defect, use the [repair-consent flow](run-control-and-debugging.md#offer-to-fix-the-line); missing reports are only one example, not a reason to require Knowledge for every outcome.
+For report publication commands, see [Knowledge surfaces](../../surfaces/references/knowledge.md#publish-a-markdown-document).

@@ -57,25 +57,6 @@ Once the aggregated debug API ships, `GET /factories/{ref}/line-runs/{run_id}/de
 
 ## After fixing
 
-### Offer to fix the Line
-
-Use the same finish-the-work-then-offer flow as chat's automation suggestion. First complete the authorized run repair and confirm its result. Then, if the cause will recur, offer to update the existing Line in the same reply. Name the stage prompt, output contract, Agent, or Machine change in one or two sentences:
-
-> The report is now published as Knowledge. Want me to update the Line's final report stage to publish it and return its Knowledge slug on future runs too?
-
-- **Yes:** inspect the current Line and affected resources, apply only the proposed change, validate and save/deploy it through the existing CLI workflow, then confirm what changed. A clear yes to this concrete proposal authorizes that narrow edit; do not require a second draft approval for it. Substantial redesign still follows the setup contract. Approval does not cover shared Agent/Machine changes affecting other Lines; explain those effects and get approval before including them.
-- **No:** leave the Line definition and its dependent resources unchanged; do not keep offering the same improvement in this conversation.
-- **No answer:** leave the definition unchanged. The run repair itself never implies permission to edit the reusable Line.
-- **One-off infrastructure or bad input:** finish the repair without an improvement offer. A flaky service or a malformed input is not evidence that the Line needs redesign.
-
-Tenant chat delegates a product run's repair to its Manager as usual, then offers only after the outcome is confirmed. Do not duplicate an offer already made by the Manager or chat. For Manager turns, use the existing [question flow](questions.md) when an answer is needed and end the turn; do not block recovery on a future-run improvement. Route report/Surface publication to the stage agent that owns its sandbox, following the [surfaces skill](../../surfaces/SKILL.md).
-
-Match the improvement to the final deliverable using the bundled [good](../lines-good-examples/README.md) and [bad](../lines-bad-examples/README.md) examples: require artifact/Knowledge publication only for a final report/text outcome, typically one item for the Line. Intermediate Agents still return summaries and typed outputs. PR/comment/action outcomes may use existing links with zero Knowledge items; do not propose per-Agent publication.
-
-For example, correcting a final-report output contract to return its published reference is recurring; retrying after a brief provider outage is one-off. A permanent selector correction is recurring too: propose it with the [trigger inclusion/exclusion checks](triggers.md#linear-label-only-selection), rather than silently editing a tenant Line.
-
-### Verify an approved persistent update
-
 After an Agent update, start a fresh Line run. Retrying an already visited stage keeps the Agent configuration that run first resolved.
 
 Only when explicitly asked to maintain an existing Job, deploy its updated version, update its existing Line binding, validate, redeploy, and start a fresh run. Leave existing Job stages in place and add no new ones. After a Machine update, wait for the Machine to return to ready before starting a fresh run.

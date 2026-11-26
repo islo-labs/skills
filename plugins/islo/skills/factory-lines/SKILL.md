@@ -42,11 +42,9 @@ Never write a manifest from memory. Check the installed `islo schema factory --s
 
 Before creating or deploying resources, check providers with the [integrations skill](../integrations/SKILL.md#check-connection-status). Follow the [chat connection gate](references/chat-embeds.md#integration-connect-cards) for connect cards and waiting.
 
-## Line quality and improvements
+## Line quality
 
 Before drafting or changing a Line, read the [checklist](references/line-best-practices.md), then the bundled [good Line examples](lines-good-examples/README.md) and [bad Line examples](lines-bad-examples/README.md) for TOMLs and explanations. No private tenant access is needed. Every stage needs a concise summary and appropriate typed outputs. Only a Line whose final deliverable is report/text requires a final artifact or Knowledge item, typically one per Line. PR/comment/action outcomes may use their existing links with zero Knowledge items. Triggers must match the requested inclusion and exclusion cases. Check the live event catalog and [trigger semantics](references/triggers.md); Linear `scope = "all"` bypasses label criteria.
-
-After repairing a recurring run problem, finish the work and then offer a concrete Line update for future runs. Require an explicit yes before persisting it; no leaves the definition unchanged. Skip one-off infrastructure or bad-input failures. Follow the shared [offer-to-fix flow](references/run-control-and-debugging.md#offer-to-fix-the-line), including when recovering a failed stage.
 
 ## Chat links
 
