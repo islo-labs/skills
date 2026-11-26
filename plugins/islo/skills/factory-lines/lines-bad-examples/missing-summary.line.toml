@@ -1,0 +1,25 @@
+# INTENTIONALLY BAD: a comment/no-op outcome still needs a stage summary.
+# Fix: ../lines-good-examples/labeled-comment.line.toml (summary + typed result).
+[line]
+name = "bad-missing-summary"
+[trigger]
+type = "manual"
+[[stages]]
+id = "comment"
+agent = "example-worker"
+prompt = "Read {{issue_id}} and post the approved comment if useful. If there is nothing to say, finish silently. Return comment_url when posted."
+params.issue_id = { type = "string", required = true }
+outputs.comment_url = { type = "string", required = false }
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "comment"
+when = { op = "always" }
+params = { issue_id = { type = "input", name = "issue_id" } }
+[[transitions]]
+id = "finish"
+type = "conditional"
+from = "comment"
+to = "done"
+when = { op = "always" }

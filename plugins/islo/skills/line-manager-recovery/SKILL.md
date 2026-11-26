@@ -133,7 +133,7 @@ Never discard pushed commits, PR branches, or stage outputs.
 
 ## After a successful repair
 
-Confirm the run repair first. If it exposed a recurring Line defect, use the shared [finish-the-work-then-offer flow](../factory-lines/references/run-control-and-debugging.md#offer-to-fix-the-line): offer a concrete one- or two-sentence stage prompt, outputs, Agent, or Machine change for future runs. Require an explicit yes before persisting it; no or no answer leaves the Line definition unchanged. Skip the offer for one-off infrastructure or bad-input failures, and do not duplicate an offer tenant chat already made. Recovery of this run is not consent to edit the Line. Use the existing question flow when an answer is needed; do not delay recovery to ask about future runs.
+Confirm the run repair first. If it exposed a recurring Line defect, use the shared [finish-the-work-then-offer flow](../factory-lines/references/run-control-and-debugging.md#offer-to-fix-the-line): offer a concrete one- or two-sentence stage prompt, outputs, Agent, or Machine change for future runs. Require an explicit yes before persisting it; no or no answer leaves the Line definition unchanged. Skip the offer for one-off infrastructure or bad-input failures, and do not duplicate an offer tenant chat already made. Recovery of this run is not consent to edit the Line. Match any publication repair to the final deliverable: one final artifact/Knowledge item is typical for a report/text Line; PR/comment/action outcomes can have zero Knowledge items and use their existing links. Do not require per-Agent publication. Use the existing question flow when an answer is needed; do not delay recovery to ask about future runs.
 
 ## Limits
 

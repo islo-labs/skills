@@ -1,0 +1,81 @@
+# Final deliverable: ONE Knowledge report for the Line. See README.md for setup
+# and sample outputs. Only the publish stage creates/updates that report.
+[line]
+name = "example-final-report"
+
+[trigger]
+type = "manual"
+
+[limits]
+max_iterations = 5
+timeout = "1h"
+
+[[stages]]
+id = "investigate"
+agent = "example-worker"
+prompt = """
+Investigate this approved request: {{request}}
+Return a concise summary, draft text, and a string array of evidence references.
+Keep intermediate work in typed outputs; do not create Knowledge items.
+If the request cannot be investigated, fail with the evidence and blocker.
+"""
+params.request = { type = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.draft = { type = "string", required = true }
+outputs.evidence_refs = { type = "array", items = "string", required = true }
+
+[[stages]]
+id = "publish"
+agent = "example-worker"
+prompt = """
+Produce the final report from this draft: {{draft}}
+Evidence references: {{evidence_refs}}
+Use the islo CLI help and surfaces skill's Knowledge publication instructions.
+Create one memory Knowledge item named final-report-$ISLO_LINE_RUN_ID, or update
+that same item on a retry. Open its Surface from this stage and confirm the write.
+Return summary, result=published, and the actual report_slug only after success.
+On publication failure return result=blocked and the blocker summary, without
+fabricating a reference. Do not create a second report for this stage or a retry.
+"""
+params.draft = { type = "string", required = true }
+params.evidence_refs = { type = "array", items = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.result = { type = "string", enum = ["published", "blocked"], required = true }
+outputs.report_slug = { type = "string", required = false }
+
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "investigate"
+when = { op = "always" }
+params = { request = { type = "input", name = "request" } }
+
+[[transitions]]
+id = "publish-draft"
+type = "conditional"
+from = "investigate"
+to = "publish"
+when = { op = "always" }
+params = { draft = { type = "output", stage = "investigate", name = "draft" }, evidence_refs = { type = "output", stage = "investigate", name = "evidence_refs" } }
+
+[[transitions]]
+id = "published"
+type = "conditional"
+from = "publish"
+to = "done"
+when = { op = "eq", left = { type = "stage", path = "$.outputs.result" }, right = { type = "literal", value = "published" } }
+
+[[transitions]]
+id = "publication-blocked"
+type = "conditional"
+from = "publish"
+to = "wait"
+when = { op = "eq", left = { type = "stage", path = "$.outputs.result" }, right = { type = "literal", value = "blocked" } }
+
+[[transitions]]
+id = "resume-after-blocker"
+type = "agentic"
+from = "wait"
+instructions = { type = "literal", value = "Explain the blocker and ask the user if a decision is needed. Retry only after it is resolved and effects remain approved. Never mark the requested outcome complete without its real result reference; end the run as failed if recovery is unavailable." }
+options = [{ name = "retry-publication", to = "publish" }]

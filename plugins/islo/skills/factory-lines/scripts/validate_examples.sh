@@ -7,6 +7,8 @@
 # Blocks tagged <!-- validate: agent --> run through `islo agent validate`.
 # Blocks tagged <!-- validate: manager-line --> exercise the Manager contract.
 # Untagged ```toml blocks get a TOML parse check only (fragments).
+# Bundled good examples are validated as Agents or complete Lines. Bundled bad
+# examples are intentional anti-examples: parse them, never deployment-validate.
 #
 # Line examples reference jobs and Agents that do not exist in the tenant; the
 # server checks those references after schema validation, so that one error is
@@ -56,6 +58,20 @@ for f in "${files[@]}"; do
   extract "$f"
 done
 
+shopt -s nullglob
+for example in "$here/../lines-good-examples/"*.toml; do
+  name="$(basename "$example")"
+  cp "$example" "$tmp/$name"
+  kind="line"
+  [[ "$name" == *.agent.toml ]] && kind="agent"
+  echo "$kind" > "$tmp/${name%.toml}.kind"
+done
+for example in "$here/../lines-bad-examples/"*.toml; do
+  name="bad-$(basename "$example")"
+  cp "$example" "$tmp/$name"
+  echo "anti-example" > "$tmp/${name%.toml}.kind"
+done
+
 only_missing_resource() {
   local output="$1" expected="$2"
   grep -Eq "^[[:space:]]+Hint: .*${expected}.*$" <<<"$output" &&
@@ -80,6 +96,8 @@ for kindfile in "$tmp"/*.kind; do
   fi
 
   case "$kind" in
+    anti-example)
+      echo "ok   $name (intentional anti-example; parse only)" ;;
     fragment)
       echo "ok   $name (parse only)" ;;
     line|manager-line)

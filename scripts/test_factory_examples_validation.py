@@ -25,6 +25,16 @@ def run_validator(
         shutil.copy2(REFERENCES / "create-a-line.md", refs / "create-a-line.md")
         agents = refs / "agents-and-managers.md"
         shutil.copy2(REFERENCES / agents.name, agents)
+        good = root / "lines-good-examples"
+        bad = root / "lines-bad-examples"
+        good.mkdir()
+        bad.mkdir()
+        (good / "bundled-good.line.toml").write_text(
+            '[line]\nname = "bundled-good"\n'
+        )
+        (bad / "intentional-bad.line.toml").write_text(
+            '[line]\nname = "intentional-bad"\n'
+        )
         if missing_agent_type is not None:
             replacement_type = "script" if missing_agent_type == "prompt" else "prompt"
             for reference in refs.glob("*.md"):
@@ -38,6 +48,10 @@ def run_validator(
         stub.write_text(
             "#!/bin/sh\n"
             "if [ \"$1 $2 $3\" = \"factory line validate\" ]; then\n"
+            "  if grep -q 'intentional-bad' \"$4\"; then\n"
+            "    echo \"Error: an intentional anti-example reached deployment validation\"\n"
+            "    exit 1\n"
+            "  fi\n"
             "  if echo \"$4\" | grep -q 'create-a-line'; then\n"
             "    grep -q '{{unique_suffix}}' \"$4\" && exit 2\n"
             "    grep -q 'isolated-agent-check-validation' \"$4\" || exit 2\n"
@@ -67,6 +81,8 @@ def run_validator(
 clean = run_validator(False)
 assert clean.returncode == 0, clean.stdout
 assert "create-a-line-1.toml (Agent schema valid" in clean.stdout
+assert "bundled-good.line.toml (Agent schema valid" in clean.stdout
+assert "intentional-bad.line.toml (intentional anti-example; parse only)" in clean.stdout
 mixed = run_validator(True)
 assert mixed.returncode != 0, mixed.stdout
 assert "malformed transition" in mixed.stdout
