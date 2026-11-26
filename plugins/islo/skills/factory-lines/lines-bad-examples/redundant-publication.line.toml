@@ -1,0 +1,42 @@
+# INTENTIONALLY BAD: a PR/review outcome does not need per-Agent Knowledge.
+# Fix: ../lines-good-examples/pr-comment.line.toml (zero Knowledge items).
+[line]
+name = "bad-redundant-publication"
+[trigger]
+type = "manual"
+[[stages]]
+id = "implement"
+agent = "example-worker"
+prompt = "Implement {{task}}, open approved PRs, and also create an implementation Knowledge report. Return summary, pull_requests, and knowledge_slug."
+params.task = { type = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.pull_requests = { type = "array", items = "string", required = true }
+outputs.knowledge_slug = { type = "string", required = true }
+[[stages]]
+id = "review"
+agent = "example-worker"
+prompt = "Review {{pull_requests}}, post the approved comments, and create another Knowledge report. Return summary, comment_urls, and knowledge_slug."
+params.pull_requests = { type = "array", items = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.comment_urls = { type = "array", items = "string", required = true }
+outputs.knowledge_slug = { type = "string", required = true }
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "implement"
+when = { op = "always" }
+params = { task = { type = "input", name = "task" } }
+[[transitions]]
+id = "review-prs"
+type = "conditional"
+from = "implement"
+to = "review"
+when = { op = "always" }
+params = { pull_requests = { type = "output", stage = "implement", name = "pull_requests" } }
+[[transitions]]
+id = "finish"
+type = "conditional"
+from = "review"
+to = "done"
+when = { op = "always" }

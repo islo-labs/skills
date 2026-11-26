@@ -42,6 +42,10 @@ Never write a manifest from memory. Check the installed `islo schema factory --s
 
 Before creating or deploying resources, check providers with the [integrations skill](../integrations/SKILL.md#check-connection-status). Follow the [chat connection gate](references/chat-embeds.md#integration-connect-cards) for connect cards and waiting.
 
+## Line quality
+
+Before drafting or changing a Line, read the [checklist](references/line-best-practices.md), then the bundled [good Line examples](lines-good-examples/README.md) and [bad Line examples](lines-bad-examples/README.md) for TOMLs and explanations. No private tenant access is needed. Every stage needs a concise summary and appropriate typed outputs. Only a Line whose final deliverable is report/text requires a final artifact or Knowledge item, typically one per Line. PR/comment/action outcomes may use their existing links with zero Knowledge items. Triggers must match the requested inclusion and exclusion cases. Check the live event catalog and [trigger semantics](references/triggers.md); Linear `scope = "all"` bypasses label criteria.
+
 ## Chat links
 
 Always use explicit `/factories/FACTORY_KEY/...` routes for Factory objects. Resolve the object's Factory key with `islo factory current --factory KEY_OR_UUID --output json` and read `factory.key`; use the same selection as the object operation. Never emit legacy singular-Factory run URLs or guess a Factory from the current conversation. If the key cannot be resolved, keep a known explicit link as a badge with `view=chip`, rather than requesting a card. If no explicit URL is known, describe the run in text until its Factory is identified. Follow [chat-embeds.md](references/chat-embeds.md) for views and filters.

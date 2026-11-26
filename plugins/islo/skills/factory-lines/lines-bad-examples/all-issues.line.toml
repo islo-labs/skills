@@ -1,0 +1,38 @@
+# INTENTIONALLY BAD: labels do not restrict an all-scope Linear selector.
+# Fix: ../lines-good-examples/labeled-comment.line.toml (selected, issue.labeled).
+[line]
+name = "bad-all-issues"
+[trigger]
+type = "integration_trigger"
+provider = "linear"
+name = "issue.updated"
+[trigger.selector]
+provider = "linear"
+kind = "issue"
+scope = "all"
+labels = ["islo"]
+team_ids = []
+project_ids = []
+states = []
+[trigger.outputs]
+issue_id = { type = "trigger_path", path = "trigger.raw.data.identifier" }
+[[stages]]
+id = "comment"
+agent = "example-worker"
+prompt = "Read {{issue_id}} and post the approved triage comment. Return summary and comment_url."
+params.issue_id = { type = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.comment_url = { type = "string", required = true }
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "comment"
+when = { op = "always" }
+params = { issue_id = { type = "input", name = "issue_id" } }
+[[transitions]]
+id = "finish"
+type = "conditional"
+from = "comment"
+to = "done"
+when = { op = "always" }

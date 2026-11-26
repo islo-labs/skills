@@ -1,0 +1,66 @@
+# Final deliverable: a Linear comment link, ZERO Knowledge items.
+# Label-only intake uses selected scope. See README.md and references/triggers.md.
+[line]
+name = "example-labeled-comment"
+
+[trigger]
+type = "integration_trigger"
+provider = "linear"
+name = "issue.labeled"
+
+[trigger.selector]
+provider = "linear"
+kind = "issue"
+scope = "selected"
+labels = ["islo"]
+
+[trigger.outputs]
+issue_id = { type = "trigger_path", path = "trigger.raw.data.identifier" }
+
+[limits]
+max_iterations = 3
+timeout = "30m"
+
+[[stages]]
+id = "comment"
+agent = "example-worker"
+prompt = """
+Read issue {{issue_id}} and post the approved triage comment with actionable findings.
+Confirm the comment exists, then return summary, result=commented, and comment_url.
+The comment is the outcome; create no Knowledge item or separate report.
+If input, access, or posting is blocked, return result=blocked and an accurate
+summary. Omit comment_url rather than inventing it. A no-op needs a summary too.
+"""
+params.issue_id = { type = "string", required = true }
+outputs.summary = { type = "string", required = true }
+outputs.result = { type = "string", enum = ["commented", "blocked"], required = true }
+outputs.comment_url = { type = "string", required = false }
+
+[[transitions]]
+id = "start"
+type = "conditional"
+from = "trigger"
+to = "comment"
+when = { op = "always" }
+params = { issue_id = { type = "input", name = "issue_id" } }
+
+[[transitions]]
+id = "commented"
+type = "conditional"
+from = "comment"
+to = "done"
+when = { op = "eq", left = { type = "stage", path = "$.outputs.result" }, right = { type = "literal", value = "commented" } }
+
+[[transitions]]
+id = "comment-blocked"
+type = "conditional"
+from = "comment"
+to = "wait"
+when = { op = "eq", left = { type = "stage", path = "$.outputs.result" }, right = { type = "literal", value = "blocked" } }
+
+[[transitions]]
+id = "resume-after-blocker"
+type = "agentic"
+from = "wait"
+instructions = { type = "literal", value = "Explain the blocker and ask the user if a decision is needed. Retry only after it is resolved and effects remain approved. Never mark the requested outcome complete without its real result reference; end the run as failed if recovery is unavailable." }
+options = [{ name = "retry-comment", to = "comment", params = { issue_id = { type = "input", name = "issue_id" } } }]
