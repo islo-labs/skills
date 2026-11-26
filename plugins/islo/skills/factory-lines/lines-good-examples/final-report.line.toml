@@ -78,4 +78,4 @@ id = "resume-after-blocker"
 type = "agentic"
 from = "wait"
 instructions = { type = "literal", value = "Explain the blocker and ask the user if a decision is needed. Retry only after it is resolved and effects remain approved. Never mark the requested outcome complete without its real result reference; end the run as failed if recovery is unavailable." }
-options = [{ name = "retry-publication", to = "publish" }]
+options = [{ name = "retry-publication", to = "publish", params = { draft = { type = "output", stage = "investigate", name = "draft" }, evidence_refs = { type = "output", stage = "investigate", name = "evidence_refs" } } }]

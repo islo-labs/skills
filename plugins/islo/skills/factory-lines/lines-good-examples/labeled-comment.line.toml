@@ -63,4 +63,4 @@ id = "resume-after-blocker"
 type = "agentic"
 from = "wait"
 instructions = { type = "literal", value = "Explain the blocker and ask the user if a decision is needed. Retry only after it is resolved and effects remain approved. Never mark the requested outcome complete without its real result reference; end the run as failed if recovery is unavailable." }
-options = [{ name = "retry-comment", to = "comment" }]
+options = [{ name = "retry-comment", to = "comment", params = { issue_id = { type = "input", name = "issue_id" } } }]
